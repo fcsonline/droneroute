@@ -6,13 +6,15 @@ import { useMissionStore } from "@/store/missionStore";
 import { WaypointEditorInline } from "./WaypointEditor";
 
 export function WaypointList() {
-  const { waypoints, selectedWaypointIndex, selectWaypoint, removeWaypoint, reorderWaypoints } =
+  const { waypoints, selectedWaypointIndex, selectWaypoint, removeWaypoint, reorderWaypoints, updateWaypoint } =
     useMissionStore();
 
   const [expandedEditor, setExpandedEditor] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const dragItemRef = useRef<number | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   if (waypoints.length === 0) {
     return (
@@ -63,6 +65,21 @@ export function WaypointList() {
     setExpandedEditor((prev) => (prev === wpIndex ? null : wpIndex));
   };
 
+  const startRename = (wpIndex: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingName(wpIndex);
+    // Focus the input after render
+    setTimeout(() => nameInputRef.current?.select(), 0);
+  };
+
+  const commitRename = (wpIndex: number, value: string) => {
+    const trimmed = value.trim();
+    if (trimmed) {
+      updateWaypoint(wpIndex, { name: trimmed });
+    }
+    setEditingName(null);
+  };
+
   return (
     <div className="flex flex-col gap-1 p-2">
       {waypoints.map((wp, i) => {
@@ -70,6 +87,7 @@ export function WaypointList() {
         const isDragging = dragIndex === i;
         const isDragOver = dragOverIndex === i;
         const isEditorOpen = expandedEditor === wp.index;
+        const isRenaming = editingName === wp.index;
 
         return (
           <div key={wp.index}>
@@ -96,11 +114,30 @@ export function WaypointList() {
                 {wp.index + 1}
               </Badge>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium truncate">
-                  {wp.height}m &middot; {wp.speed}m/s
-                </div>
+                {isRenaming ? (
+                  <input
+                    ref={nameInputRef}
+                    className="text-xs font-medium bg-transparent border-b border-primary outline-none w-full py-0"
+                    defaultValue={wp.name}
+                    autoFocus
+                    onBlur={(e) => commitRename(wp.index, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") commitRename(wp.index, e.currentTarget.value);
+                      if (e.key === "Escape") setEditingName(null);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <div
+                    className="text-xs font-medium truncate cursor-text hover:text-primary transition-colors"
+                    onDoubleClick={(e) => startRename(wp.index, e)}
+                    title="Double-click to rename"
+                  >
+                    {wp.name || `WP ${wp.index + 1}`}
+                  </div>
+                )}
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {wp.latitude.toFixed(5)}, {wp.longitude.toFixed(5)}
+                  {wp.height}m &middot; {wp.speed}m/s &middot; {wp.latitude.toFixed(5)}, {wp.longitude.toFixed(5)}
                 </div>
               </div>
               {wp.actions.length > 0 && (

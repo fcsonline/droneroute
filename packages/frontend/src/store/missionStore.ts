@@ -85,6 +85,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       const newWaypoint: Waypoint = {
         ...DEFAULT_WAYPOINT,
         index,
+        name: `WP ${index + 1}`,
         latitude: lat,
         longitude: lng,
         actions: [],

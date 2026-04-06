@@ -22,22 +22,26 @@ export function MapToolbar() {
         size="sm"
         onClick={() => setIsAddingWaypoint(true)}
         title="Click on map to add waypoints (W)"
-        className="bg-background/90 backdrop-blur-sm"
+        className="bg-background/90 backdrop-blur-sm justify-between"
       >
-        <MousePointerClick className="h-4 w-4" />
-        <span className="text-xs">Add WP</span>
-        <kbd className="ml-1 text-[10px] opacity-60 bg-black/20 px-1 rounded">W</kbd>
+        <span className="flex items-center gap-1.5">
+          <MousePointerClick className="h-4 w-4" />
+          <span className="text-xs">Add WP</span>
+        </span>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">W</kbd>
       </Button>
       <Button
         variant={isAddingPoi ? "default" : "outline"}
         size="sm"
         onClick={() => setIsAddingPoi(true)}
         title="Click on map to add POI (P)"
-        className="bg-background/90 backdrop-blur-sm"
+        className="bg-background/90 backdrop-blur-sm justify-between"
       >
-        <Crosshair className="h-4 w-4" />
-        <span className="text-xs">Add POI</span>
-        <kbd className="ml-1 text-[10px] opacity-60 bg-black/20 px-1 rounded">P</kbd>
+        <span className="flex items-center gap-1.5">
+          <Crosshair className="h-4 w-4" />
+          <span className="text-xs">Add POI</span>
+        </span>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">P</kbd>
       </Button>
       <Button
         variant={isPanning ? "default" : "outline"}
@@ -47,11 +51,13 @@ export function MapToolbar() {
           setIsAddingPoi(false);
         }}
         title="Pan / select mode (Esc)"
-        className="bg-background/90 backdrop-blur-sm"
+        className="bg-background/90 backdrop-blur-sm justify-between"
       >
-        <Hand className="h-4 w-4" />
-        <span className="text-xs">Pan</span>
-        <kbd className="ml-1 text-[10px] opacity-60 bg-black/20 px-1 rounded">Esc</kbd>
+        <span className="flex items-center gap-1.5">
+          <Hand className="h-4 w-4" />
+          <span className="text-xs">Pan</span>
+        </span>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">Esc</kbd>
       </Button>
       {(waypoints.length > 0 || pois.length > 0) && (
         <Button
