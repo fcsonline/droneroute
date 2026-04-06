@@ -137,7 +137,7 @@ export function WaypointList() {
                   </div>
                 )}
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {wp.height}m &middot; {wp.speed}m/s &middot; {wp.latitude.toFixed(5)}, {wp.longitude.toFixed(5)}
+                  {wp.height}m &middot; {wp.speed}m/s
                 </div>
               </div>
               {wp.actions.length > 0 && (

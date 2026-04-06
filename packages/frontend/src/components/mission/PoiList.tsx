@@ -83,7 +83,7 @@ export function PoiList() {
                   </div>
                 )}
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {poi.height}m &middot; {poi.latitude.toFixed(5)}, {poi.longitude.toFixed(5)}
+                  {poi.height}m
                 </div>
               </div>
               <Button
@@ -123,10 +123,6 @@ export function PoiList() {
                     onChange={(e) => updatePoi(poi.id, { height: parseFloat(e.target.value) || 0 })}
                     className="h-7 text-xs"
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[10px] text-muted-foreground">
-                  <div>Lat: {poi.latitude.toFixed(6)}</div>
-                  <div>Lng: {poi.longitude.toFixed(6)}</div>
                 </div>
               </div>
             )}
