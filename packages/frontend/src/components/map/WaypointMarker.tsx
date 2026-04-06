@@ -58,79 +58,62 @@ function createWaypointIcon(index: number, isSelected: boolean, waypoint: Waypoi
   const actionIcons = getActionIcons(waypoint);
   const hasActions = waypoint.actions.length > 0;
 
-  // Heading cone: show when waypoint has explicit fixed/manual heading
-  const showCone = !waypoint.useGlobalHeadingParam &&
+  // Heading arrow: show when waypoint has explicit fixed/manual heading
+  const showHeading = !waypoint.useGlobalHeadingParam &&
     (waypoint.headingMode === "fixed" || waypoint.headingMode === "manually");
   const headingAngle = waypoint.headingAngle ?? 0;
 
-  // Cone is rendered as an absolutely-positioned element behind the marker circle.
-  // It uses clip-path to create a ~50° triangular wedge, rotated to match heading.
-  // headingAngle: 0° = North, 90° = East. CSS rotate 0° = up, so they align.
-  const coneHtml = showCone
+  // Small chevron arrow sitting just outside the marker circle, pointing in the heading direction.
+  // The arrow is placed 18px from center (just past the 14px circle radius + border).
+  // CSS rotate: 0° = up (North), 90° = right (East), matching DJI heading convention.
+  const arrowHtml = showHeading
     ? `<div style="
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 48px;
-        height: 48px;
-        margin-left: -24px;
-        margin-top: -24px;
-        transform: rotate(${headingAngle}deg);
-        transform-origin: center center;
+        width: 0;
+        height: 0;
+        transform: rotate(${headingAngle}deg) translateY(-19px);
+        transform-origin: 0 0;
         pointer-events: none;
-        z-index: -1;
+        z-index: 2;
       ">
         <div style="
-          position: absolute;
-          top: 0;
-          left: 50%;
-          margin-left: -24px;
-          width: 48px;
-          height: 24px;
-          background: rgba(239, 68, 68, 0.35);
-          clip-path: polygon(50% 100%, 15% 0%, 85% 0%);
-          border: none;
+          width: 0;
+          height: 0;
+          margin-left: -5px;
+          margin-top: -8px;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          border-bottom: 8px solid #ef4444;
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
         "></div>
       </div>`
     : "";
-
-  // When cone is shown, we need a larger icon container
-  const size = showCone ? 68 : 28;
-  const anchor = showCone ? 34 : 14;
 
   return L.divIcon({
     html: `
       <div style="
         position: relative;
-        width: ${size}px;
-        height: ${showCone ? (hasActions ? 80 : size) : (hasActions ? 40 : 28)}px;
+        background: ${bg};
+        border: 2px solid ${border};
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-      ">
-        ${coneHtml}
-        <div style="
-          position: relative;
-          background: ${bg};
-          border: 2px solid ${border};
-          color: white;
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 700;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-          cursor: grab;
-          z-index: 1;
-        ">${index + 1}${actionIcons}</div>
-      </div>
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        cursor: grab;
+        overflow: visible;
+      ">${index + 1}${actionIcons}${arrowHtml}</div>
     `,
     className: "",
-    iconSize: [size, showCone ? (hasActions ? 80 : size) : (hasActions ? 40 : 28)],
-    iconAnchor: [anchor, showCone ? anchor : 14],
+    iconSize: [28, hasActions ? 40 : 28],
+    iconAnchor: [14, 14],
   });
 }
 
