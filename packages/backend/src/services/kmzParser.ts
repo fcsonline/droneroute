@@ -40,8 +40,8 @@ export async function parseKmz(
 ): Promise<{ config: MissionConfig; waypoints: Waypoint[]; pois: PointOfInterest[] }> {
   const zip = await JSZip.loadAsync(buffer);
 
-  // Try template.kml first
-  const templateFile = zip.file("template.kml");
+  // Try template.kml at root or inside wpmz/ directory (DJI convention)
+  const templateFile = zip.file("template.kml") || zip.file("wpmz/template.kml");
   if (!templateFile) {
     throw new Error("Invalid KMZ: missing template.kml");
   }
