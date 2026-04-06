@@ -36,6 +36,24 @@ function calculateIdealGimbalPitch(wp: Waypoint, poi: PointOfInterest): { pitch:
   return { pitch, distance };
 }
 
+/**
+ * Calculate the bearing (heading) from one lat/lng point to another.
+ * Returns degrees in -180..180 range where 0 = North, 90 = East, -90 = West.
+ */
+function calculateBearing(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const toDeg = (rad: number) => (rad * 180) / Math.PI;
+  const dLng = toRad(lng2 - lng1);
+  const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+    Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+  let bearing = toDeg(Math.atan2(y, x));
+  // Normalize to -180..180
+  if (bearing > 180) bearing -= 360;
+  if (bearing < -180) bearing += 360;
+  return Math.round(bearing);
+}
+
 interface WaypointEditorInlineProps {
   waypointIndex: number;
 }
@@ -130,7 +148,13 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             if (v === "global") {
               update({ useGlobalHeadingParam: true });
             } else {
-              update({ useGlobalHeadingParam: false, headingMode: v as HeadingMode });
+              const updates: Record<string, any> = { useGlobalHeadingParam: false, headingMode: v as HeadingMode };
+              // Auto-set heading angle toward the POI when switching to fixed/manual and there's exactly one POI
+              if ((v === "fixed" || v === "manually") && pois.length === 1) {
+                const poi = pois[0];
+                updates.headingAngle = calculateBearing(wp.latitude, wp.longitude, poi.latitude, poi.longitude);
+              }
+              update(updates);
             }
           }}
         >
