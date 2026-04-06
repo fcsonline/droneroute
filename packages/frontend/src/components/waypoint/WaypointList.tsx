@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MapPin, X, GripVertical, Settings, ArrowUp, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,14 @@ export function WaypointList() {
 
   const [expandedEditor, setExpandedEditor] = useState<number | null>(null);
   const [editingName, setEditingName] = useState<number | null>(null);
+
+  // When a waypoint is selected (e.g. by clicking on the map), expand its editor
+  // and collapse all others
+  useEffect(() => {
+    if (selectedWaypointIndex !== null) {
+      setExpandedEditor(selectedWaypointIndex);
+    }
+  }, [selectedWaypointIndex]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const dragItemRef = useRef<number | null>(null);
