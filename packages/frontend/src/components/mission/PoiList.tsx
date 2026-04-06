@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Crosshair, X, Settings } from "lucide-react";
+import { Crosshair, X, Settings, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,8 +82,8 @@ export function PoiList() {
                     {poi.name}
                   </div>
                 )}
-                <div className="text-[10px] text-muted-foreground truncate">
-                  {poi.height}m
+                <div className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                  <ArrowUp className="h-2.5 w-2.5" />{poi.height}m
                 </div>
               </div>
               <Button

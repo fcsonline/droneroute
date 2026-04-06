@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { MapPin, X, GripVertical, Settings } from "lucide-react";
+import { MapPin, X, GripVertical, Settings, ArrowUp, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
@@ -136,8 +136,9 @@ export function WaypointList() {
                     {wp.name || `Waypoint ${wp.index + 1}`}
                   </div>
                 )}
-                <div className="text-[10px] text-muted-foreground truncate">
-                  {wp.height}m &middot; {wp.speed}m/s
+                <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                  <span className="flex items-center gap-0.5"><ArrowUp className="h-2.5 w-2.5" />{wp.height}m</span>
+                  <span className="flex items-center gap-0.5"><Gauge className="h-2.5 w-2.5" />{wp.speed}m/s</span>
                 </div>
               </div>
               {wp.actions.length > 0 && (
