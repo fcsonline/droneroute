@@ -43,6 +43,3 @@ body {
     stroke-dashoffset: -16;
   }
 }
-.flight-path-animated {
-  animation: dash-flow var(--flight-duration, 2s) linear infinite;
-}

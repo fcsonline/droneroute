@@ -3,7 +3,6 @@ import { useMissionStore } from "@/store/missionStore";
 import { WaypointMarker } from "./WaypointMarker";
 import { PoiMarker } from "./PoiMarker";
 import { MapToolbar } from "./MapToolbar";
-import { useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 
 function MapClickHandler() {
@@ -27,21 +26,45 @@ function FlightPath() {
 
   if (waypoints.length < 2) return null;
 
-  const positions = waypoints.map(
-    (wp) => [wp.latitude, wp.longitude] as [number, number]
-  );
+  // Render each segment as its own Polyline so animation speed
+  // matches the departing waypoint's speed.
+  // Baseline: 7 m/s → 2s duration, scales inversely, clamped 0.5s–5s.
+  const segments = waypoints.slice(0, -1).map((wp, i) => {
+    const next = waypoints[i + 1];
+    const duration = Math.max(0.5, Math.min(5, 2 * (7 / wp.speed)));
+    return {
+      key: `seg-${wp.index}-${next.index}`,
+      positions: [
+        [wp.latitude, wp.longitude] as [number, number],
+        [next.latitude, next.longitude] as [number, number],
+      ],
+      duration,
+    };
+  });
 
   return (
-    <Polyline
-      positions={positions}
-      pathOptions={{
-        color: "#3b82f6",
-        weight: 3,
-        opacity: 0.8,
-        dashArray: "10, 6",
-        className: "flight-path-animated",
-      }}
-    />
+    <>
+      {segments.map((seg) => (
+        <Polyline
+          key={seg.key}
+          positions={seg.positions}
+          pathOptions={{
+            color: "#3b82f6",
+            weight: 3,
+            opacity: 0.8,
+            dashArray: "10, 6",
+          }}
+          eventHandlers={{
+            add: (e) => {
+              const el = (e.target as any)._path as SVGElement | undefined;
+              if (el) {
+                el.style.animation = `dash-flow ${seg.duration.toFixed(2)}s linear infinite`;
+              }
+            },
+          }}
+        />
+      ))}
+    </>
   );
 }
 
@@ -87,17 +110,8 @@ export function MapView() {
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
 
-  // Scale animation speed proportionally to average waypoint speed
-  // Baseline: 7 m/s → 2s duration, faster speed → shorter duration
-  const flightDuration = useMemo(() => {
-    if (waypoints.length === 0) return "2s";
-    const avgSpeed = waypoints.reduce((sum, wp) => sum + wp.speed, 0) / waypoints.length;
-    const duration = Math.max(0.5, Math.min(5, 2 * (7 / avgSpeed)));
-    return `${duration.toFixed(2)}s`;
-  }, [waypoints.map((wp) => wp.speed).join(",")]);
-
   return (
-    <div className="relative h-full w-full" style={{ "--flight-duration": flightDuration } as React.CSSProperties}>
+    <div className="relative h-full w-full">
       <MapContainer
         center={[41.3874, 2.1686]}
         zoom={13}
