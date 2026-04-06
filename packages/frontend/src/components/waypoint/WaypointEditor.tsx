@@ -88,11 +88,13 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             if (!targetPoi) return null;
             const { pitch: suggested, distance } = calculateIdealGimbalPitch(wp, targetPoi);
             const isAlreadyApplied = wp.gimbalPitchAngle === suggested;
+            const heightDiff = wp.height - targetPoi.height;
             const distLabel = distance >= 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`;
+            const tooltip = `The camera will point straight at ${targetPoi.name}.\n\nDrone is ${heightDiff > 0 ? `${Math.round(heightDiff)}m above` : heightDiff < 0 ? `${Math.round(Math.abs(heightDiff))}m below` : "at the same height as"} the POI, ${distLabel} away.\n\nClick to apply ${suggested}°.`;
             return (
               <button
                 type="button"
-                title={`${distLabel} away, ${Math.abs(suggested)}° below horizon – click to apply`}
+                title={tooltip}
                 onClick={() => { if (!isAlreadyApplied) update({ gimbalPitchAngle: suggested }); }}
                 className={`text-[10px] font-medium transition-colors ${
                   isAlreadyApplied
