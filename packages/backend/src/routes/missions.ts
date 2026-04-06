@@ -11,11 +11,11 @@ missionRoutes.get("/", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
   const rows = db
     .prepare(
-      "SELECT id, name, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC"
+      "SELECT id, name, config, waypoints, pois, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC"
     )
     .all(req.userId!) as any[];
 
-  res.json(rows.map((r) => ({ id: r.id, name: r.name, createdAt: r.created_at, updatedAt: r.updated_at })));
+  res.json(rows);
 });
 
 // Get single mission

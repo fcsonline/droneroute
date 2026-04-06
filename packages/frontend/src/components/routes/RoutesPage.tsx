@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, Clock, User } from "lucide-react";
+import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, ArrowUp, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
+import { DRONE_MODELS } from "@droneroute/shared";
+import type { Waypoint, MissionConfig } from "@droneroute/shared";
 
 interface SavedMission {
   id: string;
@@ -26,7 +28,7 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function estimateDistance(waypoints: any[]): number {
+function estimateDistance(waypoints: Waypoint[]): number {
   let total = 0;
   for (let i = 1; i < waypoints.length; i++) {
     total += haversine(
@@ -37,6 +39,37 @@ function estimateDistance(waypoints: any[]): number {
     );
   }
   return total;
+}
+
+function estimateFlightTime(waypoints: Waypoint[]): number {
+  let seconds = 0;
+  for (let i = 1; i < waypoints.length; i++) {
+    const dist = haversine(
+      waypoints[i - 1].latitude,
+      waypoints[i - 1].longitude,
+      waypoints[i].latitude,
+      waypoints[i].longitude
+    );
+    seconds += dist / (waypoints[i - 1].speed || 7);
+  }
+  return Math.round(seconds);
+}
+
+function formatFlightTime(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m < 60) return s > 0 ? `${m}m ${s}s` : `${m}m`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+}
+
+function getDroneLabel(config: MissionConfig): string | null {
+  const model = DRONE_MODELS.find(
+    (d) => d.droneEnumValue === config.droneEnumValue && d.droneSubEnumValue === config.droneSubEnumValue
+  );
+  return model?.label ?? null;
 }
 
 interface RoutesPageProps {
@@ -107,6 +140,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
   const formatDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
       return d.toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
@@ -165,11 +199,10 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
 
             {!loading && !token && (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                <User className="h-12 w-12 mb-4 opacity-30" />
+                <Route className="h-12 w-12 mb-4 opacity-30" />
                 <p className="text-lg font-medium mb-1">Sign in to view your routes</p>
                 <p className="text-sm mb-4">Create an account to save and manage drone missions</p>
                 <Button size="sm" className="gap-1.5" onClick={onRequestAuth}>
-                  <User className="h-4 w-4" />
                   Sign in
                 </Button>
               </div>
@@ -199,7 +232,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
             {!loading && !error && token && missions.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {missions.map((mission) => {
-                  const waypoints = (() => {
+                  const waypoints: Waypoint[] = (() => {
                     try {
                       return JSON.parse(mission.waypoints);
                     } catch {
@@ -213,7 +246,19 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                       return [];
                     }
                   })();
+                  const config: MissionConfig | null = (() => {
+                    try {
+                      return JSON.parse(mission.config);
+                    } catch {
+                      return null;
+                    }
+                  })();
                   const dist = estimateDistance(waypoints);
+                  const flightTime = estimateFlightTime(waypoints);
+                  const droneLabel = config ? getDroneLabel(config) : null;
+                  const maxAlt = waypoints.length > 0
+                    ? Math.max(...waypoints.map((w) => w.height))
+                    : 0;
 
                   return (
                     <div
@@ -242,8 +287,16 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                           </Button>
                         </div>
 
+                        {/* Drone model */}
+                        {droneLabel && (
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-2">
+                            <Plane className="h-3 w-3 text-purple-400" />
+                            {droneLabel}
+                          </div>
+                        )}
+
                         {/* Stats row */}
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
+                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2">
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3 text-blue-400" />
                             {waypoints.length} WP
@@ -254,12 +307,28 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                               {pois.length} POI
                             </span>
                           )}
+                          {maxAlt > 0 && (
+                            <span className="flex items-center gap-1">
+                              <ArrowUp className="h-3 w-3 text-sky-400" />
+                              {maxAlt}m
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Distance + time row */}
+                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
                           {dist > 0 && (
                             <span className="flex items-center gap-1">
                               <Route className="h-3 w-3 text-emerald-400" />
                               {dist >= 1000
                                 ? `${(dist / 1000).toFixed(1)}km`
                                 : `${Math.round(dist)}m`}
+                            </span>
+                          )}
+                          {flightTime > 0 && (
+                            <span className="flex items-center gap-1">
+                              <span className="text-orange-400 text-[10px]">~</span>
+                              {formatFlightTime(flightTime)}
                             </span>
                           )}
                         </div>
