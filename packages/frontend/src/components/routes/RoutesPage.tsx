@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, Clock } from "lucide-react";
+import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
+import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 
 interface SavedMission {
@@ -38,8 +39,13 @@ function estimateDistance(waypoints: any[]): number {
   return total;
 }
 
-export function RoutesPage() {
+interface RoutesPageProps {
+  onRequestAuth: () => void;
+}
+
+export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
   const { loadMission, setCurrentPage } = useMissionStore();
+  const { token } = useAuthStore();
   const [missions, setMissions] = useState<SavedMission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,8 +64,12 @@ export function RoutesPage() {
   };
 
   useEffect(() => {
-    fetchMissions();
-  }, []);
+    if (token) {
+      fetchMissions();
+    } else {
+      setLoading(false);
+    }
+  }, [token]);
 
   const handleLoad = async (mission: SavedMission) => {
     try {
@@ -153,17 +163,28 @@ export function RoutesPage() {
               </div>
             )}
 
-            {error && (
+            {!loading && !token && (
+              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                <User className="h-12 w-12 mb-4 opacity-30" />
+                <p className="text-lg font-medium mb-1">Sign in to view your routes</p>
+                <p className="text-sm mb-4">Create an account to save and manage drone missions</p>
+                <Button size="sm" className="gap-1.5" onClick={onRequestAuth}>
+                  <User className="h-4 w-4" />
+                  Sign in
+                </Button>
+              </div>
+            )}
+
+            {error && token && (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <p className="text-sm text-destructive mb-2">{error}</p>
-                <p className="text-xs mb-4">You may need to log in first</p>
                 <Button variant="outline" size="sm" onClick={fetchMissions}>
                   Retry
                 </Button>
               </div>
             )}
 
-            {!loading && !error && missions.length === 0 && (
+            {!loading && !error && token && missions.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <Route className="h-12 w-12 mb-4 opacity-30" />
                 <p className="text-lg font-medium mb-1">No saved routes yet</p>
@@ -175,7 +196,7 @@ export function RoutesPage() {
               </div>
             )}
 
-            {!loading && !error && missions.length > 0 && (
+            {!loading && !error && token && missions.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {missions.map((mission) => {
                   const waypoints = (() => {

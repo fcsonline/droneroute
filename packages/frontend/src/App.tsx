@@ -11,6 +11,8 @@ import {
   FolderOpen,
   Route,
   Clock,
+  User,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +21,9 @@ import { WaypointList } from "@/components/waypoint/WaypointList";
 import { MissionConfig } from "@/components/mission/MissionConfig";
 import { PoiList } from "@/components/mission/PoiList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { useMissionStore } from "@/store/missionStore";
+import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 
 type SidebarSection = "waypoints" | "pois" | "config";
@@ -46,7 +50,15 @@ export default function App() {
 
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { token, email: userEmail, logout, restore } = useAuthStore();
+
+  // Restore auth session on mount
+  useEffect(() => {
+    restore();
+  }, []);
 
   const toggleSection = (section: SidebarSection) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -81,6 +93,10 @@ export default function App() {
   };
 
   const handleSave = async () => {
+    if (!token) {
+      setShowAuthModal(true);
+      return;
+    }
     setSaving(true);
     try {
       if (missionId) {
@@ -165,7 +181,12 @@ export default function App() {
 
   // Show routes page
   if (currentPage === "routes") {
-    return <RoutesPage />;
+    return (
+      <>
+        <RoutesPage onRequestAuth={() => setShowAuthModal(true)} />
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </>
+    );
   }
 
   return (
@@ -179,15 +200,43 @@ export default function App() {
               <img src="/favicon.svg" alt="DroneRoute" className="h-5 w-5" />
               <span className="font-bold text-sm">DroneRoute</span>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setCurrentPage("routes")}
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
-              title="My Routes"
-            >
-              <FolderOpen className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {token ? (
+                <>
+                  <span className="text-[10px] text-muted-foreground truncate max-w-[100px]" title={userEmail || ""}>
+                    {userEmail}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={logout}
+                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    title="Sign out"
+                  >
+                    <LogOut className="h-3 w-3" />
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAuthModal(true)}
+                  className="h-6 text-[10px] text-muted-foreground hover:text-foreground gap-1 px-1.5"
+                >
+                  <User className="h-3 w-3" />
+                  Sign in
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setCurrentPage("routes")}
+                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                title="My Routes"
+              >
+                <FolderOpen className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <Input
             value={missionName}
@@ -308,6 +357,8 @@ export default function App() {
       <div className="flex-1 relative">
         <MapView />
       </div>
+
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 }
