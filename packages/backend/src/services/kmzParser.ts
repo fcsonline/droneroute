@@ -68,8 +68,20 @@ export async function parseKmz(
     globalTransitionalSpeed: parseFloat(mc["wpml:globalTransitionalSpeed"] || "10"),
   };
 
-  // Parse folder
-  const folder = doc.Folder;
+  // Determine which document contains the Folder with waypoints.
+  // template.kml may have it, or it may only be in waylines.wpml.
+  let folder = doc.Folder;
+
+  if (!folder) {
+    // Try waylines.wpml for the actual waypoint data
+    const waylinesFile = zip.file("waylines.wpml") || zip.file("wpmz/waylines.wpml");
+    if (waylinesFile) {
+      const waylinesXml = await waylinesFile.async("string");
+      const waylinesParsed = parser.parse(waylinesXml);
+      folder = waylinesParsed.kml?.Document?.Folder;
+    }
+  }
+
   if (folder) {
     config.autoFlightSpeed = parseFloat(folder["wpml:autoFlightSpeed"] || "7");
     config.gimbalPitchMode = folder["wpml:gimbalPitchMode"] || "usePointSetting";
@@ -93,17 +105,21 @@ export async function parseKmz(
   const placemarks = folder?.Placemark || [];
   const poiMap = new Map<string, PointOfInterest>(); // key: "lon,lat,height" -> POI
 
-  const waypoints: Waypoint[] = placemarks.map((pm: any) => {
+  const waypoints: Waypoint[] = placemarks.map((pm: any, i: number) => {
     const coords = extractCoords(pm.Point.coordinates);
     const actions = parseActions(pm);
 
     // Check for per-waypoint heading params with POI
     const headingParam = pm["wpml:waypointHeadingParam"];
     let headingMode: string | undefined;
+    let headingAngle: number | undefined;
     let poiId: string | undefined;
 
     if (headingParam) {
       headingMode = headingParam["wpml:waypointHeadingMode"];
+      headingAngle = headingParam["wpml:waypointHeadingAngle"] != null
+        ? parseFloat(headingParam["wpml:waypointHeadingAngle"])
+        : undefined;
       const poiPoint = headingParam["wpml:waypointPoiPoint"];
       if (headingMode === "towardPOI" && poiPoint) {
         const poiKey = String(poiPoint);
@@ -122,19 +138,46 @@ export async function parseKmz(
       }
     }
 
+    // Parse turn mode
+    const turnParam = pm["wpml:waypointTurnParam"];
+    const turnMode = turnParam?.["wpml:waypointTurnMode"];
+
+    // Height: try wpml:executeHeight (waylines.wpml), wpml:height, wpml:ellipsoidHeight
+    const height = parseFloat(
+      pm["wpml:executeHeight"] || pm["wpml:height"] || pm["wpml:ellipsoidHeight"] || "50"
+    );
+
+    // Gimbal pitch: try direct field or extract from gimbalRotate action
+    let gimbalPitchAngle = pm["wpml:gimbalPitchAngle"] != null
+      ? parseFloat(pm["wpml:gimbalPitchAngle"])
+      : undefined;
+    if (gimbalPitchAngle == null) {
+      // Look for a gimbalRotate action with pitch angle
+      const gimbalAction = actions.find((a) => a.actionType === "gimbalRotate");
+      const gimbalParams = gimbalAction?.params as any;
+      if (gimbalParams?.["wpml:gimbalPitchRotateAngle"] != null) {
+        gimbalPitchAngle = parseFloat(gimbalParams["wpml:gimbalPitchRotateAngle"]);
+      }
+    }
+
+    const wpIndex = pm["wpml:index"] != null ? parseInt(pm["wpml:index"]) : i;
+
     return {
       ...DEFAULT_WAYPOINT,
-      index: parseInt(pm["wpml:index"] || "0"),
+      index: wpIndex,
+      name: `Waypoint ${wpIndex + 1}`,
       latitude: coords.latitude,
       longitude: coords.longitude,
-      height: parseFloat(pm["wpml:height"] || pm["wpml:ellipsoidHeight"] || "50"),
+      height,
       speed: parseFloat(pm["wpml:waypointSpeed"] || String(config.autoFlightSpeed)),
       useGlobalSpeed: pm["wpml:useGlobalSpeed"] === "1" || pm["wpml:useGlobalSpeed"] === 1,
       useGlobalHeight: pm["wpml:useGlobalHeight"] === "1" || pm["wpml:useGlobalHeight"] === 1,
       useGlobalHeadingParam: pm["wpml:useGlobalHeadingParam"] === "1" || pm["wpml:useGlobalHeadingParam"] === 1,
       useGlobalTurnParam: pm["wpml:useGlobalTurnParam"] === "1" || pm["wpml:useGlobalTurnParam"] === 1,
-      gimbalPitchAngle: parseFloat(pm["wpml:gimbalPitchAngle"] || "-90"),
+      gimbalPitchAngle: gimbalPitchAngle ?? DEFAULT_WAYPOINT.gimbalPitchAngle,
       headingMode: headingMode as any,
+      headingAngle,
+      turnMode: turnMode as any,
       poiId,
       actions,
     };
