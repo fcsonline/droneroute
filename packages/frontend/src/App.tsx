@@ -13,6 +13,8 @@ import {
   Clock,
   User,
   LogOut,
+  Camera,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -324,6 +326,26 @@ export default function App() {
                 <span className="text-amber-300 font-medium">{pois.length}</span>
               </span>
             )}
+            {(() => {
+              const photoCount = waypoints.reduce((sum, wp) => sum + wp.actions.filter((a) => a.actionType === "takePhoto").length, 0);
+              const videoCount = waypoints.reduce((sum, wp) => sum + wp.actions.filter((a) => a.actionType === "startRecord").length, 0);
+              return (
+                <>
+                  {photoCount > 0 && (
+                    <span className="flex items-center gap-1 text-[11px]">
+                      <Camera className="h-3 w-3 text-sky-400" />
+                      <span className="text-sky-300 font-medium">{photoCount}</span>
+                    </span>
+                  )}
+                  {videoCount > 0 && (
+                    <span className="flex items-center gap-1 text-[11px]">
+                      <Video className="h-3 w-3 text-red-400" />
+                      <span className="text-red-300 font-medium">{videoCount}</span>
+                    </span>
+                  )}
+                </>
+              );
+            })()}
           </div>
           <div className="flex items-center gap-3">
             {waypoints.length >= 2
