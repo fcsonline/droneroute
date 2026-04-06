@@ -1,0 +1,9 @@
+node_modules
+dist
+*.db
+data/
+.env
+.DS_Store
+.playwright-mcp
+tsconfig.tsbuildinfo
+*.tsbuildinfo

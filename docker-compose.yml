@@ -1,0 +1,35 @@
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: droneroute-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"   # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+
+  droneroute:
+    build: .
+    container_name: droneroute
+    volumes:
+      - droneroute-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
+      - DB_PATH=/app/data/droneroute.db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.droneroute.rule=Host(`droneroute.localhost`)"
+      - "traefik.http.routers.droneroute.entrypoints=web"
+      - "traefik.http.services.droneroute.loadbalancer.server.port=3001"
+    restart: unless-stopped
+
+volumes:
+  droneroute-data:
