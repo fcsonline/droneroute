@@ -1,4 +1,4 @@
-import { Marker, Popup, useMap } from "react-leaflet";
+import { Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
 import type { Waypoint } from "@droneroute/shared";
@@ -141,7 +141,7 @@ export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
         },
       }}
     >
-      <Popup>
+      <Tooltip direction="top" offset={[0, -14]} opacity={0.95}>
         <div className="text-xs">
           <strong>{waypoint.name}</strong>
           <br />
@@ -157,7 +157,7 @@ export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
           <br />
           {waypoint.latitude.toFixed(6)}, {waypoint.longitude.toFixed(6)}
         </div>
-      </Popup>
+      </Tooltip>
     </Marker>
   );
 }

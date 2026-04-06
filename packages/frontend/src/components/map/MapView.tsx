@@ -142,9 +142,17 @@ function PoiPointingLines() {
 export function MapView() {
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
+  const isAddingWaypoint = useMissionStore((s) => s.isAddingWaypoint);
+  const isAddingPoi = useMissionStore((s) => s.isAddingPoi);
+
+  const cursorClass = isAddingWaypoint
+    ? "map-tool-waypoint"
+    : isAddingPoi
+      ? "map-tool-poi"
+      : "";
 
   return (
-    <div className="relative h-full w-full">
+    <div className={`relative h-full w-full ${cursorClass}`}>
       <MapContainer
         center={[41.3874, 2.1686]}
         zoom={13}

@@ -43,3 +43,9 @@ body {
     stroke-dashoffset: -16;
   }
 }
+
+/* Crosshair cursor when placing waypoints or POIs */
+.map-tool-waypoint .leaflet-container,
+.map-tool-poi .leaflet-container {
+  cursor: crosshair !important;
+}
