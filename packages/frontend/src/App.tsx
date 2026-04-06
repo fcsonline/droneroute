@@ -174,9 +174,20 @@ export default function App() {
       <div className="w-80 flex flex-col border-r border-border bg-card shrink-0">
         {/* Header */}
         <div className="p-3 border-b border-border">
-          <div className="flex items-center gap-2 mb-2">
-            <img src="/favicon.svg" alt="DroneRoute" className="h-5 w-5" />
-            <span className="font-bold text-sm">DroneRoute</span>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <img src="/favicon.svg" alt="DroneRoute" className="h-5 w-5" />
+              <span className="font-bold text-sm">DroneRoute</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCurrentPage("routes")}
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              title="My Routes"
+            >
+              <FolderOpen className="h-4 w-4" />
+            </Button>
           </div>
           <Input
             value={missionName}
@@ -199,15 +210,6 @@ export default function App() {
           <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="flex-1 text-xs h-7">
             <Upload className="h-3 w-3" />
             Import
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage("routes")}
-            className="text-xs h-7 px-2"
-            title="My Routes"
-          >
-            <FolderOpen className="h-3 w-3" />
           </Button>
           <input
             ref={fileInputRef}

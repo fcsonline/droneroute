@@ -133,7 +133,7 @@ export function WaypointList() {
                     onDoubleClick={(e) => startRename(wp.index, e)}
                     title="Double-click to rename"
                   >
-                    {wp.name || `WP ${wp.index + 1}`}
+                    {wp.name || `Waypoint ${wp.index + 1}`}
                   </div>
                 )}
                 <div className="text-[10px] text-muted-foreground truncate">

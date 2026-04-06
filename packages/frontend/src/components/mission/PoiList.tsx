@@ -1,4 +1,5 @@
-import { Crosshair, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { Crosshair, X, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +8,9 @@ import { useMissionStore } from "@/store/missionStore";
 
 export function PoiList() {
   const { pois, selectedPoiId, selectPoi, removePoi, updatePoi } = useMissionStore();
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [expandedEditor, setExpandedEditor] = useState<string | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   if (pois.length === 0) {
     return (
@@ -18,30 +22,83 @@ export function PoiList() {
     );
   }
 
+  const startRename = (poiId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingName(poiId);
+    setTimeout(() => nameInputRef.current?.select(), 0);
+  };
+
+  const commitRename = (poiId: string, value: string) => {
+    const trimmed = value.trim();
+    if (trimmed) {
+      updatePoi(poiId, { name: trimmed });
+    }
+    setEditingName(null);
+  };
+
+  const toggleEditor = (poiId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedEditor((prev) => (prev === poiId ? null : poiId));
+  };
+
   return (
     <div className="flex flex-col gap-1 p-2">
       {pois.map((poi) => {
         const isSelected = selectedPoiId === poi.id;
+        const isRenaming = editingName === poi.id;
+        const isEditorOpen = expandedEditor === poi.id;
+
         return (
           <div key={poi.id}>
             <div
               className={`flex items-center gap-2 rounded-md px-2 py-1.5 cursor-pointer transition-colors ${
                 isSelected
-                  ? "bg-destructive/20 border border-destructive/40"
+                  ? "bg-amber-500/20 border border-amber-500/40"
                   : "hover:bg-secondary border border-transparent"
               }`}
               onClick={() => selectPoi(isSelected ? null : poi.id)}
             >
-              <Crosshair className="h-3 w-3 text-destructive shrink-0" />
+              <Crosshair className="h-3 w-3 text-amber-400 shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium truncate">{poi.name}</div>
+                {isRenaming ? (
+                  <input
+                    ref={nameInputRef}
+                    className="text-xs font-medium bg-transparent border-b border-amber-400 outline-none w-full py-0"
+                    defaultValue={poi.name}
+                    autoFocus
+                    onBlur={(e) => commitRename(poi.id, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") commitRename(poi.id, e.currentTarget.value);
+                      if (e.key === "Escape") setEditingName(null);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <div
+                    className="text-xs font-medium truncate cursor-text hover:text-amber-300 transition-colors"
+                    onDoubleClick={(e) => startRename(poi.id, e)}
+                    title="Double-click to rename"
+                  >
+                    {poi.name}
+                  </div>
+                )}
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {poi.latitude.toFixed(5)}, {poi.longitude.toFixed(5)}
+                  {poi.height}m &middot; {poi.latitude.toFixed(5)}, {poi.longitude.toFixed(5)}
                 </div>
               </div>
-              <Badge variant="outline" className="text-[10px] px-1 py-0">
-                {poi.height}m
-              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-5 w-5 shrink-0 ${
+                  isEditorOpen
+                    ? "text-amber-400 hover:text-amber-400"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={(e) => toggleEditor(poi.id, e)}
+                title="Edit POI settings"
+              >
+                <Settings className="h-3 w-3" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -55,17 +112,9 @@ export function PoiList() {
               </Button>
             </div>
 
-            {/* Inline editor when selected */}
-            {isSelected && (
-              <div className="px-2 py-2 space-y-2 border-l-2 border-destructive/30 ml-2">
-                <div>
-                  <Label className="text-xs">Name</Label>
-                  <Input
-                    value={poi.name}
-                    onChange={(e) => updatePoi(poi.id, { name: e.target.value })}
-                    className="h-7 text-xs"
-                  />
-                </div>
+            {/* Inline editor */}
+            {isEditorOpen && (
+              <div className="ml-4 mr-1 mt-1 mb-2 border-l-2 border-amber-400/30 bg-amber-500/5 rounded-r-md p-3 space-y-2">
                 <div>
                   <Label className="text-xs">Height (m)</Label>
                   <Input

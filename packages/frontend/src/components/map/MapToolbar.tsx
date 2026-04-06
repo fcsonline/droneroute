@@ -2,6 +2,9 @@ import { MousePointerClick, Hand, Trash2, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 
+const activeClass = "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg shadow-primary/20 hover:bg-primary/90";
+const inactiveClass = "bg-background/90 backdrop-blur-sm";
+
 export function MapToolbar() {
   const {
     isAddingWaypoint,
@@ -22,7 +25,7 @@ export function MapToolbar() {
         size="sm"
         onClick={() => setIsAddingWaypoint(true)}
         title="Click on map to add waypoints (W)"
-        className="bg-background/90 backdrop-blur-sm justify-between"
+        className={`justify-between ${isAddingWaypoint ? activeClass : inactiveClass}`}
       >
         <span className="flex items-center gap-1.5">
           <MousePointerClick className="h-4 w-4" />
@@ -35,7 +38,7 @@ export function MapToolbar() {
         size="sm"
         onClick={() => setIsAddingPoi(true)}
         title="Click on map to add POI (P)"
-        className="bg-background/90 backdrop-blur-sm justify-between"
+        className={`justify-between ${isAddingPoi ? activeClass : inactiveClass}`}
       >
         <span className="flex items-center gap-1.5">
           <Crosshair className="h-4 w-4" />
@@ -51,7 +54,7 @@ export function MapToolbar() {
           setIsAddingPoi(false);
         }}
         title="Pan / select mode (Esc)"
-        className="bg-background/90 backdrop-blur-sm justify-between"
+        className={`justify-between ${isPanning ? activeClass : inactiveClass}`}
       >
         <span className="flex items-center gap-1.5">
           <Hand className="h-4 w-4" />
