@@ -38,6 +38,7 @@ function FlightPath() {
         weight: 3,
         opacity: 0.8,
         dashArray: "10, 6",
+        className: "flight-path-animated",
       }}
     />
   );

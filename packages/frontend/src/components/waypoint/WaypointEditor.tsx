@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ActionEditor } from "./ActionEditor";
-import { Lightbulb } from "lucide-react";
 import type { HeadingMode, TurnMode, Waypoint, PointOfInterest } from "@droneroute/shared";
 
 /**
@@ -24,14 +23,17 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 
 /**
  * Calculate the ideal gimbal pitch angle for a waypoint pointing at a POI.
- * Returns degrees where 0 = horizon, -90 = straight down.
+ * Uses trigonometry: pitch = -atan2(heightDiff, horizontalDist)
+ * Returns degrees where 0 = horizon, -90 = straight down, plus the distance.
  */
-function calculateIdealGimbalPitch(wp: Waypoint, poi: PointOfInterest): number {
+function calculateIdealGimbalPitch(wp: Waypoint, poi: PointOfInterest): { pitch: number; distance: number } {
   const horizontalDist = haversineDistance(wp.latitude, wp.longitude, poi.latitude, poi.longitude);
   const heightDiff = wp.height - poi.height; // positive = drone is above POI
-  if (horizontalDist < 0.01) return -90; // directly above → straight down
+  if (horizontalDist < 0.01) return { pitch: -90, distance: 0 }; // directly above → straight down
   const angleRad = Math.atan2(heightDiff, horizontalDist);
-  return Math.round(-angleRad * (180 / Math.PI));
+  const pitch = Math.round(-angleRad * (180 / Math.PI));
+  const distance = Math.sqrt(horizontalDist ** 2 + heightDiff ** 2); // 3D slant distance
+  return { pitch, distance };
 }
 
 interface WaypointEditorInlineProps {
@@ -84,20 +86,21 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
               ? pois.find((p) => p.id === wp.poiId)
               : null;
             if (!targetPoi) return null;
-            const suggested = calculateIdealGimbalPitch(wp, targetPoi);
+            const { pitch: suggested, distance } = calculateIdealGimbalPitch(wp, targetPoi);
             const isAlreadyApplied = wp.gimbalPitchAngle === suggested;
+            const distLabel = distance >= 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`;
             return (
               <button
                 type="button"
-                title={isAlreadyApplied ? `Optimal pitch applied (${suggested}°)` : `Suggest optimal pitch: ${suggested}°`}
+                title={`${distLabel} away, ${Math.abs(suggested)}° below horizon – click to apply`}
                 onClick={() => { if (!isAlreadyApplied) update({ gimbalPitchAngle: suggested }); }}
-                className={`inline-flex items-center justify-center w-4 h-4 rounded transition-colors ${
+                className={`text-[10px] font-medium transition-colors ${
                   isAlreadyApplied
                     ? "text-yellow-400 cursor-default"
-                    : "text-muted-foreground hover:text-yellow-400 cursor-pointer"
+                    : "text-yellow-400/60 hover:text-yellow-400 cursor-pointer"
                 }`}
               >
-                <Lightbulb className="w-3 h-3" />
+                Perfect pitch: {suggested}&deg;
               </button>
             );
           })()}
@@ -206,11 +209,6 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             <SelectItem value="toPointAndPassWithContinuityCurvature">Pass Point (curve)</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 text-[10px] text-muted-foreground">
-        <div>Lat: {wp.latitude.toFixed(6)}</div>
-        <div>Lng: {wp.longitude.toFixed(6)}</div>
       </div>
 
       <Separator />

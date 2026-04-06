@@ -36,3 +36,13 @@ body {
 .leaflet-bottom {
   z-index: 2 !important;
 }
+
+/* Animated flight path dashes flowing in waypoint order */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+.flight-path-animated {
+  animation: dash-flow 0.8s linear infinite;
+}
