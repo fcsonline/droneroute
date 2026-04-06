@@ -276,6 +276,6 @@ export const DEFAULT_WAYPOINT: Omit<Waypoint, "index" | "name" | "latitude" | "l
   useGlobalHeight: false,
   useGlobalHeadingParam: true,
   useGlobalTurnParam: true,
-  gimbalPitchAngle: -90,
+  gimbalPitchAngle: -45,
   actions: [],
 };

@@ -4,7 +4,35 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ActionEditor } from "./ActionEditor";
-import type { HeadingMode, TurnMode } from "@droneroute/shared";
+import { Lightbulb } from "lucide-react";
+import type { HeadingMode, TurnMode, Waypoint, PointOfInterest } from "@droneroute/shared";
+
+/**
+ * Calculate the horizontal distance in meters between two lat/lng points
+ * using the Haversine formula.
+ */
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000; // Earth's radius in meters
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Calculate the ideal gimbal pitch angle for a waypoint pointing at a POI.
+ * Returns degrees where 0 = horizon, -90 = straight down.
+ */
+function calculateIdealGimbalPitch(wp: Waypoint, poi: PointOfInterest): number {
+  const horizontalDist = haversineDistance(wp.latitude, wp.longitude, poi.latitude, poi.longitude);
+  const heightDiff = wp.height - poi.height; // positive = drone is above POI
+  if (horizontalDist < 0.01) return -90; // directly above → straight down
+  const angleRad = Math.atan2(heightDiff, horizontalDist);
+  return Math.round(-angleRad * (180 / Math.PI));
+}
 
 interface WaypointEditorInlineProps {
   waypointIndex: number;
@@ -49,7 +77,31 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
       </div>
 
       <div>
-        <Label className="text-xs">Gimbal Pitch (&deg;)</Label>
+        <div className="flex items-center gap-1">
+          <Label className="text-xs">Gimbal Pitch (&deg;)</Label>
+          {(() => {
+            const targetPoi = !wp.useGlobalHeadingParam && wp.headingMode === "towardPOI" && wp.poiId
+              ? pois.find((p) => p.id === wp.poiId)
+              : null;
+            if (!targetPoi) return null;
+            const suggested = calculateIdealGimbalPitch(wp, targetPoi);
+            const isAlreadyApplied = wp.gimbalPitchAngle === suggested;
+            return (
+              <button
+                type="button"
+                title={isAlreadyApplied ? `Optimal pitch applied (${suggested}°)` : `Suggest optimal pitch: ${suggested}°`}
+                onClick={() => { if (!isAlreadyApplied) update({ gimbalPitchAngle: suggested }); }}
+                className={`inline-flex items-center justify-center w-4 h-4 rounded transition-colors ${
+                  isAlreadyApplied
+                    ? "text-yellow-400 cursor-default"
+                    : "text-muted-foreground hover:text-yellow-400 cursor-pointer"
+                }`}
+              >
+                <Lightbulb className="w-3 h-3" />
+              </button>
+            );
+          })()}
+        </div>
         <Input
           type="number"
           value={wp.gimbalPitchAngle}

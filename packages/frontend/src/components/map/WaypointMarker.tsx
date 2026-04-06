@@ -108,7 +108,7 @@ export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
     >
       <Popup>
         <div className="text-xs">
-          <strong>WP {waypoint.index + 1}</strong>
+          <strong>{waypoint.name}</strong>
           <br />
           Alt: {waypoint.height}m | Speed: {waypoint.speed}m/s
           <br />
