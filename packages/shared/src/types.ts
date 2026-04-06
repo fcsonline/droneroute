@@ -143,6 +143,16 @@ export const DRONE_MODELS: DroneModel[] = [
     payloads: [{ label: "M30T Camera", payloadEnumValue: 53 }],
   },
   {
+    // droneEnumValue 68 appears in real DJI KMZ files (likely Dock-paired M30 variant)
+    label: "DJI M30 (Dock)",
+    droneEnumValue: 68,
+    droneSubEnumValue: 0,
+    payloads: [
+      { label: "M30 Camera", payloadEnumValue: 52 },
+      { label: "M30T Camera", payloadEnumValue: 53 },
+    ],
+  },
+  {
     label: "DJI Mavic 3E",
     droneEnumValue: 77,
     droneSubEnumValue: 0,

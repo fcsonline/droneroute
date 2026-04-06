@@ -96,8 +96,11 @@ export async function parseKmz(
     }
 
     const coordSys = folder["wpml:waylineCoordinateSysParam"];
-    if (coordSys) {
-      config.heightMode = coordSys["wpml:heightMode"] || "relativeToStartPoint";
+    if (coordSys?.["wpml:heightMode"]) {
+      config.heightMode = coordSys["wpml:heightMode"];
+    } else if (folder["wpml:executeHeightMode"]) {
+      // Fallback: some DJI files use executeHeightMode at folder level
+      config.heightMode = folder["wpml:executeHeightMode"];
     }
   }
 
@@ -117,9 +120,13 @@ export async function parseKmz(
 
     if (headingParam) {
       headingMode = headingParam["wpml:waypointHeadingMode"];
-      headingAngle = headingParam["wpml:waypointHeadingAngle"] != null
-        ? parseFloat(headingParam["wpml:waypointHeadingAngle"])
-        : undefined;
+      // Only import headingAngle when explicitly enabled in the file
+      const headingAngleEnabled =
+        headingParam["wpml:waypointHeadingAngleEnable"] === "1" ||
+        headingParam["wpml:waypointHeadingAngleEnable"] === 1;
+      if (headingAngleEnabled && headingParam["wpml:waypointHeadingAngle"] != null) {
+        headingAngle = parseFloat(headingParam["wpml:waypointHeadingAngle"]);
+      }
       const poiPoint = headingParam["wpml:waypointPoiPoint"];
       if (headingMode === "towardPOI" && poiPoint) {
         const poiKey = String(poiPoint);
@@ -138,9 +145,12 @@ export async function parseKmz(
       }
     }
 
-    // Parse turn mode
+    // Parse turn mode and damping distance
     const turnParam = pm["wpml:waypointTurnParam"];
     const turnMode = turnParam?.["wpml:waypointTurnMode"];
+    const turnDampingDist = turnParam?.["wpml:waypointTurnDampingDist"] != null
+      ? parseFloat(turnParam["wpml:waypointTurnDampingDist"])
+      : undefined;
 
     // Height: try wpml:executeHeight (waylines.wpml), wpml:height, wpml:ellipsoidHeight
     const height = parseFloat(
@@ -178,6 +188,7 @@ export async function parseKmz(
       headingMode: headingMode as any,
       headingAngle,
       turnMode: turnMode as any,
+      turnDampingDist,
       poiId,
       actions,
     };
