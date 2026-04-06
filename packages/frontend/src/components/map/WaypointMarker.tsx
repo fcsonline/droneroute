@@ -59,9 +59,11 @@ function createWaypointIcon(index: number, isSelected: boolean, waypoint: Waypoi
   const actionIcons = getActionIcons(waypoint);
   const hasActions = waypoint.actions.length > 0;
 
-  // Heading arrow: show when waypoint has explicit fixed/manual/smooth heading
+  // Heading arrow: show for fixed/manual modes, and for smoothTransition only
+  // when the waypoint has an explicitly enabled heading angle
   const showHeading = !waypoint.useGlobalHeadingParam &&
-    (waypoint.headingMode === "fixed" || waypoint.headingMode === "manually" || waypoint.headingMode === "smoothTransition");
+    (waypoint.headingMode === "fixed" || waypoint.headingMode === "manually" ||
+     (waypoint.headingMode === "smoothTransition" && waypoint.headingAngle != null));
   const headingAngle = waypoint.headingAngle ?? 0;
 
   // Small chevron arrow sitting just outside the marker circle, pointing in the heading direction.

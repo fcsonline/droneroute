@@ -120,13 +120,9 @@ export async function parseKmz(
 
     if (headingParam) {
       headingMode = headingParam["wpml:waypointHeadingMode"];
-      // Only import headingAngle when explicitly enabled in the file
-      const headingAngleEnabled =
-        headingParam["wpml:waypointHeadingAngleEnable"] === "1" ||
-        headingParam["wpml:waypointHeadingAngleEnable"] === 1;
-      if (headingAngleEnabled && headingParam["wpml:waypointHeadingAngle"] != null) {
-        headingAngle = parseFloat(headingParam["wpml:waypointHeadingAngle"]);
-      }
+      headingAngle = headingParam["wpml:waypointHeadingAngle"] != null
+        ? parseFloat(headingParam["wpml:waypointHeadingAngle"])
+        : undefined;
       const poiPoint = headingParam["wpml:waypointPoiPoint"];
       if (headingMode === "towardPOI" && poiPoint) {
         const poiKey = String(poiPoint);
