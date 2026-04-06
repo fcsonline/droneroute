@@ -1,8 +1,10 @@
-import { MapContainer, TileLayer, useMapEvents, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, useMapEvents, useMap, Polyline } from "react-leaflet";
+import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
 import { WaypointMarker } from "./WaypointMarker";
 import { PoiMarker } from "./PoiMarker";
 import { MapToolbar } from "./MapToolbar";
+import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 
 function MapClickHandler() {
@@ -17,6 +19,37 @@ function MapClickHandler() {
       }
     },
   });
+
+  return null;
+}
+
+/**
+ * Automatically fits the map to show all waypoints when a mission is loaded
+ * (import or saved route). Triggers when waypoints go from 0 to N.
+ */
+function FitBoundsOnLoad() {
+  const map = useMap();
+  const waypoints = useMissionStore((s) => s.waypoints);
+  const pois = useMissionStore((s) => s.pois);
+  const prevCountRef = useRef(waypoints.length);
+
+  useEffect(() => {
+    const wasEmpty = prevCountRef.current === 0;
+    prevCountRef.current = waypoints.length;
+
+    // Only fit bounds when loading a mission (0 → N waypoints)
+    if (!wasEmpty || waypoints.length === 0) return;
+
+    const points: L.LatLngExpression[] = [
+      ...waypoints.map((wp) => [wp.latitude, wp.longitude] as [number, number]),
+      ...pois.map((p) => [p.latitude, p.longitude] as [number, number]),
+    ];
+
+    if (points.length > 0) {
+      const bounds = L.latLngBounds(points);
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+    }
+  }, [waypoints, pois, map]);
 
   return null;
 }
@@ -123,6 +156,7 @@ export function MapView() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapClickHandler />
+        <FitBoundsOnLoad />
         <FlightPath />
         <PoiPointingLines />
         {waypoints.map((wp) => (
