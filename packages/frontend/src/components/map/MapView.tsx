@@ -3,6 +3,7 @@ import { useMissionStore } from "@/store/missionStore";
 import { WaypointMarker } from "./WaypointMarker";
 import { PoiMarker } from "./PoiMarker";
 import { MapToolbar } from "./MapToolbar";
+import { useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 
 function MapClickHandler() {
@@ -86,8 +87,17 @@ export function MapView() {
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
 
+  // Scale animation speed proportionally to average waypoint speed
+  // Baseline: 7 m/s → 2s duration, faster speed → shorter duration
+  const flightDuration = useMemo(() => {
+    if (waypoints.length === 0) return "2s";
+    const avgSpeed = waypoints.reduce((sum, wp) => sum + wp.speed, 0) / waypoints.length;
+    const duration = Math.max(0.5, Math.min(5, 2 * (7 / avgSpeed)));
+    return `${duration.toFixed(2)}s`;
+  }, [waypoints.map((wp) => wp.speed).join(",")]);
+
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full" style={{ "--flight-duration": flightDuration } as React.CSSProperties}>
       <MapContainer
         center={[41.3874, 2.1686]}
         zoom={13}

@@ -44,5 +44,5 @@ body {
   }
 }
 .flight-path-animated {
-  animation: dash-flow 2s linear infinite;
+  animation: dash-flow var(--flight-duration, 2s) linear infinite;
 }
