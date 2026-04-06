@@ -58,28 +58,79 @@ function createWaypointIcon(index: number, isSelected: boolean, waypoint: Waypoi
   const actionIcons = getActionIcons(waypoint);
   const hasActions = waypoint.actions.length > 0;
 
+  // Heading cone: show when waypoint has explicit fixed/manual heading
+  const showCone = !waypoint.useGlobalHeadingParam &&
+    (waypoint.headingMode === "fixed" || waypoint.headingMode === "manually");
+  const headingAngle = waypoint.headingAngle ?? 0;
+
+  // Cone is rendered as an absolutely-positioned element behind the marker circle.
+  // It uses clip-path to create a ~50° triangular wedge, rotated to match heading.
+  // headingAngle: 0° = North, 90° = East. CSS rotate 0° = up, so they align.
+  const coneHtml = showCone
+    ? `<div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 48px;
+        height: 48px;
+        margin-left: -24px;
+        margin-top: -24px;
+        transform: rotate(${headingAngle}deg);
+        transform-origin: center center;
+        pointer-events: none;
+        z-index: -1;
+      ">
+        <div style="
+          position: absolute;
+          top: 0;
+          left: 50%;
+          margin-left: -24px;
+          width: 48px;
+          height: 24px;
+          background: rgba(239, 68, 68, 0.35);
+          clip-path: polygon(50% 100%, 15% 0%, 85% 0%);
+          border: none;
+        "></div>
+      </div>`
+    : "";
+
+  // When cone is shown, we need a larger icon container
+  const size = showCone ? 68 : 28;
+  const anchor = showCone ? 34 : 14;
+
   return L.divIcon({
     html: `
       <div style="
         position: relative;
-        background: ${bg};
-        border: 2px solid ${border};
-        color: white;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
+        width: ${size}px;
+        height: ${showCone ? (hasActions ? 80 : size) : (hasActions ? 40 : 28)}px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 12px;
-        font-weight: 700;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        cursor: grab;
-      ">${index + 1}${actionIcons}</div>
+      ">
+        ${coneHtml}
+        <div style="
+          position: relative;
+          background: ${bg};
+          border: 2px solid ${border};
+          color: white;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 700;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+          cursor: grab;
+          z-index: 1;
+        ">${index + 1}${actionIcons}</div>
+      </div>
     `,
     className: "",
-    iconSize: [28, hasActions ? 40 : 28],
-    iconAnchor: [14, 14],
+    iconSize: [size, showCone ? (hasActions ? 80 : size) : (hasActions ? 40 : 28)],
+    iconAnchor: [anchor, showCone ? anchor : 14],
   });
 }
 
@@ -89,7 +140,7 @@ export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
 
   const icon = useMemo(
     () => createWaypointIcon(waypoint.index, isSelected, waypoint),
-    [waypoint.index, isSelected, waypoint.actions.length, waypoint.actions.map((a) => a.actionType).join(",")]
+    [waypoint.index, isSelected, waypoint.actions.length, waypoint.actions.map((a) => a.actionType).join(","), waypoint.headingMode, waypoint.headingAngle, waypoint.useGlobalHeadingParam]
   );
 
   return (

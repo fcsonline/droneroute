@@ -90,7 +90,8 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             const isAlreadyApplied = wp.gimbalPitchAngle === suggested;
             const heightDiff = wp.height - targetPoi.height;
             const distLabel = distance >= 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`;
-            const tooltip = `The camera will point straight at ${targetPoi.name}.\n\nDrone is ${heightDiff > 0 ? `${Math.round(heightDiff)}m above` : heightDiff < 0 ? `${Math.round(Math.abs(heightDiff))}m below` : "at the same height as"} the POI, ${distLabel} away.\n\nClick to apply ${suggested}°.`;
+            const heightDesc = heightDiff > 0 ? `${Math.round(heightDiff)}m above` : heightDiff < 0 ? `${Math.round(Math.abs(heightDiff))}m below` : "level with";
+            const tooltip = `Point your camera right at ${targetPoi.name} — the perfect angle for the shot.\n\n${distLabel} away, ${heightDesc}. Click to apply ${suggested}°.`;
             return (
               <button
                 type="button"
