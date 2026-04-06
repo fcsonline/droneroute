@@ -34,6 +34,7 @@ export type ActionType =
   | "startRecord"
   | "stopRecord"
   | "gimbalRotate"
+  | "gimbalEvenlyRotate"
   | "rotateYaw"
   | "hover"
   | "zoom"
@@ -58,6 +59,11 @@ export interface GimbalRotateParams {
   gimbalYawRotateAngle: number; // -180 to 180
   gimbalRollRotateAngle: number; // typically 0
   gimbalRotateMode: "absoluteAngle";
+  payloadPositionIndex: number;
+}
+
+export interface GimbalEvenlyRotateParams {
+  gimbalPitchRotateAngle: number; // -120 to 45 — target pitch at this waypoint
   payloadPositionIndex: number;
 }
 
@@ -86,6 +92,7 @@ export type ActionParams =
   | StartRecordParams
   | StopRecordParams
   | GimbalRotateParams
+  | GimbalEvenlyRotateParams
   | RotateYawParams
   | HoverParams
   | ZoomParams

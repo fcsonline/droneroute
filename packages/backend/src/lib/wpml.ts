@@ -66,6 +66,13 @@ function buildActionXml(action: WaypointAction): string {
               <wpml:payloadPositionIndex>${p.payloadPositionIndex ?? 0}</wpml:payloadPositionIndex>`;
       break;
     }
+    case "gimbalEvenlyRotate": {
+      const p = action.params as any;
+      paramsXml = `
+              <wpml:gimbalPitchRotateAngle>${p.gimbalPitchRotateAngle ?? -45}</wpml:gimbalPitchRotateAngle>
+              <wpml:payloadPositionIndex>${p.payloadPositionIndex ?? 0}</wpml:payloadPositionIndex>`;
+      break;
+    }
     case "rotateYaw": {
       const p = action.params as any;
       paramsXml = `

@@ -1,4 +1,4 @@
-import { Plus, X, Camera, Video, VideoOff, RotateCcw, Compass, Clock, ZoomIn, Focus } from "lucide-react";
+import { Plus, X, Camera, Video, VideoOff, RotateCcw, Compass, Clock, ZoomIn, Focus, MoveDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ const ACTION_OPTIONS: { value: ActionType; label: string; icon: React.ReactNode 
   { value: "startRecord", label: "Start Recording", icon: <Video className="h-3 w-3" /> },
   { value: "stopRecord", label: "Stop Recording", icon: <VideoOff className="h-3 w-3" /> },
   { value: "gimbalRotate", label: "Gimbal Rotate", icon: <RotateCcw className="h-3 w-3" /> },
+  { value: "gimbalEvenlyRotate", label: "Gimbal Smooth", icon: <MoveDown className="h-3 w-3" /> },
   { value: "rotateYaw", label: "Rotate Yaw", icon: <Compass className="h-3 w-3" /> },
   { value: "hover", label: "Hover", icon: <Clock className="h-3 w-3" /> },
   { value: "zoom", label: "Zoom", icon: <ZoomIn className="h-3 w-3" /> },
@@ -31,6 +32,11 @@ function getDefaultParams(actionType: ActionType): any {
         gimbalYawRotateAngle: 0,
         gimbalRollRotateAngle: 0,
         gimbalRotateMode: "absoluteAngle",
+        payloadPositionIndex: 0,
+      };
+    case "gimbalEvenlyRotate":
+      return {
+        gimbalPitchRotateAngle: -45,
         payloadPositionIndex: 0,
       };
     case "rotateYaw":
@@ -177,6 +183,23 @@ function ActionItem({
               max={180}
               className="h-7 text-xs"
             />
+          </div>
+        </div>
+      )}
+
+      {action.actionType === "gimbalEvenlyRotate" && (
+        <div>
+          <Label className="text-[10px]">Target Pitch (&deg;)</Label>
+          <Input
+            type="number"
+            value={params.gimbalPitchRotateAngle ?? -45}
+            onChange={(e) => updateParam("gimbalPitchRotateAngle", parseFloat(e.target.value) || 0)}
+            min={-120}
+            max={45}
+            className="h-7 text-xs"
+          />
+          <div className="text-[10px] text-muted-foreground mt-0.5">
+            Smoothly interpolates pitch between waypoints
           </div>
         </div>
       )}

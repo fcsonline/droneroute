@@ -14,6 +14,7 @@ const ACTION_ICONS: Record<string, string> = {
   startRecord: `<svg viewBox="0 0 16 16" width="12" height="12" fill="#ef4444"><circle cx="8" cy="8" r="5"/></svg>`,
   stopRecord: `<svg viewBox="0 0 16 16" width="12" height="12" fill="white"><rect x="4" y="4" width="8" height="8" rx="1"/></svg>`,
   gimbalRotate: `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="white" stroke-width="1.5"><path d="M3 8a5 5 0 019.5-1.5M13 8a5 5 0 01-9.5 1.5"/><path d="M12.5 4v2.5H10M3.5 12V9.5H6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  gimbalEvenlyRotate: `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="white" stroke-width="1.5"><path d="M3 4l5 8 5-8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   rotateYaw: `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="white" stroke-width="1.5"><path d="M2 8a6 6 0 0112 0M14 8a6 6 0 01-12 0"/><path d="M12 4l2 2-2 2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   hover: `<svg viewBox="0 0 16 16" width="12" height="12" fill="white"><rect x="4" y="3" width="3" height="10" rx="1"/><rect x="9" y="3" width="3" height="10" rx="1"/></svg>`,
   zoom: `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="white" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14" stroke-linecap="round"/><path d="M5 7h4M7 5v4" stroke-linecap="round"/></svg>`,
