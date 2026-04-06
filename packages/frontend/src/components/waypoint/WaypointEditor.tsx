@@ -145,7 +145,7 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
         </Select>
       </div>
 
-      {!wp.useGlobalHeadingParam && wp.headingMode === "smoothTransition" && (
+      {!wp.useGlobalHeadingParam && (wp.headingMode === "manually" || wp.headingMode === "fixed" || wp.headingMode === "smoothTransition") && (
         <div>
           <Label className="text-xs">Heading Angle (&deg;)</Label>
           <Input
@@ -156,6 +156,9 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             max={180}
             className="h-8 text-xs"
           />
+          <div className="text-[10px] text-muted-foreground mt-0.5">
+            0&deg; = North, 90&deg; = East, -90&deg; = West
+          </div>
         </div>
       )}
 
