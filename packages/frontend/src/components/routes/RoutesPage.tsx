@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, ArrowUp, Plane } from "lucide-react";
+import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, ArrowUp, Plane, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
-import type { Waypoint, MissionConfig } from "@droneroute/shared";
+import type { Waypoint, MissionConfig, PointOfInterest } from "@droneroute/shared";
 
 interface SavedMission {
   id: string;
@@ -129,6 +129,40 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
       setMissions((prev) => prev.filter((m) => m.id !== id));
     } catch (e: any) {
       alert("Failed to delete: " + (e.message || "Unknown error"));
+    }
+  };
+
+  const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const handleExportKmz = async (mission: SavedMission) => {
+    setExportingId(mission.id);
+    try {
+      const waypoints: Waypoint[] = JSON.parse(mission.waypoints);
+      const config: MissionConfig = JSON.parse(mission.config);
+      const pois: PointOfInterest[] = mission.pois ? JSON.parse(mission.pois) : [];
+
+      if (waypoints.length < 2) {
+        alert("Need at least 2 waypoints to export");
+        return;
+      }
+
+      const blob = await api.post<Blob>("/kmz/generate", {
+        name: mission.name,
+        config,
+        waypoints,
+        pois,
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(mission.name || "mission").replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(`Export failed: ${err.message}`);
+    } finally {
+      setExportingId(null);
     }
   };
 
@@ -274,17 +308,33 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                           <h3 className="text-sm font-semibold text-foreground truncate flex-1 mr-2 group-hover:text-primary transition-colors">
                             {mission.name || "Untitled Route"}
                           </h3>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(mission.id);
-                            }}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              disabled={exportingId === mission.id}
+                              title="Download KMZ"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleExportKmz(mission);
+                              }}
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              title="Delete route"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(mission.id);
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
 
                         {/* Drone model */}
