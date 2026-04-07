@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Waypoint, MissionConfig, WaypointAction, PointOfInterest } from "@droneroute/shared";
 import { DEFAULT_MISSION_CONFIG, DEFAULT_WAYPOINT } from "@droneroute/shared";
+import type { TemplateType } from "@/lib/templates";
 
 export type SelectionMode = "replace" | "toggle" | "range";
 
@@ -24,6 +25,7 @@ interface MissionState {
   // UI state
   isAddingWaypoint: boolean;
   isAddingPoi: boolean;
+  templateMode: TemplateType | null;
   currentPage: "editor" | "routes";
   setCurrentPage: (page: "editor" | "routes") => void;
 
@@ -53,6 +55,8 @@ interface MissionState {
   movePoi: (id: string, lat: number, lng: number) => void;
   selectPoi: (id: string | null) => void;
   setIsAddingPoi: (adding: boolean) => void;
+  setTemplateMode: (mode: TemplateType | null) => void;
+  appendWaypoints: (waypoints: Omit<Waypoint, "index" | "name">[], pois?: Omit<PointOfInterest, "id">[]) => void;
 
   // Mission actions
   loadMission: (data: {
@@ -76,6 +80,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   selectedPoiId: null,
   isAddingWaypoint: true,
   isAddingPoi: false,
+  templateMode: null,
   currentPage: "editor",
   setCurrentPage: (page) => set({ currentPage: page }),
 
@@ -243,7 +248,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     }),
 
   setIsAddingWaypoint: (adding) =>
-    set((state) => ({ isAddingWaypoint: adding, isAddingPoi: adding ? false : state.isAddingPoi })),
+    set((state) => ({ isAddingWaypoint: adding, isAddingPoi: adding ? false : state.isAddingPoi, templateMode: adding ? null : state.templateMode })),
 
   addAction: (waypointIndex, action) =>
     set((state) => ({
@@ -321,7 +326,45 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   selectPoi: (id) => set({ selectedPoiId: id }),
 
   setIsAddingPoi: (adding) =>
-    set((state) => ({ isAddingPoi: adding, isAddingWaypoint: adding ? false : state.isAddingWaypoint })),
+    set((state) => ({ isAddingPoi: adding, isAddingWaypoint: adding ? false : state.isAddingWaypoint, templateMode: adding ? null : state.templateMode })),
+
+  setTemplateMode: (mode) =>
+    set({ templateMode: mode, isAddingWaypoint: false, isAddingPoi: false }),
+
+  appendWaypoints: (newWps, newPois) =>
+    set((state) => {
+      const startIndex = state.waypoints.length;
+      const fullWaypoints: Waypoint[] = newWps.map((wp, i) => ({
+        ...wp,
+        index: startIndex + i,
+        name: `Waypoint ${startIndex + i + 1}`,
+      }));
+
+      const fullPois: PointOfInterest[] = (newPois || []).map((p) => ({
+        ...p,
+        id: crypto.randomUUID(),
+      }));
+
+      // If orbit template created a POI, link the waypoints to it
+      if (fullPois.length === 1) {
+        const poiId = fullPois[0].id;
+        for (const wp of fullWaypoints) {
+          if (wp.headingMode === "fixed") {
+            // Convert to towardPOI mode for orbit waypoints
+            wp.headingMode = "towardPOI";
+            wp.poiId = poiId;
+          }
+        }
+      }
+
+      return {
+        waypoints: [...state.waypoints, ...fullWaypoints],
+        pois: [...state.pois, ...fullPois],
+        selectedWaypointIndices: new Set(fullWaypoints.map((wp) => wp.index)),
+        lastSelectedWaypointIndex: fullWaypoints.length > 0 ? fullWaypoints[fullWaypoints.length - 1].index : state.lastSelectedWaypointIndex,
+        templateMode: null,
+      };
+    }),
 
   loadMission: (data) =>
     set({

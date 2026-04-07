@@ -1,17 +1,20 @@
 import { MapContainer, TileLayer, useMapEvents, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
+import { calculateIdealGimbalPitch } from "@/lib/geo";
 import { WaypointMarker } from "./WaypointMarker";
 import { PoiMarker } from "./PoiMarker";
 import { MapToolbar } from "./MapToolbar";
+import { TemplateDrawHandler } from "./TemplateDrawHandler";
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 
 function MapClickHandler() {
-  const { isAddingWaypoint, isAddingPoi, addWaypoint, addPoi } = useMissionStore();
+  const { isAddingWaypoint, isAddingPoi, templateMode, addWaypoint, addPoi } = useMissionStore();
 
   useMapEvents({
     click(e) {
+      if (templateMode) return; // Template mode handles its own interactions
       if (isAddingWaypoint) {
         addWaypoint(e.latlng.lat, e.latlng.lng);
       } else if (isAddingPoi) {
@@ -106,16 +109,18 @@ function PoiPointingLines() {
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
 
-  const lines: { from: [number, number]; to: [number, number]; key: string }[] = [];
+  const lines: { from: [number, number]; to: [number, number]; key: string; perfect: boolean }[] = [];
 
   for (const wp of waypoints) {
     if (wp.headingMode === "towardPOI" && wp.poiId) {
       const poi = pois.find((p) => p.id === wp.poiId);
       if (poi) {
+        const { pitch } = calculateIdealGimbalPitch(wp, poi);
         lines.push({
           from: [wp.latitude, wp.longitude],
           to: [poi.latitude, poi.longitude],
           key: `poi-line-${wp.index}-${poi.id}`,
+          perfect: wp.gimbalPitchAngle === pitch,
         });
       }
     }
@@ -128,10 +133,10 @@ function PoiPointingLines() {
           key={line.key}
           positions={[line.from, line.to]}
           pathOptions={{
-            color: "#ef4444",
-            weight: 2,
-            opacity: 0.6,
-            dashArray: "4, 8",
+            color: line.perfect ? "#4ade80" : "#ef4444",
+            weight: line.perfect ? 3 : 2,
+            opacity: line.perfect ? 0.8 : 0.6,
+            dashArray: line.perfect ? undefined : "4, 8",
           }}
         />
       ))}
@@ -144,12 +149,15 @@ export function MapView() {
   const pois = useMissionStore((s) => s.pois);
   const isAddingWaypoint = useMissionStore((s) => s.isAddingWaypoint);
   const isAddingPoi = useMissionStore((s) => s.isAddingPoi);
+  const templateMode = useMissionStore((s) => s.templateMode);
 
-  const cursorClass = isAddingWaypoint
-    ? "map-tool-waypoint"
-    : isAddingPoi
-      ? "map-tool-poi"
-      : "";
+  const cursorClass = templateMode
+    ? "map-tool-template"
+    : isAddingWaypoint
+      ? "map-tool-waypoint"
+      : isAddingPoi
+        ? "map-tool-poi"
+        : "";
 
   return (
     <div className={`relative h-full w-full ${cursorClass}`}>
@@ -167,6 +175,7 @@ export function MapView() {
         <FitBoundsOnLoad />
         <FlightPath />
         <PoiPointingLines />
+        <TemplateDrawHandler />
         {waypoints.map((wp) => (
           <WaypointMarker key={wp.index} waypoint={wp} />
         ))}

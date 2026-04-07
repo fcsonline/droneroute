@@ -49,3 +49,8 @@ body {
 .map-tool-poi .leaflet-container {
   cursor: crosshair !important;
 }
+
+/* Crosshair cursor for template drawing */
+.map-tool-template .leaflet-container {
+  cursor: crosshair !important;
+}

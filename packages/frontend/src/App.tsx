@@ -153,10 +153,12 @@ export default function App() {
       const {
         setIsAddingWaypoint,
         setIsAddingPoi,
+        setTemplateMode,
         clearWaypointSelection,
         removeSelectedWaypoints,
         selectAllWaypoints,
         selectedWaypointIndices,
+        templateMode,
       } = useMissionStore.getState();
 
       switch (e.key.toLowerCase()) {
@@ -169,6 +171,20 @@ export default function App() {
           e.preventDefault();
           setIsAddingPoi(true);
           break;
+        case "t":
+          if (e.metaKey || e.ctrlKey) return;
+          e.preventDefault();
+          // Cycle through template modes, or activate orbit as default
+          if (!templateMode) {
+            setTemplateMode("orbit");
+          } else if (templateMode === "orbit") {
+            setTemplateMode("grid");
+          } else if (templateMode === "grid") {
+            setTemplateMode("facade");
+          } else {
+            setTemplateMode(null);
+          }
+          break;
         case "a":
           if (e.metaKey || e.ctrlKey) {
             e.preventDefault();
@@ -180,6 +196,7 @@ export default function App() {
           clearWaypointSelection();
           setIsAddingWaypoint(false);
           setIsAddingPoi(false);
+          setTemplateMode(null);
           break;
         case "delete":
         case "backspace":
