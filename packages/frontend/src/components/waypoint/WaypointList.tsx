@@ -3,22 +3,30 @@ import { MapPin, X, GripVertical, Settings, ArrowUp, Gauge } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
+import type { SelectionMode } from "@/store/missionStore";
 import { WaypointEditorInline } from "./WaypointEditor";
 
 export function WaypointList() {
-  const { waypoints, selectedWaypointIndex, selectWaypoint, removeWaypoint, reorderWaypoints, updateWaypoint } =
-    useMissionStore();
+  const {
+    waypoints,
+    selectedWaypointIndices,
+    selectWaypoint,
+    removeWaypoint,
+    reorderWaypoints,
+    updateWaypoint,
+  } = useMissionStore();
 
   const [expandedEditor, setExpandedEditor] = useState<number | null>(null);
   const [editingName, setEditingName] = useState<number | null>(null);
 
-  // When a waypoint is selected (e.g. by clicking on the map), expand its editor
-  // and collapse all others
+  // When exactly one waypoint is selected (e.g. by clicking on the map), expand its editor
   useEffect(() => {
-    if (selectedWaypointIndex !== null) {
-      setExpandedEditor(selectedWaypointIndex);
+    if (selectedWaypointIndices.size === 1) {
+      const [index] = selectedWaypointIndices;
+      setExpandedEditor(index);
     }
-  }, [selectedWaypointIndex]);
+  }, [selectedWaypointIndices]);
+
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const dragItemRef = useRef<number | null>(null);
@@ -88,13 +96,23 @@ export function WaypointList() {
     setEditingName(null);
   };
 
+  const handleClick = (e: React.MouseEvent, wpIndex: number) => {
+    let mode: SelectionMode = "replace";
+    if (e.ctrlKey || e.metaKey) {
+      mode = "toggle";
+    } else if (e.shiftKey) {
+      mode = "range";
+    }
+    selectWaypoint(wpIndex, mode);
+  };
+
   return (
     <div className="flex flex-col gap-1 p-2">
       {waypoints.map((wp, i) => {
-        const isSelected = selectedWaypointIndex === wp.index;
+        const isSelected = selectedWaypointIndices.has(wp.index);
         const isDragging = dragIndex === i;
         const isDragOver = dragOverIndex === i;
-        const isEditorOpen = expandedEditor === wp.index;
+        const isEditorOpen = expandedEditor === wp.index && selectedWaypointIndices.size <= 1;
         const isRenaming = editingName === wp.index;
 
         return (
@@ -109,7 +127,7 @@ export function WaypointList() {
                       ? "bg-primary/20 border border-primary/40"
                       : "hover:bg-secondary border border-transparent"
               }`}
-              onClick={() => selectWaypoint(wp.index)}
+              onClick={(e) => handleClick(e, wp.index)}
               draggable
               onDragStart={(e) => handleDragStart(e, i)}
               onDragOver={(e) => handleDragOver(e, i)}

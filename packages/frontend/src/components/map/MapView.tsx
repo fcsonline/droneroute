@@ -31,7 +31,7 @@ function FitBoundsOnLoad() {
   const map = useMap();
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
-  const prevCountRef = useRef(waypoints.length);
+  const prevCountRef = useRef(0);
 
   useEffect(() => {
     const wasEmpty = prevCountRef.current === 0;

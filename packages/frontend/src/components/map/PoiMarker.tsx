@@ -1,16 +1,17 @@
-import { Marker, Popup } from "react-leaflet";
+import { Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
 import type { PointOfInterest } from "@droneroute/shared";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 interface PoiMarkerProps {
   poi: PointOfInterest;
 }
 
-function createPoiIcon(name: string, isSelected: boolean): L.DivIcon {
+function createPoiIcon(name: string, isSelected: boolean, ctrlReady: boolean): L.DivIcon {
   const bg = isSelected ? "#ef4444" : "#dc2626";
   const border = isSelected ? "#fca5a5" : "#991b1b";
+  const cursor = ctrlReady ? "crosshair" : "grab";
 
   return L.divIcon({
     html: `
@@ -26,7 +27,7 @@ function createPoiIcon(name: string, isSelected: boolean): L.DivIcon {
         font-size: 11px;
         font-weight: 700;
         box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        cursor: grab;
+        cursor: ${cursor};
         clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
       ">&#x25CE;</div>
     `,
@@ -37,12 +38,28 @@ function createPoiIcon(name: string, isSelected: boolean): L.DivIcon {
 }
 
 export function PoiMarker({ poi }: PoiMarkerProps) {
-  const { selectedPoiId, selectPoi, movePoi } = useMissionStore();
+  const { selectedPoiId, selectPoi, movePoi, selectedWaypointIndices, updateWaypoint } = useMissionStore();
   const isSelected = selectedPoiId === poi.id;
+  const [ctrlHeld, setCtrlHeld] = useState(false);
+  const hasSelectedWaypoints = selectedWaypointIndices.size > 0;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Control" || e.key === "Meta") setCtrlHeld(e.type === "keydown");
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKey);
+    };
+  }, []);
+
+  const ctrlReady = ctrlHeld && hasSelectedWaypoints;
 
   const icon = useMemo(
-    () => createPoiIcon(poi.name, isSelected),
-    [poi.name, isSelected]
+    () => createPoiIcon(poi.name, isSelected, ctrlReady),
+    [poi.name, isSelected, ctrlReady]
   );
 
   return (
@@ -51,7 +68,21 @@ export function PoiMarker({ poi }: PoiMarkerProps) {
       icon={icon}
       draggable
       eventHandlers={{
-        click: () => selectPoi(poi.id),
+        click: (e) => {
+          const nativeEvent = e.originalEvent;
+          if ((nativeEvent.ctrlKey || nativeEvent.metaKey) && hasSelectedWaypoints) {
+            // Ctrl+click: assign ALL selected waypoints heading toward this POI
+            for (const idx of selectedWaypointIndices) {
+              updateWaypoint(idx, {
+                headingMode: "towardPOI",
+                poiId: poi.id,
+                useGlobalHeadingParam: false,
+              });
+            }
+          } else {
+            selectPoi(poi.id);
+          }
+        },
         dragend: (e) => {
           const marker = e.target;
           const pos = marker.getLatLng();
@@ -59,15 +90,21 @@ export function PoiMarker({ poi }: PoiMarkerProps) {
         },
       }}
     >
-      <Popup>
+      <Tooltip direction="top" offset={[0, -12]} opacity={0.95}>
         <div className="text-xs">
           <strong>{poi.name}</strong>
           <br />
           Height: {poi.height}m
-          <br />
-          {poi.latitude.toFixed(6)}, {poi.longitude.toFixed(6)}
+          {ctrlReady && (
+            <>
+              <br />
+              <span className="text-blue-500 font-semibold">
+                Ctrl+click to aim {selectedWaypointIndices.size === 1 ? "waypoint" : `${selectedWaypointIndices.size} waypoints`} here
+              </span>
+            </>
+          )}
         </div>
-      </Popup>
+      </Tooltip>
     </Marker>
   );
 }

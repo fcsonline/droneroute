@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { Waypoint, MissionConfig, WaypointAction, PointOfInterest } from "@droneroute/shared";
 import { DEFAULT_MISSION_CONFIG, DEFAULT_WAYPOINT } from "@droneroute/shared";
 
+export type SelectionMode = "replace" | "toggle" | "range";
+
 interface MissionState {
   // Mission metadata
   missionId: string | null;
@@ -12,7 +14,8 @@ interface MissionState {
 
   // Waypoints
   waypoints: Waypoint[];
-  selectedWaypointIndex: number | null;
+  selectedWaypointIndices: Set<number>;
+  lastSelectedWaypointIndex: number | null;
 
   // POIs
   pois: PointOfInterest[];
@@ -32,7 +35,11 @@ interface MissionState {
   updateWaypoint: (index: number, updates: Partial<Waypoint>) => void;
   removeWaypoint: (index: number) => void;
   moveWaypoint: (index: number, lat: number, lng: number) => void;
-  selectWaypoint: (index: number | null) => void;
+  selectWaypoint: (index: number | null, mode?: SelectionMode) => void;
+  selectAllWaypoints: () => void;
+  clearWaypointSelection: () => void;
+  removeSelectedWaypoints: () => void;
+  updateSelectedWaypoints: (updates: Partial<Waypoint>) => void;
   reorderWaypoints: (fromIndex: number, toIndex: number) => void;
   setIsAddingWaypoint: (adding: boolean) => void;
   addAction: (waypointIndex: number, action: WaypointAction) => void;
@@ -63,7 +70,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   missionName: "New Mission",
   config: { ...DEFAULT_MISSION_CONFIG },
   waypoints: [],
-  selectedWaypointIndex: null,
+  selectedWaypointIndices: new Set<number>(),
+  lastSelectedWaypointIndex: null,
   pois: [],
   selectedPoiId: null,
   isAddingWaypoint: true,
@@ -92,7 +100,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       };
       return {
         waypoints: [...state.waypoints, newWaypoint],
-        selectedWaypointIndex: index,
+        selectedWaypointIndices: new Set([index]),
+        lastSelectedWaypointIndex: index,
       };
     }),
 
@@ -108,15 +117,23 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       const filtered = state.waypoints
         .filter((wp) => wp.index !== index)
         .map((wp, i) => ({ ...wp, index: i }));
+
+      // Rebuild selection: remove the deleted index, adjust indices above it
+      const newSelection = new Set<number>();
+      for (const idx of state.selectedWaypointIndices) {
+        if (idx === index) continue;
+        newSelection.add(idx > index ? idx - 1 : idx);
+      }
+
       return {
         waypoints: filtered,
-        selectedWaypointIndex:
-          state.selectedWaypointIndex === index
+        selectedWaypointIndices: newSelection,
+        lastSelectedWaypointIndex:
+          state.lastSelectedWaypointIndex === index
             ? null
-            : state.selectedWaypointIndex !== null &&
-                state.selectedWaypointIndex > index
-              ? state.selectedWaypointIndex - 1
-              : state.selectedWaypointIndex,
+            : state.lastSelectedWaypointIndex !== null && state.lastSelectedWaypointIndex > index
+              ? state.lastSelectedWaypointIndex - 1
+              : state.lastSelectedWaypointIndex,
       };
     }),
 
@@ -127,7 +144,89 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       ),
     })),
 
-  selectWaypoint: (index) => set({ selectedWaypointIndex: index }),
+  selectWaypoint: (index, mode = "replace") =>
+    set((state) => {
+      if (index === null) {
+        return {
+          selectedWaypointIndices: new Set<number>(),
+          lastSelectedWaypointIndex: null,
+        };
+      }
+
+      switch (mode) {
+        case "replace":
+          return {
+            selectedWaypointIndices: new Set([index]),
+            lastSelectedWaypointIndex: index,
+          };
+
+        case "toggle": {
+          const next = new Set(state.selectedWaypointIndices);
+          if (next.has(index)) {
+            next.delete(index);
+          } else {
+            next.add(index);
+          }
+          return {
+            selectedWaypointIndices: next,
+            lastSelectedWaypointIndex: next.size > 0 ? index : null,
+          };
+        }
+
+        case "range": {
+          const anchor = state.lastSelectedWaypointIndex;
+          if (anchor === null) {
+            return {
+              selectedWaypointIndices: new Set([index]),
+              lastSelectedWaypointIndex: index,
+            };
+          }
+          const start = Math.min(anchor, index);
+          const end = Math.max(anchor, index);
+          const rangeSet = new Set(state.selectedWaypointIndices);
+          for (let i = start; i <= end; i++) {
+            rangeSet.add(i);
+          }
+          return {
+            selectedWaypointIndices: rangeSet,
+            // Keep the anchor so subsequent Shift+clicks extend from the same origin
+            lastSelectedWaypointIndex: anchor,
+          };
+        }
+      }
+    }),
+
+  selectAllWaypoints: () =>
+    set((state) => ({
+      selectedWaypointIndices: new Set(state.waypoints.map((wp) => wp.index)),
+      lastSelectedWaypointIndex: state.waypoints.length > 0 ? 0 : null,
+    })),
+
+  clearWaypointSelection: () =>
+    set({
+      selectedWaypointIndices: new Set<number>(),
+      lastSelectedWaypointIndex: null,
+    }),
+
+  removeSelectedWaypoints: () =>
+    set((state) => {
+      if (state.selectedWaypointIndices.size === 0) return state;
+      const filtered = state.waypoints
+        .filter((wp) => !state.selectedWaypointIndices.has(wp.index))
+        .map((wp, i) => ({ ...wp, index: i }));
+      return {
+        waypoints: filtered,
+        selectedWaypointIndices: new Set<number>(),
+        lastSelectedWaypointIndex: null,
+      };
+    }),
+
+  updateSelectedWaypoints: (updates) =>
+    set((state) => ({
+      waypoints: state.waypoints.map((wp) =>
+        state.selectedWaypointIndices.has(wp.index) ? { ...wp, ...updates } : wp
+      ),
+    })),
 
   reorderWaypoints: (fromIndex, toIndex) =>
     set((state) => {
@@ -138,10 +237,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       const reindexed = items.map((wp, i) => ({ ...wp, index: i }));
       return {
         waypoints: reindexed,
-        selectedWaypointIndex:
-          state.selectedWaypointIndex === fromIndex
-            ? toIndex
-            : state.selectedWaypointIndex,
+        selectedWaypointIndices: new Set([toIndex]),
+        lastSelectedWaypointIndex: toIndex,
       };
     }),
 
@@ -233,7 +330,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       config: data.config,
       waypoints: data.waypoints,
       pois: data.pois || [],
-      selectedWaypointIndex: null,
+      selectedWaypointIndices: new Set<number>(),
+      lastSelectedWaypointIndex: null,
       selectedPoiId: null,
     }),
 
@@ -244,7 +342,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       config: { ...DEFAULT_MISSION_CONFIG },
       waypoints: [],
       pois: [],
-      selectedWaypointIndex: null,
+      selectedWaypointIndices: new Set<number>(),
+      lastSelectedWaypointIndex: null,
       selectedPoiId: null,
     }),
 }));

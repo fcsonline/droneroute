@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapView } from "@/components/map/MapView";
 import { WaypointList } from "@/components/waypoint/WaypointList";
+import { BulkActionToolbar } from "@/components/waypoint/BulkActionToolbar";
 import { MissionConfig } from "@/components/mission/MissionConfig";
 import { PoiList } from "@/components/mission/PoiList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
@@ -149,8 +150,14 @@ export default function App() {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
-      const { setIsAddingWaypoint, setIsAddingPoi, selectWaypoint, removeWaypoint, selectedWaypointIndex } =
-        useMissionStore.getState();
+      const {
+        setIsAddingWaypoint,
+        setIsAddingPoi,
+        clearWaypointSelection,
+        removeSelectedWaypoints,
+        selectAllWaypoints,
+        selectedWaypointIndices,
+      } = useMissionStore.getState();
 
       switch (e.key.toLowerCase()) {
         case "w":
@@ -162,17 +169,29 @@ export default function App() {
           e.preventDefault();
           setIsAddingPoi(true);
           break;
+        case "a":
+          if (e.metaKey || e.ctrlKey) {
+            e.preventDefault();
+            selectAllWaypoints();
+          }
+          break;
         case "escape":
           e.preventDefault();
-          selectWaypoint(null);
+          clearWaypointSelection();
           setIsAddingWaypoint(false);
           setIsAddingPoi(false);
           break;
         case "delete":
         case "backspace":
-          if (selectedWaypointIndex !== null) {
+          if (selectedWaypointIndices.size > 0) {
             e.preventDefault();
-            removeWaypoint(selectedWaypointIndex);
+            if (selectedWaypointIndices.size > 1) {
+              if (confirm(`Delete ${selectedWaypointIndices.size} waypoints?`)) {
+                removeSelectedWaypoints();
+              }
+            } else {
+              removeSelectedWaypoints();
+            }
           }
           break;
       }
@@ -378,6 +397,7 @@ export default function App() {
       {/* Map */}
       <div className="flex-1 relative">
         <MapView />
+        <BulkActionToolbar />
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}

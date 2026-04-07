@@ -1,6 +1,7 @@
 import { Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
+import type { SelectionMode } from "@/store/missionStore";
 import type { Waypoint } from "@droneroute/shared";
 import { useMemo } from "react";
 
@@ -121,8 +122,8 @@ function createWaypointIcon(index: number, isSelected: boolean, waypoint: Waypoi
 }
 
 export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
-  const { selectedWaypointIndex, selectWaypoint, moveWaypoint } = useMissionStore();
-  const isSelected = selectedWaypointIndex === waypoint.index;
+  const { selectedWaypointIndices, selectWaypoint, moveWaypoint } = useMissionStore();
+  const isSelected = selectedWaypointIndices.has(waypoint.index);
 
   const icon = useMemo(
     () => createWaypointIcon(waypoint.index, isSelected, waypoint),
@@ -135,7 +136,16 @@ export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
       icon={icon}
       draggable
       eventHandlers={{
-        click: () => selectWaypoint(waypoint.index),
+        click: (e) => {
+          const nativeEvent = (e as any).originalEvent as MouseEvent;
+          let mode: SelectionMode = "replace";
+          if (nativeEvent?.ctrlKey || nativeEvent?.metaKey) {
+            mode = "toggle";
+          } else if (nativeEvent?.shiftKey) {
+            mode = "range";
+          }
+          selectWaypoint(waypoint.index, mode);
+        },
         dragend: (e) => {
           const marker = e.target;
           const pos = marker.getLatLng();
