@@ -5,6 +5,7 @@ import path from "path";
 import { execSync } from "child_process";
 
 const commitSha = (() => {
+  if (process.env.COMMIT_SHA) return process.env.COMMIT_SHA;
   try {
     return execSync("git rev-parse --short HEAD").toString().trim();
   } catch {

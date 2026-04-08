@@ -30,6 +30,7 @@ import { RoutesPage } from "@/components/routes/RoutesPage";
 import { ElevationGraph } from "@/components/mission/ElevationGraph";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { AccountModal } from "@/components/auth/AccountModal";
+import { AboutDialog } from "@/components/AboutDialog";
 import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
@@ -62,7 +63,7 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { token, email: userEmail, logout, restore } = useAuthStore();
@@ -279,7 +280,7 @@ export default function App() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowWelcome(true)}
+                onClick={() => setShowAbout(true)}
                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
                 title="Help & shortcuts"
               >
@@ -509,7 +510,8 @@ export default function App() {
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       {showAccountMenu && <AccountModal onClose={() => setShowAccountMenu(false)} />}
-      <WelcomeDialog open={showWelcome} onClose={() => setShowWelcome(false)} />
+      {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
+      <WelcomeDialog />
     </div>
   );
 }

@@ -91,6 +91,8 @@ Select multiple waypoints (Ctrl/Cmd+Click or Shift+Click), then use the bulk act
 - Delete all selected waypoints
 - Apply the same altitude, speed, or other settings to multiple waypoints at once
 
+![Multiple waypoints selected in the sidebar with bulk action toolbar](docs/screenshots/multiselect.jpg)
+
 ---
 
 ## Points of Interest (POIs)
@@ -130,6 +132,8 @@ When editing a waypoint that faces a POI, you'll see a green **"Perfect pitch: X
 
 - **Green and solid** — your current pitch already matches the ideal angle
 - **Green and semi-transparent** — click it to apply the calculated angle
+
+![Waypoint editor showing the perfect gimbal pitch calculation toward a POI](docs/screenshots/gimbal-pitch.jpg)
 
 ### Visual Feedback on the Map
 
@@ -183,6 +187,8 @@ Creates a circular flight path around a center point. Click and drag on the map 
 
 The gimbal pitch is automatically set to look toward the center point. If "Create POI" is enabled, waypoints are set to "Toward POI" heading mode for precise camera tracking.
 
+![Orbit template configuration panel with live preview on the map](docs/screenshots/template-orbit.jpg)
+
 ### Grid Survey
 
 **Shortcut: G**
@@ -199,6 +205,8 @@ Creates a lawn-mower (zigzag) pattern for systematic area coverage. Click and dr
 
 The gimbal is set to -90 degrees (straight down) and heading follows the flight direction. The pattern automatically determines the most efficient orientation based on the shape of your survey area.
 
+![Grid survey template with zigzag pattern covering a rectangular area](docs/screenshots/template-grid.jpg)
+
 ### Facade Scan
 
 **Shortcut: F**
@@ -214,6 +222,8 @@ Creates a vertical scanning pattern parallel to a wall or building face. Click a
 **Use cases:** Building facade inspections, wall surveys, structural assessments.
 
 The drone flies back and forth in a zigzag pattern at increasing altitudes. Heading is automatically set to face the wall, and gimbal pitch adjusts per row to look at the wall base. A photo is taken at every waypoint.
+
+![Facade scan template with vertical scanning pattern along a building wall](docs/screenshots/template-facade.jpg)
 
 ---
 
@@ -261,6 +271,8 @@ The floating toolbar on the map provides:
 ### Elevation Graph
 
 Below the waypoint list, an elevation graph shows the altitude profile of your mission. This helps visualize altitude changes across the flight path.
+
+![Elevation graph showing the altitude profile of a mission](docs/screenshots/elevation-graph.jpg)
 
 ---
 

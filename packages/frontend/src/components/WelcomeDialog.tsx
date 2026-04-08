@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "droneroute_welcome_dismissed";
 
-interface WelcomeDialogProps {
-  open?: boolean;
-  onClose?: () => void;
-}
-
-export function WelcomeDialog({ open, onClose }: WelcomeDialogProps) {
+export function WelcomeDialog() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -18,15 +13,9 @@ export function WelcomeDialog({ open, onClose }: WelcomeDialogProps) {
     }
   }, []);
 
-  // Allow external open trigger
-  useEffect(() => {
-    if (open) setVisible(true);
-  }, [open]);
-
   const dismiss = () => {
     localStorage.setItem(STORAGE_KEY, "1");
     setVisible(false);
-    onClose?.();
   };
 
   // Close on Escape key
@@ -92,45 +81,6 @@ export function WelcomeDialog({ open, onClose }: WelcomeDialogProps) {
                 <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-muted rounded border border-border">Del</kbd>
                 Remove selected
               </span>
-            </div>
-          </div>
-
-          {/* Links */}
-          <div className="flex flex-col gap-2 pt-1">
-            <a
-              href="https://github.com/fcsonline/droneroute"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Github className="h-4 w-4 shrink-0" />
-              GitHub — Star the repo, report bugs, contribute
-            </a>
-            <a
-              href="https://github.com/fcsonline/droneroute/blob/main/GUIDE.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <BookOpen className="h-4 w-4 shrink-0" />
-              User Guide — Features, shortcuts &amp; tips
-            </a>
-            <div className="mt-2 pt-2 border-t border-border">
-              <p className="text-xs text-muted-foreground mb-2">
-                DroneRoute is free and open-source. If you find it useful, consider supporting its development:
-              </p>
-              <a
-                href="https://www.buymeacoffee.com/fcsonline"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block"
-              >
-                <img
-                  src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png"
-                  alt="Buy Me a Coffee"
-                  className="h-8"
-                />
-              </a>
             </div>
           </div>
         </div>

@@ -15,7 +15,10 @@ services:
     restart: unless-stopped
 
   droneroute:
-    build: .
+    build:
+      context: .
+      args:
+        COMMIT_SHA: ${COMMIT_SHA:-dev}
     container_name: droneroute
     volumes:
       - droneroute-data:/app/data
