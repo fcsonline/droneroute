@@ -1,6 +1,12 @@
-# DroneRoute
+<p align="center">
+  <img src="droneroute.png" alt="DroneRoute" width="128" />
+</p>
 
-[![CI](https://github.com/fcsonline/droneroute/actions/workflows/ci.yml/badge.svg)](https://github.com/fcsonline/droneroute/actions/workflows/ci.yml)
+<h1 align="center">DroneRoute</h1>
+
+<p align="center">
+  <a href="https://github.com/fcsonline/droneroute/actions/workflows/ci.yml"><img src="https://github.com/fcsonline/droneroute/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+</p>
 
 A free, open-source mission planner for DJI drones. Plan waypoint missions on an interactive map, tweak flight parameters, and export KMZ files ready to fly.
 

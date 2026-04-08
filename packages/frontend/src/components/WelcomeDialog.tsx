@@ -39,7 +39,7 @@ export function WelcomeDialog() {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-0">
           <div className="flex items-center gap-2.5">
-            <img src="/favicon.svg" alt="DroneRoute" className="h-7 w-7" />
+            <img src="/droneroute.png" alt="DroneRoute" className="h-7 w-7" />
             <h2 className="text-base font-bold">Welcome to DroneRoute</h2>
           </div>
           <button onClick={dismiss} className="text-muted-foreground hover:text-foreground transition-colors">

@@ -273,7 +273,7 @@ export default function App() {
         <div className="p-3 border-b border-border">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <img src="/favicon.svg" alt="DroneRoute" className="h-5 w-5" />
+              <img src="/droneroute.png" alt="DroneRoute" className="h-5 w-5" />
               <span className="font-bold text-sm">DroneRoute</span>
             </div>
             <div className="flex items-center gap-1">
