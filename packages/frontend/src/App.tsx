@@ -49,6 +49,8 @@ export default function App() {
     loadMission,
     currentPage,
     setCurrentPage,
+    dirty,
+    setDirty,
   } = useMissionStore();
 
   const [expandedSections, setExpandedSections] = useState<Record<SidebarSection, boolean>>({
@@ -71,6 +73,17 @@ export default function App() {
   useEffect(() => {
     restore();
   }, []);
+
+  // Warn before closing/navigating away with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (dirty && (waypoints.length > 1 || pois.length > 0)) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty, waypoints.length, pois.length]);
 
   // Compute Gravatar URL when email changes
   useEffect(() => {
@@ -135,6 +148,7 @@ export default function App() {
         });
         setMissionId(result.id);
       }
+      setDirty(false);
     } catch (err: any) {
       alert(`Save failed: ${err.message}`);
     } finally {
@@ -168,9 +182,9 @@ export default function App() {
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ignore when typing in inputs/selects
+      // Ignore when typing in inputs/selects (except Escape which should always work)
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key !== "Escape" && (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")) return;
 
       const {
         setIsAddingWaypoint,
@@ -253,7 +267,7 @@ export default function App() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
       {/* Sidebar */}
-      <div className="w-80 flex flex-col border-r border-border bg-card shrink-0 tabular-nums">
+      <div className="w-88 flex flex-col border-r border-border bg-card shrink-0 tabular-nums">
         {/* Header */}
         <div className="p-3 border-b border-border">
           <div className="flex items-center justify-between mb-2">

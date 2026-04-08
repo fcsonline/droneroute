@@ -59,6 +59,7 @@ export interface GridParams {
   spacingM: number;
   addPhotos: boolean;
   rotationDeg: number;       // rotation of the grid in degrees (0-360)
+  reverse: boolean;          // fly the grid in reverse order
 }
 
 export interface FacadeParams {
@@ -92,6 +93,7 @@ export const DEFAULT_GRID_PARAMS: Omit<GridParams, "corner1" | "corner2"> = {
   spacingM: 30,
   addPhotos: true,
   rotationDeg: 0,
+  reverse: false,
 };
 
 export const DEFAULT_FACADE_PARAMS: Omit<FacadeParams, "point1" | "point2"> = {
@@ -156,7 +158,7 @@ export function generateOrbit(params: OrbitParams): TemplateResult {
 }
 
 export function generateGrid(params: GridParams): TemplateResult {
-  const { corner1, corner2, altitude, spacingM, addPhotos, rotationDeg } = params;
+  const { corner1, corner2, altitude, spacingM, addPhotos, rotationDeg, reverse } = params;
   const [lat1, lng1] = corner1;
   const [lat2, lng2] = corner2;
 
@@ -258,6 +260,10 @@ export function generateGrid(params: GridParams): TemplateResult {
       useGlobalTurnParam: false,
       actions: addPhotos ? [{ ...takePhotoAction, actionId: 0 }] : [],
     });
+  }
+
+  if (reverse) {
+    waypoints.reverse();
   }
 
   return { waypoints, pois: [] };

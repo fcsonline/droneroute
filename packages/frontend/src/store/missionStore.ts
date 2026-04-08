@@ -9,6 +9,7 @@ interface MissionState {
   // Mission metadata
   missionId: string | null;
   missionName: string;
+  dirty: boolean;
 
   // Config
   config: MissionConfig;
@@ -67,11 +68,13 @@ interface MissionState {
     pois?: PointOfInterest[];
   }) => void;
   clearMission: () => void;
+  setDirty: (dirty: boolean) => void;
 }
 
 export const useMissionStore = create<MissionState>((set, get) => ({
   missionId: null,
   missionName: "New Mission",
+  dirty: false,
   config: { ...DEFAULT_MISSION_CONFIG },
   waypoints: [],
   selectedWaypointIndices: new Set<number>(),
@@ -84,12 +87,13 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   currentPage: "editor",
   setCurrentPage: (page) => set({ currentPage: page }),
 
-  setMissionName: (name) => set({ missionName: name }),
+  setMissionName: (name) => set({ missionName: name, dirty: true }),
   setMissionId: (id) => set({ missionId: id }),
 
   setConfig: (updates) =>
     set((state) => ({
       config: { ...state.config, ...updates },
+      dirty: true,
     })),
 
   addWaypoint: (lat, lng) =>
@@ -107,6 +111,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         waypoints: [...state.waypoints, newWaypoint],
         selectedWaypointIndices: new Set([index]),
         lastSelectedWaypointIndex: index,
+        dirty: true,
       };
     }),
 
@@ -115,6 +120,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       waypoints: state.waypoints.map((wp) =>
         wp.index === index ? { ...wp, ...updates } : wp
       ),
+      dirty: true,
     })),
 
   removeWaypoint: (index) =>
@@ -139,6 +145,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
             : state.lastSelectedWaypointIndex !== null && state.lastSelectedWaypointIndex > index
               ? state.lastSelectedWaypointIndex - 1
               : state.lastSelectedWaypointIndex,
+        dirty: true,
       };
     }),
 
@@ -147,6 +154,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       waypoints: state.waypoints.map((wp) =>
         wp.index === index ? { ...wp, latitude: lat, longitude: lng } : wp
       ),
+      dirty: true,
     })),
 
   selectWaypoint: (index, mode = "replace") =>
@@ -223,6 +231,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         waypoints: filtered,
         selectedWaypointIndices: new Set<number>(),
         lastSelectedWaypointIndex: null,
+        dirty: true,
       };
     }),
 
@@ -231,6 +240,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       waypoints: state.waypoints.map((wp) =>
         state.selectedWaypointIndices.has(wp.index) ? { ...wp, ...updates } : wp
       ),
+      dirty: true,
     })),
 
   reorderWaypoints: (fromIndex, toIndex) =>
@@ -244,6 +254,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         waypoints: reindexed,
         selectedWaypointIndices: new Set([toIndex]),
         lastSelectedWaypointIndex: toIndex,
+        dirty: true,
       };
     }),
 
@@ -257,6 +268,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
           ? { ...wp, actions: [...wp.actions, action] }
           : wp
       ),
+      dirty: true,
     })),
 
   updateAction: (waypointIndex, actionId, updates) =>
@@ -271,6 +283,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
             }
           : wp
       ),
+      dirty: true,
     })),
 
   removeAction: (waypointIndex, actionId) =>
@@ -283,6 +296,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
             }
           : wp
       ),
+      dirty: true,
     })),
 
   // POI actions
@@ -298,12 +312,14 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       return {
         pois: [...state.pois, poi],
         selectedPoiId: poi.id,
+        dirty: true,
       };
     }),
 
   updatePoi: (id, updates) =>
     set((state) => ({
       pois: state.pois.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+      dirty: true,
     })),
 
   removePoi: (id) =>
@@ -314,6 +330,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       waypoints: state.waypoints.map((wp) =>
         wp.poiId === id ? { ...wp, poiId: undefined } : wp
       ),
+      dirty: true,
     })),
 
   movePoi: (id, lat, lng) =>
@@ -321,6 +338,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       pois: state.pois.map((p) =>
         p.id === id ? { ...p, latitude: lat, longitude: lng } : p
       ),
+      dirty: true,
     })),
 
   selectPoi: (id) => set({ selectedPoiId: id }),
@@ -329,7 +347,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     set((state) => ({ isAddingPoi: adding, isAddingWaypoint: adding ? false : state.isAddingWaypoint, templateMode: adding ? null : state.templateMode })),
 
   setTemplateMode: (mode) =>
-    set({ templateMode: mode, isAddingWaypoint: false, isAddingPoi: false }),
+    set({ templateMode: mode, isAddingWaypoint: false, isAddingPoi: false, selectedWaypointIndices: new Set(), selectedPoiId: null }),
 
   appendWaypoints: (newWps, newPois) =>
     set((state) => {
@@ -363,6 +381,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         selectedWaypointIndices: new Set(fullWaypoints.map((wp) => wp.index)),
         lastSelectedWaypointIndex: fullWaypoints.length > 0 ? fullWaypoints[fullWaypoints.length - 1].index : state.lastSelectedWaypointIndex,
         templateMode: null,
+        dirty: true,
       };
     }),
 
@@ -376,6 +395,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       selectedWaypointIndices: new Set<number>(),
       lastSelectedWaypointIndex: null,
       selectedPoiId: null,
+      dirty: false,
     }),
 
   clearMission: () =>
@@ -388,5 +408,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       selectedWaypointIndices: new Set<number>(),
       lastSelectedWaypointIndex: null,
       selectedPoiId: null,
+      dirty: false,
     }),
+
+  setDirty: (dirty) => set({ dirty }),
 }));

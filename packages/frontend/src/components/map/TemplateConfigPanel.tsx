@@ -145,7 +145,7 @@ export function TemplateConfigPanel({
               className="h-7 text-xs"
             />
           </div>
-          <div className="flex items-end pb-1">
+          <div className="flex items-end gap-2 pb-1">
             <label className="flex items-center gap-1.5 text-xs cursor-pointer">
               <input
                 type="checkbox"
@@ -154,6 +154,15 @@ export function TemplateConfigPanel({
                 className="rounded"
               />
               Photos
+            </label>
+            <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+              <input
+                type="checkbox"
+                checked={gridParams.reverse}
+                onChange={(e) => onGridChange({ ...gridParams, reverse: e.target.checked })}
+                className="rounded"
+              />
+              Reverse
             </label>
           </div>
         </div>

@@ -29,6 +29,16 @@ export function WelcomeDialog({ open, onClose }: WelcomeDialogProps) {
     onClose?.();
   };
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!visible) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dismiss();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [visible]);
+
   if (!visible) return null;
 
   return (
