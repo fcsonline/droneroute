@@ -10,7 +10,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
     viewport: { width: 1400, height: 900 },
-    deviceScaleFactor: 2,
+    deviceScaleFactor: 1,
   });
 
   // Dismiss welcome dialog on every page
