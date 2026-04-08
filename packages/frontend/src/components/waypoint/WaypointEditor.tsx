@@ -49,7 +49,7 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             value={wp.height}
             onChange={(e) => update({ height: parseFloat(e.target.value) || 0 })}
             min={1}
-            max={1500}
+            max={500}
             className="h-8 text-xs"
           />
         </div>

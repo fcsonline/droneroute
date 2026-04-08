@@ -58,6 +58,7 @@ export interface GridParams {
   altitude: number;
   spacingM: number;
   addPhotos: boolean;
+  rotationDeg: number;       // rotation of the grid in degrees (0-360)
 }
 
 export interface FacadeParams {
@@ -90,6 +91,7 @@ export const DEFAULT_GRID_PARAMS: Omit<GridParams, "corner1" | "corner2"> = {
   altitude: 80,
   spacingM: 30,
   addPhotos: true,
+  rotationDeg: 0,
 };
 
 export const DEFAULT_FACADE_PARAMS: Omit<FacadeParams, "point1" | "point2"> = {
@@ -154,7 +156,7 @@ export function generateOrbit(params: OrbitParams): TemplateResult {
 }
 
 export function generateGrid(params: GridParams): TemplateResult {
-  const { corner1, corner2, altitude, spacingM, addPhotos } = params;
+  const { corner1, corner2, altitude, spacingM, addPhotos, rotationDeg } = params;
   const [lat1, lng1] = corner1;
   const [lat2, lng2] = corner2;
 
@@ -165,6 +167,10 @@ export function generateGrid(params: GridParams): TemplateResult {
   const maxLat = Math.max(lat1, lat2);
   const minLng = Math.min(lng1, lng2);
   const maxLng = Math.max(lng1, lng2);
+
+  // Center of the bounding box (rotation pivot)
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLng = (minLng + maxLng) / 2;
 
   // Calculate the width and height of the area in meters
   const widthM = haversine(minLat, minLng, minLat, maxLng);
@@ -183,71 +189,75 @@ export function generateGrid(params: GridParams): TemplateResult {
     params: { payloadPositionIndex: 0 },
   };
 
+  // Rotation helper: rotate a lat/lng point around the center by rotationDeg degrees.
+  // Uses equirectangular approximation (accurate enough for small areas).
+  const rotRad = (rotationDeg * Math.PI) / 180;
+  const cosR = Math.cos(rotRad);
+  const sinR = Math.sin(rotRad);
+  const cosCenter = Math.cos((centerLat * Math.PI) / 180);
+
+  function rotatePoint(lat: number, lng: number): [number, number] {
+    if (rotationDeg === 0) return [lat, lng];
+    // Convert to local offsets in degrees, scaling lng by cos(lat) for equal units
+    const dLat = lat - centerLat;
+    const dLng = (lng - centerLng) * cosCenter;
+    // Rotate
+    const rLat = dLat * cosR - dLng * sinR;
+    const rLng = dLat * sinR + dLng * cosR;
+    // Convert back
+    return [centerLat + rLat, centerLng + rLng / cosCenter];
+  }
+
   for (let pass = 0; pass < numPasses; pass++) {
     const fraction = numPasses <= 1 ? 0 : pass / (numPasses - 1);
     const reverse = pass % 2 === 1; // lawn-mower pattern: alternate direction
+
+    let wpLat1: number, wpLng1: number, wpLat2: number, wpLng2: number;
 
     if (flyEW) {
       // Cross axis is N-S: each pass is a horizontal E-W line
       const lat = minLat + fraction * (maxLat - minLat);
       const startLng = reverse ? maxLng : minLng;
       const endLng = reverse ? minLng : maxLng;
-
-      waypoints.push({
-        ...DEFAULT_WAYPOINT,
-        latitude: lat,
-        longitude: startLng,
-        height: altitude,
-        gimbalPitchAngle: -90,
-        useGlobalHeadingParam: false,
-        headingMode: "followWayline",
-        turnMode: "toPointAndStopWithContinuityCurvature",
-        useGlobalTurnParam: false,
-        actions: addPhotos ? [{ ...takePhotoAction, actionId: 0 }] : [],
-      });
-      waypoints.push({
-        ...DEFAULT_WAYPOINT,
-        latitude: lat,
-        longitude: endLng,
-        height: altitude,
-        gimbalPitchAngle: -90,
-        useGlobalHeadingParam: false,
-        headingMode: "followWayline",
-        turnMode: "toPointAndStopWithContinuityCurvature",
-        useGlobalTurnParam: false,
-        actions: addPhotos ? [{ ...takePhotoAction, actionId: 0 }] : [],
-      });
+      wpLat1 = lat; wpLng1 = startLng;
+      wpLat2 = lat; wpLng2 = endLng;
     } else {
       // Cross axis is E-W: each pass is a vertical N-S line
       const lng = minLng + fraction * (maxLng - minLng);
       const startLat = reverse ? maxLat : minLat;
       const endLat = reverse ? minLat : maxLat;
-
-      waypoints.push({
-        ...DEFAULT_WAYPOINT,
-        latitude: startLat,
-        longitude: lng,
-        height: altitude,
-        gimbalPitchAngle: -90,
-        useGlobalHeadingParam: false,
-        headingMode: "followWayline",
-        turnMode: "toPointAndStopWithContinuityCurvature",
-        useGlobalTurnParam: false,
-        actions: addPhotos ? [{ ...takePhotoAction, actionId: 0 }] : [],
-      });
-      waypoints.push({
-        ...DEFAULT_WAYPOINT,
-        latitude: endLat,
-        longitude: lng,
-        height: altitude,
-        gimbalPitchAngle: -90,
-        useGlobalHeadingParam: false,
-        headingMode: "followWayline",
-        turnMode: "toPointAndStopWithContinuityCurvature",
-        useGlobalTurnParam: false,
-        actions: addPhotos ? [{ ...takePhotoAction, actionId: 0 }] : [],
-      });
+      wpLat1 = startLat; wpLng1 = lng;
+      wpLat2 = endLat; wpLng2 = lng;
     }
+
+    // Apply rotation
+    const [rLat1, rLng1] = rotatePoint(wpLat1, wpLng1);
+    const [rLat2, rLng2] = rotatePoint(wpLat2, wpLng2);
+
+    waypoints.push({
+      ...DEFAULT_WAYPOINT,
+      latitude: rLat1,
+      longitude: rLng1,
+      height: altitude,
+      gimbalPitchAngle: -90,
+      useGlobalHeadingParam: false,
+      headingMode: "followWayline",
+      turnMode: "toPointAndStopWithContinuityCurvature",
+      useGlobalTurnParam: false,
+      actions: addPhotos ? [{ ...takePhotoAction, actionId: 0 }] : [],
+    });
+    waypoints.push({
+      ...DEFAULT_WAYPOINT,
+      latitude: rLat2,
+      longitude: rLng2,
+      height: altitude,
+      gimbalPitchAngle: -90,
+      useGlobalHeadingParam: false,
+      headingMode: "followWayline",
+      turnMode: "toPointAndStopWithContinuityCurvature",
+      useGlobalTurnParam: false,
+      actions: addPhotos ? [{ ...takePhotoAction, actionId: 0 }] : [],
+    });
   }
 
   return { waypoints, pois: [] };

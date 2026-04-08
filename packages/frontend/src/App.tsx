@@ -15,6 +15,7 @@ import {
   LogOut,
   Camera,
   Video,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ import { BulkActionToolbar } from "@/components/waypoint/BulkActionToolbar";
 import { MissionConfig } from "@/components/mission/MissionConfig";
 import { PoiList } from "@/components/mission/PoiList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
+import { ElevationGraph } from "@/components/mission/ElevationGraph";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
@@ -171,19 +173,20 @@ export default function App() {
           e.preventDefault();
           setIsAddingPoi(true);
           break;
-        case "t":
+        case "o":
           if (e.metaKey || e.ctrlKey) return;
           e.preventDefault();
-          // Cycle through template modes, or activate orbit as default
-          if (!templateMode) {
-            setTemplateMode("orbit");
-          } else if (templateMode === "orbit") {
-            setTemplateMode("grid");
-          } else if (templateMode === "grid") {
-            setTemplateMode("facade");
-          } else {
-            setTemplateMode(null);
-          }
+          setTemplateMode(templateMode === "orbit" ? null : "orbit");
+          break;
+        case "g":
+          if (e.metaKey || e.ctrlKey) return;
+          e.preventDefault();
+          setTemplateMode(templateMode === "grid" ? null : "grid");
+          break;
+        case "f":
+          if (e.metaKey || e.ctrlKey) return;
+          e.preventDefault();
+          setTemplateMode(templateMode === "facade" ? null : "facade");
           break;
         case "a":
           if (e.metaKey || e.ctrlKey) {
@@ -230,7 +233,7 @@ export default function App() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
       {/* Sidebar */}
-      <div className="w-80 flex flex-col border-r border-border bg-card shrink-0">
+      <div className="w-80 flex flex-col border-r border-border bg-card shrink-0 tabular-nums">
         {/* Header */}
         <div className="p-3 border-b border-border">
           <div className="flex items-center justify-between mb-2">
@@ -349,6 +352,9 @@ export default function App() {
           </div>
         </div>
 
+        {/* Elevation graph */}
+        <ElevationGraph />
+
         {/* Footer stats with colored icons */}
         <div className="px-3 py-2 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -387,8 +393,19 @@ export default function App() {
             {waypoints.length >= 2
               ? (() => {
                   const { distance, time } = estimateFlightStats(waypoints, config.autoFlightSpeed);
+                  const elevGain = waypoints.reduce((sum, wp, i) => {
+                    if (i === 0) return 0;
+                    const diff = wp.height - waypoints[i - 1].height;
+                    return sum + (diff > 0 ? diff : 0);
+                  }, 0);
                   return (
                     <>
+                      {elevGain > 0 && (
+                        <span className="flex items-center gap-1 text-[11px]">
+                          <TrendingUp className="h-3 w-3 text-orange-400" />
+                          <span className="text-orange-300 font-medium">{elevGain}m</span>
+                        </span>
+                      )}
                       <span className="flex items-center gap-1 text-[11px]">
                         <Route className="h-3 w-3 text-emerald-400" />
                         <span className="text-emerald-300 font-medium">

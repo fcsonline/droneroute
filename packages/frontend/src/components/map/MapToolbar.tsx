@@ -7,10 +7,10 @@ import type { TemplateType } from "@/lib/templates";
 const activeClass = "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg shadow-primary/20 hover:bg-primary/90";
 const inactiveClass = "bg-background/90 backdrop-blur-sm";
 
-const TEMPLATE_OPTIONS: { type: TemplateType; label: string; icon: typeof Orbit; description: string }[] = [
-  { type: "orbit", label: "Orbit", icon: Orbit, description: "Circle around a point" },
-  { type: "grid", label: "Grid Survey", icon: Grid3X3, description: "Lawn-mower scan area" },
-  { type: "facade", label: "Facade Scan", icon: Building2, description: "Vertical wall scan" },
+const TEMPLATE_OPTIONS: { type: TemplateType; label: string; shortLabel: string; icon: typeof Orbit; description: string; key: string }[] = [
+  { type: "orbit", label: "Orbit", shortLabel: "Orbit", icon: Orbit, description: "Circle around a point", key: "O" },
+  { type: "grid", label: "Grid Survey", shortLabel: "Grid", icon: Grid3X3, description: "Lawn-mower scan area", key: "G" },
+  { type: "facade", label: "Facade Scan", shortLabel: "Facade", icon: Building2, description: "Vertical wall scan", key: "F" },
 ];
 
 export function MapToolbar() {
@@ -44,7 +44,7 @@ export function MapToolbar() {
   const isPanning = !isAddingWaypoint && !isAddingPoi && !templateMode;
 
   return (
-    <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+    <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 min-w-[130px]">
       <Button
         variant={isAddingWaypoint ? "default" : "outline"}
         size="sm"
@@ -78,7 +78,7 @@ export function MapToolbar() {
           variant={templateMode ? "default" : "outline"}
           size="sm"
           onClick={() => setShowTemplateMenu(!showTemplateMenu)}
-          title="Insert a mission template (T)"
+          title="Insert a mission template"
           className={`justify-between w-full ${templateMode ? activeClass : inactiveClass}`}
         >
           <span className="flex items-center gap-1.5">
@@ -88,7 +88,7 @@ export function MapToolbar() {
              <Grid3X3 className="h-4 w-4" />}
             <span className="text-xs">
               {templateMode
-                ? TEMPLATE_OPTIONS.find((t) => t.type === templateMode)?.label
+                ? TEMPLATE_OPTIONS.find((t) => t.type === templateMode)?.shortLabel
                 : "Template"}
             </span>
           </span>
@@ -110,10 +110,11 @@ export function MapToolbar() {
                   }}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <div className="text-left">
+                  <div className="text-left flex-1">
                     <div className="font-medium">{opt.label}</div>
                     <div className="text-[10px] text-muted-foreground">{opt.description}</div>
                   </div>
+                  <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80 shrink-0">{opt.key}</kbd>
                 </button>
               );
             })}

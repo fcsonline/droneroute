@@ -78,7 +78,7 @@ export function BulkActionToolbar() {
         : "mixed";
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-200">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-200 tabular-nums">
       <div className="bg-card border border-border rounded-xl shadow-2xl shadow-black/30 overflow-hidden">
         {/* Action bar */}
         <div className="flex items-center gap-3 px-4 py-2.5">
@@ -170,7 +170,7 @@ export function BulkActionToolbar() {
                     }
                   }}
                   min={1}
-                  max={1500}
+                   max={500}
                   className="h-7 text-xs mt-0.5"
                 />
               </div>

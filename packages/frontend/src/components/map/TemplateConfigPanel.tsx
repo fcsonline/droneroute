@@ -133,7 +133,19 @@ export function TemplateConfigPanel({
               className="h-7 text-xs"
             />
           </div>
-          <div className="col-span-2 flex items-center">
+          <div>
+            <Label className="text-[10px]">Rotation (°)</Label>
+            <Input
+              type="number"
+              value={gridParams.rotationDeg}
+              onChange={(e) => onGridChange({ ...gridParams, rotationDeg: Math.max(-180, Math.min(180, parseFloat(e.target.value) || 0)) })}
+              min={-180}
+              max={180}
+              step={5}
+              className="h-7 text-xs"
+            />
+          </div>
+          <div className="flex items-end pb-1">
             <label className="flex items-center gap-1.5 text-xs cursor-pointer">
               <input
                 type="checkbox"
@@ -141,7 +153,7 @@ export function TemplateConfigPanel({
                 onChange={(e) => onGridChange({ ...gridParams, addPhotos: e.target.checked })}
                 className="rounded"
               />
-              Take photo at each waypoint
+              Photos
             </label>
           </div>
         </div>
