@@ -84,7 +84,7 @@ If you find a bug or have an idea, feel free to [open an issue](https://github.c
 
 DroneRoute is built and maintained in my spare time. If it saves you time planning your flights, consider buying me a coffee — it helps keep the project going.
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/fcsonline)
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/fcsonline)
 
 ## License
 
