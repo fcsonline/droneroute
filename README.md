@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/fcsonline/droneroute/actions/workflows/ci.yml/badge.svg)](https://github.com/fcsonline/droneroute/actions/workflows/ci.yml)
 
-A free, open-source web application for creating DJI drone waypoint mission files (KMZ). Place waypoints on an interactive map, configure flight parameters, and export WPML-compliant KMZ files ready to load into DJI flight controllers.
+A free, open-source mission planner for DJI drones. Plan waypoint missions on an interactive map, tweak flight parameters, and export KMZ files ready to fly.
 
 **[Try the live demo](https://droneroute.fly.dev)**
 
@@ -12,62 +12,30 @@ A free, open-source web application for creating DJI drone waypoint mission file
 
 - **Interactive map** — Click to place waypoints and Points of Interest on OpenStreetMap
 - **Waypoint configuration** — Set altitude, speed, gimbal pitch, heading mode, and turn mode per waypoint
-- **Points of Interest** — Define POIs and point waypoints toward them with automatic heading
-- **Smart gimbal pitch** — Calculates the optimal gimbal angle based on distance and height to a target POI
+- **Points of Interest** — Define POIs and auto-point the camera toward them
+- **Smart gimbal pitch** — Automatically calculates the optimal gimbal angle based on distance and height to a POI
 - **Waypoint actions** — Add photo, video, gimbal rotate, yaw, hover, zoom, and focus actions
-- **KMZ export** — Generates DJI WPML-compliant KMZ files (template.kml + waylines.wpml)
-- **KMZ import** — Load existing KMZ mission files
-- **Save & load** — Persist missions to a local SQLite database with user accounts
-- **Animated flight path** — Dashed lines animate in flight direction, speed proportional to each waypoint's configured speed
+- **KMZ export & import** — Generates DJI WPML-compliant KMZ files, or load existing ones
+- **Save & load** — Persist missions to a local database with user accounts
+- **Mission templates** — Orbit, grid survey, and facade scan presets to get you flying faster
+- **Animated flight path** — Dashed lines animate in flight direction, proportional to each waypoint's speed
 - **Drag-and-drop reordering** — Reorder waypoints by dragging in the sidebar
 - **Keyboard shortcuts** — `W` add waypoint, `P` add POI, `Esc` deselect, `Delete` remove selected
-- **Docker self-hosting** — Single-command deployment with Traefik reverse proxy
+- **Self-hosted** — Run it on your own machine or server with Docker
 
 ## Supported Drones
 
 DJI M300 RTK, M350 RTK, M30/M30T, Mavic 3E/3T/3M/3D/3TD, Mini 4 Pro.
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4, shadcn/ui, Zustand, Leaflet |
-| Backend | Node.js, Express 5, better-sqlite3, JWT auth |
-| Shared | TypeScript types package (compiled to JS for runtime) |
-| Infrastructure | Docker, Traefik v3.6, SQLite |
-
-## Project Structure
-
-```
-droneroute/
-├── packages/
-│   ├── shared/          # TypeScript types, constants, defaults
-│   ├── backend/         # Express API server
-│   │   └── src/
-│   │       ├── routes/       # auth, missions, kmz endpoints
-│   │       ├── services/     # KMZ generation & parsing
-│   │       ├── models/       # SQLite schema
-│   │       └── middleware/    # JWT auth
-│   └── frontend/        # React SPA
-│       └── src/
-│           ├── components/   # map, waypoint, mission, auth, routes
-│           ├── store/        # Zustand stores (mission, auth)
-│           └── lib/          # API client
-├── Dockerfile           # Multi-stage build
-├── docker-compose.yml   # Traefik + app
-└── package.json         # npm workspaces root
-```
-
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 22+
-- npm 10+
-
-### Development
+You'll need **Node.js 22+** and **npm 10+**.
 
 ```bash
+# Clone the repo
+git clone https://github.com/fcsonline/droneroute.git
+cd droneroute
+
 # Install dependencies
 npm install
 
@@ -78,51 +46,39 @@ npm run build -w packages/shared
 npm run dev
 ```
 
-The frontend dev server runs on `http://localhost:5173` and proxies API requests to the backend on port `3001`.
-
-### Production Build
-
-```bash
-# Build everything (shared → backend → frontend)
-npm run build
-
-# Start the production server
-npm start
-```
-
-The server serves the frontend static files and API on the same port (default `3001`).
+That's it! Open `http://localhost:5173` and start planning missions.
 
 ### Docker
 
-```bash
-# Start with Docker Compose (Traefik + app)
-docker compose up -d
+Prefer Docker? One command:
 
-# Access at http://droneroute.localhost
+```bash
+docker compose up -d
+# Open http://droneroute.localhost
 ```
 
-#### Environment Variables
+## Tech Stack
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3001` | Server port |
-| `JWT_SECRET` | `change-this-secret-in-production` | Secret for signing JWT tokens |
-| `DB_PATH` | `./data/droneroute.db` | SQLite database file path |
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4, shadcn/ui, Zustand, Leaflet |
+| Backend | Node.js, Express 5, better-sqlite3, JWT auth |
+| Shared | TypeScript types package shared between frontend and backend |
+| Infrastructure | Docker, Traefik, SQLite |
 
-Data is persisted in a Docker volume (`droneroute-data`) mounted at `/app/data`.
+The project is organized as an npm monorepo with three packages: `shared`, `backend`, and `frontend`.
 
-## API Endpoints
+## Contributing
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/api/auth/register` | No | Create account |
-| `POST` | `/api/auth/login` | No | Sign in, returns JWT |
-| `GET` | `/api/missions` | Yes | List user's missions |
-| `POST` | `/api/missions` | Yes | Save new mission |
-| `PUT` | `/api/missions/:id` | Yes | Update mission |
-| `DELETE` | `/api/missions/:id` | Yes | Delete mission |
-| `POST` | `/api/kmz/generate` | No | Generate KMZ from mission data |
-| `POST` | `/api/kmz/import` | No | Parse uploaded KMZ file |
+Contributions are welcome! Whether it's a bug fix, a new feature, or improving the docs — every bit helps.
+
+1. Fork the repo
+2. Create a branch (`git checkout -b my-feature`)
+3. Make your changes
+4. Run the dev server and make sure things work (`npm run dev`)
+5. Open a Pull Request
+
+If you find a bug or have an idea, feel free to [open an issue](https://github.com/fcsonline/droneroute/issues). We'd love to hear from you.
 
 ## License
 

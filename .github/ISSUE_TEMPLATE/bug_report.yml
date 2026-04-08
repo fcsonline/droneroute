@@ -1,0 +1,82 @@
+name: Bug Report
+description: Report something that isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill in the details below so we can track it down.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: "When I click Export KMZ with 10+ waypoints, the download never starts."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: What should have happened instead?
+      placeholder: "A .kmz file should download to my computer."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Open the app
+        2. Add 10 waypoints
+        3. Click "KMZ" to export
+        4. Nothing happens
+    validations:
+      required: true
+
+  - type: dropdown
+    id: drone
+    attributes:
+      label: Drone model (if relevant)
+      options:
+        - N/A
+        - DJI M300 RTK
+        - DJI M350 RTK
+        - DJI M30 / M30T
+        - DJI Mavic 3E / 3T / 3M
+        - DJI Mavic 3D / 3TD
+        - DJI Mini 4 Pro
+    validations:
+      required: false
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & OS
+      description: e.g. Chrome 124 on macOS, Firefox 126 on Windows 11
+      placeholder: "Chrome 124, macOS Sonoma"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Live demo (droneroute.fly.dev)
+        - Self-hosted (Docker)
+        - Local development
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, console errors, KMZ files that trigger the bug — anything that might help.
+    validations:
+      required: false
