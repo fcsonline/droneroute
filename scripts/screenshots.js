@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 const path = require('path');
 
-const BASE = 'http://localhost:5173';
+const BASE = process.env.BASE_URL || 'http://droneroute.localhost';
 const OUT = path.join(__dirname, '..', 'docs', 'screenshots');
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -17,6 +17,42 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
   await context.addInitScript(() => {
     localStorage.setItem('droneroute_welcome_dismissed', '1');
   });
+
+  // ─── MAIN MAP (README hero shot) ─────────────────
+  console.log('0/6 Main map...');
+  {
+    const page = await context.newPage();
+    await page.goto(BASE);
+    await page.waitForSelector('.leaflet-container');
+    await sleep(2000);
+
+    const map = page.locator('.leaflet-container');
+    const box = await map.boundingBox();
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+
+    // Add several waypoints for a nice flight path
+    await page.keyboard.press('w');
+    await sleep(300);
+    const mainWps = [
+      [cx - 180, cy - 60],
+      [cx - 80,  cy - 120],
+      [cx + 40,  cy - 40],
+      [cx + 140, cy - 100],
+      [cx + 200, cy + 20],
+      [cx + 80,  cy + 80],
+    ];
+    for (const [x, y] of mainWps) {
+      await page.mouse.click(x, y);
+      await sleep(400);
+    }
+    await page.keyboard.press('Escape');
+    await sleep(1000);
+
+    await page.screenshot({ path: path.join(OUT, 'main-map.jpg'), type: 'jpeg', quality: 90 });
+    console.log('  -> saved main-map.jpg');
+    await page.close();
+  }
 
   // ─── ORBIT TEMPLATE ──────────────────────────────
   console.log('1/6 Orbit template...');
@@ -44,8 +80,8 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     await sleep(1500);
 
     // Config panel should be visible with preview
-    await page.screenshot({ path: path.join(OUT, 'template-orbit.png') });
-    console.log('  -> saved template-orbit.png');
+    await page.screenshot({ path: path.join(OUT, 'template-orbit.jpg'), type: 'jpeg', quality: 85 });
+    console.log('  -> saved template-orbit.jpg');
 
     // Apply so we can reuse the pattern
     const applyBtn = page.getByRole('button', { name: /apply/i });
@@ -80,8 +116,8 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     await page.mouse.up();
     await sleep(1500);
 
-    await page.screenshot({ path: path.join(OUT, 'template-grid.png') });
-    console.log('  -> saved template-grid.png');
+    await page.screenshot({ path: path.join(OUT, 'template-grid.jpg'), type: 'jpeg', quality: 85 });
+    console.log('  -> saved template-grid.jpg');
     await page.close();
   }
 
@@ -109,8 +145,8 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     await page.mouse.up();
     await sleep(1500);
 
-    await page.screenshot({ path: path.join(OUT, 'template-facade.png') });
-    console.log('  -> saved template-facade.png');
+    await page.screenshot({ path: path.join(OUT, 'template-facade.jpg'), type: 'jpeg', quality: 85 });
+    console.log('  -> saved template-facade.jpg');
     await page.close();
   }
 
@@ -178,8 +214,8 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
       await sleep(500);
     }
 
-    await page.screenshot({ path: path.join(OUT, 'multiselect.png') });
-    console.log('  -> saved multiselect.png');
+    await page.screenshot({ path: path.join(OUT, 'multiselect.jpg'), type: 'jpeg', quality: 85 });
+    console.log('  -> saved multiselect.jpg');
 
     // ─── ELEVATION GRAPH SCREENSHOT ───
     console.log('6/6 Elevation graph...');
@@ -195,7 +231,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
       // Crop bottom portion of the sidebar
       const clipHeight = 200;
       await page.screenshot({
-        path: path.join(OUT, 'elevation-graph.png'),
+        path: path.join(OUT, 'elevation-graph.jpg'), type: 'jpeg', quality: 85,
         clip: {
           x: sidebarBox.x,
           y: sidebarBox.y + sidebarBox.height - clipHeight,
@@ -203,7 +239,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
           height: clipHeight,
         },
       });
-      console.log('  -> saved elevation-graph.png');
+      console.log('  -> saved elevation-graph.jpg');
     }
 
     // ─── GIMBAL PITCH SCREENSHOT ───
@@ -251,8 +287,8 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
       }
 
       await sleep(1000);
-      await page.screenshot({ path: path.join(OUT, 'gimbal-pitch.png') });
-      console.log('  -> saved gimbal-pitch.png');
+      await page.screenshot({ path: path.join(OUT, 'gimbal-pitch.jpg'), type: 'jpeg', quality: 85 });
+      console.log('  -> saved gimbal-pitch.jpg');
     }
 
     await page.close();
