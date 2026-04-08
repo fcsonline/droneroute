@@ -135,7 +135,7 @@ export function WaypointList() {
               onDrop={(e) => handleDrop(e, i)}
               onDragEnd={handleDragEnd}
             >
-              <GripVertical className="h-3 w-3 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" />
+              <span title="Drag to reorder"><GripVertical className="h-3 w-3 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" /></span>
               <Badge variant={isSelected ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
                 {wp.index + 1}
               </Badge>
@@ -193,6 +193,7 @@ export function WaypointList() {
                   e.stopPropagation();
                   removeWaypoint(wp.index);
                 }}
+                title="Remove waypoint"
               >
                 <X className="h-3 w-3" />
               </Button>

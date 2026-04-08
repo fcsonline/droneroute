@@ -16,6 +16,8 @@ import {
   Camera,
   Video,
   TrendingUp,
+  UserCog,
+  CircleHelp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,8 @@ import { PoiList } from "@/components/mission/PoiList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
 import { ElevationGraph } from "@/components/mission/ElevationGraph";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { AccountModal } from "@/components/auth/AccountModal";
+import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
@@ -56,14 +60,30 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { token, email: userEmail, logout, restore } = useAuthStore();
+  const [gravatarUrl, setGravatarUrl] = useState<string | null>(null);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
 
   // Restore auth session on mount
   useEffect(() => {
     restore();
   }, []);
+
+  // Compute Gravatar URL when email changes
+  useEffect(() => {
+    if (!userEmail) {
+      setGravatarUrl(null);
+      return;
+    }
+    const trimmed = userEmail.trim().toLowerCase();
+    crypto.subtle.digest("SHA-256", new TextEncoder().encode(trimmed)).then((buf) => {
+      const hex = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+      setGravatarUrl(`https://www.gravatar.com/avatar/${hex}?s=64&d=mp`);
+    });
+  }, [userEmail]);
 
   const toggleSection = (section: SidebarSection) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -242,32 +262,15 @@ export default function App() {
               <span className="font-bold text-sm">DroneRoute</span>
             </div>
             <div className="flex items-center gap-1">
-              {token ? (
-                <>
-                  <span className="text-[10px] text-muted-foreground truncate max-w-[100px]" title={userEmail || ""}>
-                    {userEmail}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={logout}
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                    title="Sign out"
-                  >
-                    <LogOut className="h-3 w-3" />
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAuthModal(true)}
-                  className="h-6 text-[10px] text-muted-foreground hover:text-foreground gap-1 px-1.5"
-                >
-                  <User className="h-3 w-3" />
-                  Sign in
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowWelcome(true)}
+                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                title="Help & shortcuts"
+              >
+                <CircleHelp className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -289,17 +292,17 @@ export default function App() {
 
         {/* Toolbar */}
         <div className="flex gap-1 p-2 border-b border-border">
-          <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="flex-1 text-xs h-7">
+          <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="flex-1 text-xs h-7" title="Save mission to your account">
             <Save className="h-3 w-3" />
             {saving ? "..." : "Save"}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || waypoints.length < 2} className="flex-1 text-xs h-7">
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || waypoints.length < 2} className="flex-1 text-xs h-7" title="Export mission as DJI KMZ file">
             <Download className="h-3 w-3" />
-            {exporting ? "..." : "KMZ"}
+            {exporting ? "..." : "Export KMZ"}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="flex-1 text-xs h-7">
+          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="flex-1 text-xs h-7" title="Import a DJI KMZ file">
             <Upload className="h-3 w-3" />
-            Import
+            Import KMZ
           </Button>
           <input
             ref={fileInputRef}
@@ -358,12 +361,12 @@ export default function App() {
         {/* Footer stats with colored icons */}
         <div className="px-3 py-2 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-[11px]">
+            <span className="flex items-center gap-1 text-[11px]" title="Waypoints">
               <MapPin className="h-3 w-3 text-blue-400" />
               <span className="text-blue-300 font-medium">{waypoints.length}</span>
             </span>
             {pois.length > 0 && (
-              <span className="flex items-center gap-1 text-[11px]">
+              <span className="flex items-center gap-1 text-[11px]" title="Points of Interest">
                 <Crosshair className="h-3 w-3 text-amber-400" />
                 <span className="text-amber-300 font-medium">{pois.length}</span>
               </span>
@@ -374,13 +377,13 @@ export default function App() {
               return (
                 <>
                   {photoCount > 0 && (
-                    <span className="flex items-center gap-1 text-[11px]">
+                    <span className="flex items-center gap-1 text-[11px]" title="Photo actions">
                       <Camera className="h-3 w-3 text-sky-400" />
                       <span className="text-sky-300 font-medium">{photoCount}</span>
                     </span>
                   )}
                   {videoCount > 0 && (
-                    <span className="flex items-center gap-1 text-[11px]">
+                    <span className="flex items-center gap-1 text-[11px]" title="Video actions">
                       <Video className="h-3 w-3 text-red-400" />
                       <span className="text-red-300 font-medium">{videoCount}</span>
                     </span>
@@ -401,12 +404,12 @@ export default function App() {
                   return (
                     <>
                       {elevGain > 0 && (
-                        <span className="flex items-center gap-1 text-[11px]">
+                        <span className="flex items-center gap-1 text-[11px]" title="Elevation gain">
                           <TrendingUp className="h-3 w-3 text-orange-400" />
                           <span className="text-orange-300 font-medium">{elevGain}m</span>
                         </span>
                       )}
-                      <span className="flex items-center gap-1 text-[11px]">
+                      <span className="flex items-center gap-1 text-[11px]" title="Total distance">
                         <Route className="h-3 w-3 text-emerald-400" />
                         <span className="text-emerald-300 font-medium">
                           {distance >= 1000
@@ -414,7 +417,7 @@ export default function App() {
                             : `~${distance.toFixed(0)}m`}
                         </span>
                       </span>
-                      <span className="flex items-center gap-1 text-[11px]">
+                      <span className="flex items-center gap-1 text-[11px]" title="Estimated flight time">
                         <Clock className="h-3 w-3 text-yellow-400" />
                         <span className="text-yellow-300 font-medium">{formatDuration(time)}</span>
                       </span>
@@ -426,6 +429,62 @@ export default function App() {
               )}
           </div>
         </div>
+
+        {/* Auth row */}
+        <div className="px-3 py-2 border-t border-border">
+          {token ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                {gravatarUrl ? (
+                  <img
+                    src={gravatarUrl}
+                    alt=""
+                    className="h-6 w-6 rounded-full shrink-0"
+                  />
+                ) : (
+                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                  </div>
+                )}
+                <span className="text-[11px] text-muted-foreground truncate" title={userEmail || ""}>
+                  {userEmail}
+                </span>
+              </div>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowAccountMenu(true)}
+                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                  title="Account settings"
+                >
+                  <UserCog className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={logout}
+                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                  title="Sign out"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAuthModal(true)}
+              className="w-full h-7 text-[11px] text-muted-foreground hover:text-foreground gap-1.5 justify-start px-1"
+            >
+              <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+                <User className="h-3 w-3 text-muted-foreground" />
+              </div>
+              Sign in to save missions
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Map */}
@@ -435,6 +494,8 @@ export default function App() {
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      {showAccountMenu && <AccountModal onClose={() => setShowAccountMenu(false)} />}
+      <WelcomeDialog open={showWelcome} onClose={() => setShowWelcome(false)} />
     </div>
   );
 }

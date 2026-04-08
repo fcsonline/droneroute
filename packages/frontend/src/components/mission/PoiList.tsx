@@ -107,6 +107,7 @@ export function PoiList() {
                   e.stopPropagation();
                   removePoi(poi.id);
                 }}
+                title="Remove POI"
               >
                 <X className="h-3 w-3" />
               </Button>
