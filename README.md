@@ -4,6 +4,8 @@
 
 A free, open-source web application for creating DJI drone waypoint mission files (KMZ). Place waypoints on an interactive map, configure flight parameters, and export WPML-compliant KMZ files ready to load into DJI flight controllers.
 
+**[Try the live demo](https://droneroute.fly.dev)**
+
 ![DroneRoute — Mission planner with waypoints, configuration panel, and elevation chart](docs/screenshots/main-map.jpg)
 
 ## Features

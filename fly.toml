@@ -1,0 +1,29 @@
+# fly.toml app configuration file generated for droneroute on 2026-04-08T19:00:44+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'droneroute'
+primary_region = 'ams'
+
+[build]
+
+[env]
+  DB_PATH = '/app/data/droneroute.db'
+  NODE_ENV = 'production'
+  PORT = '3001'
+
+[[mounts]]
+  source = 'droneroute_data'
+  destination = '/app/data'
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'
