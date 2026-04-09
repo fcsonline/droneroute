@@ -15,6 +15,7 @@ A complete guide to planning DJI waypoint missions with DroneRoute.
 - [Understanding the Map](#understanding-the-map)
 - [KMZ Export & Import](#kmz-export--import)
 - [Saving Missions](#saving-missions)
+- [Sharing Missions](#sharing-missions)
 - [Supported Drones](#supported-drones)
 - [Tips & Tricks](#tips--tricks)
 
@@ -349,6 +350,35 @@ Sign in with an email and password to save missions to the server. Your saved mi
 - **My Routes** — lists all your saved missions, click to load one
 
 Missions are stored in a SQLite database on the server. If you're self-hosting, the database persists in a Docker volume.
+
+---
+
+## Sharing Missions
+
+Share any saved mission with a read-only link. Recipients don't need an account to view the shared route.
+
+### How to Share
+
+1. Open **My routes** (folder icon in the header)
+2. Click the **share** button on a mission card
+3. A unique link is generated and copied to your clipboard
+4. Send the link to anyone — they can open it in any browser
+
+Shared missions display a green **"Shared"** badge on the card. Click the share button again to copy the link a second time.
+
+### What Recipients See
+
+When someone opens a share link, they see a read-only summary page with:
+
+- **Mission name** and owner
+- **Stats** — drone model, waypoint count, total distance, max altitude, estimated flight time
+- **Open in editor** — loads the mission into the map editor (in-memory only, not saved)
+- **Clone to my routes** — copies the mission into their own account (requires sign-in)
+- **Export KMZ** — downloads the KMZ file directly without needing an account
+
+### Revoking a Share
+
+To stop sharing a mission, open **My routes** and click the **unshare** button (the link-off icon) on the shared card. The link becomes invalid immediately — anyone with the old URL will see a "route not found" message.
 
 ---
 

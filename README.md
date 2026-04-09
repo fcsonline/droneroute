@@ -23,6 +23,7 @@ A free, open-source mission planner for DJI drones. Plan waypoint missions on an
 - **Waypoint actions** — Add photo, video, gimbal rotate, yaw, hover, zoom, and focus actions
 - **KMZ export & import** — Generates DJI WPML-compliant KMZ files, or load existing ones
 - **Save & load** — Persist missions to a local database with user accounts
+- **Share missions** — Generate a read-only link to share any saved route; recipients can preview stats, open in the editor, clone to their account, or export the KMZ directly
 - **Mission templates** — Orbit, grid survey, facade scan, and pencil path presets to get you flying faster
 - **Animated flight path** — Dashed lines animate in flight direction, proportional to each waypoint's speed
 - **Drag-and-drop reordering** — Reorder waypoints by dragging in the sidebar
