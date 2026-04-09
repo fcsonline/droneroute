@@ -80,6 +80,7 @@ export interface PencilParams {
   speed: number;
   gimbalPitchAngle: number;
   reverse: boolean;
+  poiId?: string;             // optional POI to face during flight
 }
 
 export type TemplateParams = OrbitParams | GridParams | FacadeParams | PencilParams;
@@ -405,11 +406,13 @@ export function pathLength(path: [number, number][]): number {
 }
 
 export function generatePencil(params: PencilParams): TemplateResult {
-  const { path, numPoints, altitude, speed, gimbalPitchAngle, reverse } = params;
+  const { path, numPoints, altitude, speed, gimbalPitchAngle, reverse, poiId } = params;
 
   if (path.length < 2 || numPoints < 2) return { waypoints: [], pois: [] };
 
   const resampled = resamplePath(path, numPoints);
+
+  const useTowardPoi = !!poiId;
 
   const waypoints: TemplateResult["waypoints"] = resampled.map(([lat, lng]) => ({
     ...DEFAULT_WAYPOINT,
@@ -419,7 +422,8 @@ export function generatePencil(params: PencilParams): TemplateResult {
     speed,
     useGlobalSpeed: false,
     useGlobalHeadingParam: false,
-    headingMode: "followWayline" as const,
+    headingMode: useTowardPoi ? "towardPOI" as const : "followWayline" as const,
+    ...(useTowardPoi ? { poiId } : {}),
     gimbalPitchAngle,
     turnMode: "toPointAndPassWithContinuityCurvature" as const,
     useGlobalTurnParam: false,

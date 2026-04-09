@@ -3,8 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Check, X, MapPin } from "lucide-react";
 import type { TemplateType, OrbitParams, GridParams, FacadeParams, PencilParams } from "@/lib/templates";
+import type { PointOfInterest } from "@droneroute/shared";
 
 interface TemplateConfigPanelProps {
   type: TemplateType;
@@ -19,6 +21,7 @@ interface TemplateConfigPanelProps {
   onApply: () => void;
   onCancel: () => void;
   waypointCount: number;
+  pois?: PointOfInterest[];
 }
 
 export function TemplateConfigPanel({
@@ -34,6 +37,7 @@ export function TemplateConfigPanel({
   onApply,
   onCancel,
   waypointCount,
+  pois,
 }: TemplateConfigPanelProps) {
 
   const title = type === "orbit" ? "Orbit" : type === "grid" ? "Grid survey" : type === "facade" ? "Facade scan" : "Pencil path";
@@ -319,7 +323,7 @@ export function TemplateConfigPanel({
               className="h-7 text-xs"
             />
           </div>
-          <div className="flex items-end pb-1">
+          <div className="flex items-end pb-1 gap-3">
             <label className="flex items-center gap-1.5 text-xs cursor-pointer">
               <input
                 type="checkbox"
@@ -330,6 +334,27 @@ export function TemplateConfigPanel({
               Reverse
             </label>
           </div>
+          {pois && pois.length > 0 && (
+            <div>
+              <Label className="text-[10px]">Face POI</Label>
+              <Select
+                value={pencilParams.poiId || "none"}
+                onValueChange={(v) => onPencilChange({ ...pencilParams, poiId: v === "none" ? undefined : v })}
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (follow path)</SelectItem>
+                  {pois.map((poi) => (
+                    <SelectItem key={poi.id} value={poi.id}>
+                      {poi.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       )}
 

@@ -12,6 +12,7 @@ export function PencilDrawHandler() {
   const templateMode = useMissionStore((s) => s.templateMode);
   const setTemplateMode = useMissionStore((s) => s.setTemplateMode);
   const appendWaypoints = useMissionStore((s) => s.appendWaypoints);
+  const pois = useMissionStore((s) => s.pois);
 
   const [rawPath, setRawPath] = useState<[number, number][]>([]);
   const [confirmed, setConfirmed] = useState(false);
@@ -135,13 +136,14 @@ export function PencilDrawHandler() {
 
       {/* Config panel (shown after drawing completes) */}
       {confirmed && pencilParams && (
-        <TemplateConfigPanel
+         <TemplateConfigPanel
           type="pencil"
           pencilParams={pencilParams}
           onPencilChange={setPencilParams}
           onApply={handleApply}
           onCancel={handleCancel}
           waypointCount={preview?.waypoints.length ?? 0}
+          pois={pois}
         />
       )}
     </>
