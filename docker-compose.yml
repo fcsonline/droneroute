@@ -15,10 +15,12 @@ services:
     restart: unless-stopped
 
   droneroute:
-    build:
-      context: .
-      args:
-        COMMIT_SHA: ${COMMIT_SHA:-dev}
+    image: fcsonline/droneroute:latest
+    # To build from source instead, comment out "image" above and uncomment:
+    # build:
+    #   context: .
+    #   args:
+    #     COMMIT_SHA: ${COMMIT_SHA:-dev}
     container_name: droneroute
     volumes:
       - droneroute-data:/app/data
