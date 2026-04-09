@@ -120,7 +120,7 @@ export function TemplateConfigPanel({
                 onChange={(e) => onOrbitChange({ ...orbitParams, clockwise: e.target.checked })}
                 className="rounded"
               />
-              CW
+              Clockwise
             </label>
             <label className="flex items-center gap-1.5 text-xs cursor-pointer">
               <input
@@ -129,7 +129,7 @@ export function TemplateConfigPanel({
                 onChange={(e) => onOrbitChange({ ...orbitParams, createPoi: e.target.checked })}
                 className="rounded"
               />
-              POI
+              Center POI
             </label>
           </div>
         </div>

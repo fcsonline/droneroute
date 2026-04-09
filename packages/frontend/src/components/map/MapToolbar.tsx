@@ -11,7 +11,7 @@ const TEMPLATE_OPTIONS: { type: TemplateType; label: string; shortLabel: string;
   { type: "orbit", label: "Orbit", shortLabel: "Orbit", icon: Orbit, description: "Circle around a point", key: "O" },
   { type: "grid", label: "Grid Survey", shortLabel: "Grid", icon: Grid3X3, description: "Lawn-mower scan area", key: "G" },
   { type: "facade", label: "Facade Scan", shortLabel: "Facade", icon: Building2, description: "Vertical wall scan", key: "F" },
-  { type: "pencil", label: "Pencil Path", shortLabel: "Pencil", icon: PenLine, description: "Freehand draw a flight path", key: "Z" },
+  { type: "pencil", label: "Pencil Path", shortLabel: "Pencil", icon: PenLine, description: "Draw a freehand path", key: "Z" },
 ];
 
 export function MapToolbar() {
