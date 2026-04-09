@@ -361,7 +361,7 @@ export default function App() {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
           {/* Waypoints section — BLUE accent */}
-          <div className="border-l-2 border-blue-500/70">
+          <div className="border-l-2 border-blue-500/70 bg-blue-500/[0.03]">
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-blue-500/10 text-blue-400"
               onClick={() => toggleSection("waypoints")}
@@ -370,11 +370,15 @@ export default function App() {
               <MapPin className="h-3 w-3" />
               Waypoints ({waypoints.length})
             </button>
-            {expandedSections.waypoints && <WaypointList />}
+            {expandedSections.waypoints && (
+              <div className="max-h-[40vh] overflow-y-auto">
+                <WaypointList />
+              </div>
+            )}
           </div>
 
           {/* POIs section — AMBER/ORANGE accent */}
-          <div className="border-l-2 border-amber-500/70">
+          <div className="border-l-2 border-amber-500/70 bg-amber-500/[0.03]">
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-amber-500/10 text-amber-400"
               onClick={() => toggleSection("pois")}
@@ -383,20 +387,28 @@ export default function App() {
               <Crosshair className="h-3 w-3" />
                Points of interest ({pois.length})
             </button>
-            {expandedSections.pois && <PoiList />}
+            {expandedSections.pois && (
+              <div className="max-h-[30vh] overflow-y-auto">
+                <PoiList />
+              </div>
+            )}
           </div>
 
-          {/* Mission Config section — PURPLE accent */}
-          <div className="border-l-2 border-purple-500/70">
+          {/* Mission Settings section — PURPLE accent */}
+          <div className="border-l-2 border-purple-500/70 bg-purple-500/[0.03]">
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-purple-500/10 text-purple-400"
               onClick={() => toggleSection("config")}
             >
               {expandedSections.config ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               <Settings className="h-3 w-3" />
-               Mission config
+               Mission settings
             </button>
-            {expandedSections.config && <MissionConfig />}
+            {expandedSections.config && (
+              <div className="max-h-[40vh] overflow-y-auto">
+                <MissionConfig />
+              </div>
+            )}
           </div>
         </div>
 

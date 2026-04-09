@@ -14,8 +14,6 @@ export function MissionConfig() {
 
   return (
     <div className="p-3 space-y-3">
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mission settings</h3>
-
       <div>
         <Label className="text-xs">Drone model</Label>
         <Select
