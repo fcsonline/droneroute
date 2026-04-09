@@ -296,7 +296,7 @@
     /* ── Templates Section ───────────────────────────────── */
     .templates-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 24px;
     }
     @media (max-width: 900px) {
@@ -693,7 +693,7 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         </div>
         <h3>Mission templates</h3>
-        <p>Generate orbit, grid survey, and facade scan patterns in seconds. Fine-tune the generated waypoints afterward for full flexibility.</p>
+        <p>Generate orbit, grid survey, facade scan, and pencil path patterns in seconds. Fine-tune the generated waypoints afterward for full flexibility.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon icon-cyan">
@@ -733,6 +733,13 @@
         <div class="template-card-body">
           <h3>Facade scan <span class="template-shortcut">F</span></h3>
           <p>Vertical scanning along building faces. Configurable standoff distance, altitude range, and row/column density for structural inspections.</p>
+        </div>
+      </div>
+      <div class="template-card">
+        <img src="https://raw.githubusercontent.com/fcsonline/droneroute/main/docs/screenshots/template-pencil.jpg" alt="Pencil path template showing freehand drawn flight path" loading="lazy" />
+        <div class="template-card-body">
+          <h3>Pencil path <span class="template-shortcut">Z</span></h3>
+          <p>Draw a freehand flight path on the map. Waypoints are placed at equal intervals along the drawn shape. Adjust waypoint count for precision.</p>
         </div>
       </div>
     </div>
@@ -803,6 +810,10 @@
       <div class="shortcut-item">
         <span class="shortcut-key">F</span>
         <span class="shortcut-label">Facade scan</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-key">Z</span>
+        <span class="shortcut-label">Pencil path</span>
       </div>
       <div class="shortcut-item">
         <span class="shortcut-key">Esc</span>
