@@ -162,7 +162,7 @@ export function ElevationGraph() {
         ) : (
           <ChevronRight className="h-3 w-3" />
         )}
-        Elevation Chart
+        Elevation chart
       </button>
 
       {/* Collapsible body */}

@@ -36,7 +36,7 @@ export function TemplateConfigPanel({
   waypointCount,
 }: TemplateConfigPanelProps) {
 
-  const title = type === "orbit" ? "Orbit" : type === "grid" ? "Grid Survey" : type === "facade" ? "Facade Scan" : "Pencil Path";
+  const title = type === "orbit" ? "Orbit" : type === "grid" ? "Grid survey" : type === "facade" ? "Facade scan" : "Pencil path";
   const description = type === "orbit"
     ? "Circular flight path around a center point. Adjust the radius, number of points, and enable POI to keep the camera focused on the center."
     : type === "grid"
@@ -150,7 +150,7 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Line Spacing (m)</Label>
+            <Label className="text-[10px]">Line spacing (m)</Label>
             <Input
               type="number"
               value={gridParams.spacingM}
@@ -210,7 +210,7 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Min Altitude (m)</Label>
+            <Label className="text-[10px]">Min altitude (m)</Label>
             <Input
               type="number"
               value={facadeParams.minAltitude}
@@ -224,7 +224,7 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Max Altitude (m)</Label>
+            <Label className="text-[10px]">Max altitude (m)</Label>
             <Input
               type="number"
               value={facadeParams.maxAltitude}
@@ -308,7 +308,7 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Gimbal Pitch (°)</Label>
+            <Label className="text-[10px]">Gimbal pitch (°)</Label>
             <Input
               type="number"
               value={pencilParams.gimbalPitchAngle}

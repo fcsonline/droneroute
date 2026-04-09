@@ -133,7 +133,7 @@ export function generateOrbit(params: OrbitParams): TemplateResult {
   const pois: TemplateResult["pois"] = [];
 
   // Optionally create a POI at the center
-  const poiName = "Orbit Center";
+  const poiName = "Orbit center";
 
   if (createPoi) {
     pois.push({ name: poiName, latitude: cLat, longitude: cLng, height: 0 });

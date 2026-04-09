@@ -253,7 +253,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
               <div>
                 <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <Route className="h-5 w-5 text-primary" />
-                  My Routes
+                   My routes
                 </h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {missions.length} saved route{missions.length !== 1 ? "s" : ""}
@@ -262,7 +262,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
             </div>
             <Button onClick={handleNewRoute} size="sm" className="gap-1.5">
               <Plus className="h-4 w-4" />
-              New Route
+              New route
             </Button>
           </div>
         </div>
@@ -306,7 +306,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                 <p className="text-sm mb-4">Create your first drone waypoint mission</p>
                 <Button onClick={handleNewRoute} size="sm" className="gap-1.5">
                   <Plus className="h-4 w-4" />
-                  Create Route
+                   Create route
                 </Button>
               </div>
             )}
@@ -354,7 +354,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                       <div className="p-4">
                         <div className="flex items-start justify-between mb-3">
                           <h3 className="text-sm font-semibold text-foreground truncate flex-1 mr-2 group-hover:text-primary transition-colors">
-                            {mission.name || "Untitled Route"}
+                            {mission.name || "Untitled route"}
                           </h3>
                           <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button

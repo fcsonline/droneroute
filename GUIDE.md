@@ -25,7 +25,7 @@ A complete guide to planning DJI waypoint missions with DroneRoute.
 1. Open DroneRoute in your browser
 2. Click on the map to place waypoints (or press **W** first)
 3. Adjust altitude, speed, and gimbal settings in the sidebar
-4. Configure your drone model under **Mission Config**
+4. Configure your drone model under **Mission config**
 5. Click **KMZ** to export — load the file onto your DJI controller and fly
 
 That's it. The rest of this guide covers every feature in detail.
@@ -249,7 +249,7 @@ The waypoints are placed at equal arc-length intervals along the drawn path usin
 
 ## Mission Configuration
 
-Open the **Mission Config** section in the sidebar to configure global mission parameters.
+Open the **Mission config** section in the sidebar to configure global mission parameters.
 
 | Setting | Description |
 |---------|-------------|
@@ -343,7 +343,7 @@ This is useful for editing missions created in DJI Pilot 2 or other planning too
 
 ## Saving Missions
 
-Sign in with an email and password to save missions to the server. Your saved missions are accessible from the **My Routes** button (folder icon in the header).
+Sign in with an email and password to save missions to the server. Your saved missions are accessible from the **My routes** button (folder icon in the header).
 
 - **Save** — saves the current mission (creates a new one or updates an existing one)
 - **My Routes** — lists all your saved missions, click to load one

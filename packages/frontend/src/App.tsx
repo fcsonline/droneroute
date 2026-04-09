@@ -321,7 +321,7 @@ export default function App() {
                 size="icon"
                 onClick={() => setCurrentPage("routes")}
                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                title="My Routes"
+                 title="My routes"
               >
                 <FolderOpen className="h-4 w-4" />
               </Button>
@@ -381,7 +381,7 @@ export default function App() {
             >
               {expandedSections.pois ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               <Crosshair className="h-3 w-3" />
-              Points of Interest ({pois.length})
+               Points of interest ({pois.length})
             </button>
             {expandedSections.pois && <PoiList />}
           </div>
@@ -394,7 +394,7 @@ export default function App() {
             >
               {expandedSections.config ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               <Settings className="h-3 w-3" />
-              Mission Config
+               Mission config
             </button>
             {expandedSections.config && <MissionConfig />}
           </div>

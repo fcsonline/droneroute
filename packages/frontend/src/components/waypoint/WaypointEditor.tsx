@@ -112,7 +112,7 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
       </div>
 
       <div>
-        <Label className="text-xs">Heading Mode</Label>
+        <Label className="text-xs">Heading mode</Label>
         <Select
           value={wp.useGlobalHeadingParam ? "global" : (wp.headingMode || "followWayline")}
           onValueChange={(v) => {
@@ -133,11 +133,11 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="global">Use Global ({config.globalHeadingMode})</SelectItem>
-            <SelectItem value="followWayline">Follow Wayline</SelectItem>
+            <SelectItem value="global">Use global ({config.globalHeadingMode})</SelectItem>
+            <SelectItem value="followWayline">Follow wayline</SelectItem>
             <SelectItem value="manually">Manual</SelectItem>
             <SelectItem value="fixed">Fixed</SelectItem>
-            <SelectItem value="smoothTransition">Smooth Transition</SelectItem>
+            <SelectItem value="smoothTransition">Smooth transition</SelectItem>
             <SelectItem value="towardPOI">Toward POI</SelectItem>
           </SelectContent>
         </Select>
@@ -145,7 +145,7 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
 
       {!wp.useGlobalHeadingParam && (wp.headingMode === "manually" || wp.headingMode === "fixed" || wp.headingMode === "smoothTransition") && (
         <div>
-          <Label className="text-xs">Heading Angle (&deg;)</Label>
+          <Label className="text-xs">Heading angle (&deg;)</Label>
           <Input
             type="number"
             value={wp.headingAngle ?? 0}
@@ -188,7 +188,7 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
       )}
 
       <div>
-        <Label className="text-xs">Turn Mode</Label>
+        <Label className="text-xs">Turn mode</Label>
         <Select
           value={wp.useGlobalTurnParam ? "global" : (wp.turnMode || config.globalTurnMode)}
           onValueChange={(v) => {
@@ -203,11 +203,11 @@ export function WaypointEditorInline({ waypointIndex }: WaypointEditorInlineProp
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="global">Use Global</SelectItem>
-            <SelectItem value="coordinateTurn">Coordinated Turn</SelectItem>
-            <SelectItem value="toPointAndStopWithDiscontinuityCurvature">Stop at Point (sharp)</SelectItem>
-            <SelectItem value="toPointAndStopWithContinuityCurvature">Stop at Point (curve)</SelectItem>
-            <SelectItem value="toPointAndPassWithContinuityCurvature">Pass Point (curve)</SelectItem>
+            <SelectItem value="global">Use global</SelectItem>
+            <SelectItem value="coordinateTurn">Coordinated turn</SelectItem>
+            <SelectItem value="toPointAndStopWithDiscontinuityCurvature">Stop at point (sharp)</SelectItem>
+            <SelectItem value="toPointAndStopWithContinuityCurvature">Stop at point (curve)</SelectItem>
+            <SelectItem value="toPointAndPassWithContinuityCurvature">Pass point (curve)</SelectItem>
           </SelectContent>
         </Select>
       </div>

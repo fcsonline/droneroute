@@ -7,12 +7,12 @@ import { useMissionStore } from "@/store/missionStore";
 import type { ActionType, WaypointAction } from "@droneroute/shared";
 
 const ACTION_OPTIONS: { value: ActionType; label: string; icon: React.ReactNode }[] = [
-  { value: "takePhoto", label: "Take Photo", icon: <Camera className="h-3 w-3" /> },
-  { value: "startRecord", label: "Start Recording", icon: <Video className="h-3 w-3" /> },
-  { value: "stopRecord", label: "Stop Recording", icon: <VideoOff className="h-3 w-3" /> },
-  { value: "gimbalRotate", label: "Gimbal Rotate", icon: <RotateCcw className="h-3 w-3" /> },
-  { value: "gimbalEvenlyRotate", label: "Gimbal Smooth", icon: <MoveDown className="h-3 w-3" /> },
-  { value: "rotateYaw", label: "Rotate Yaw", icon: <Compass className="h-3 w-3" /> },
+  { value: "takePhoto", label: "Take photo", icon: <Camera className="h-3 w-3" /> },
+  { value: "startRecord", label: "Start recording", icon: <Video className="h-3 w-3" /> },
+  { value: "stopRecord", label: "Stop recording", icon: <VideoOff className="h-3 w-3" /> },
+  { value: "gimbalRotate", label: "Gimbal rotate", icon: <RotateCcw className="h-3 w-3" /> },
+  { value: "gimbalEvenlyRotate", label: "Gimbal smooth", icon: <MoveDown className="h-3 w-3" /> },
+  { value: "rotateYaw", label: "Rotate yaw", icon: <Compass className="h-3 w-3" /> },
   { value: "hover", label: "Hover", icon: <Clock className="h-3 w-3" /> },
   { value: "zoom", label: "Zoom", icon: <ZoomIn className="h-3 w-3" /> },
   { value: "focus", label: "Focus", icon: <Focus className="h-3 w-3" /> },
@@ -93,7 +93,7 @@ export function ActionEditor({ waypointIndex }: ActionEditorProps) {
         <SelectTrigger className="h-8 text-xs">
           <div className="flex items-center gap-1">
             <Plus className="h-3 w-3" />
-            <span>Add Action</span>
+             <span>Add action</span>
           </div>
         </SelectTrigger>
         <SelectContent>
@@ -189,7 +189,7 @@ function ActionItem({
 
       {action.actionType === "gimbalEvenlyRotate" && (
         <div>
-          <Label className="text-[10px]">Target Pitch (&deg;)</Label>
+          <Label className="text-[10px]">Target pitch (&deg;)</Label>
           <Input
             type="number"
             value={params.gimbalPitchRotateAngle ?? -45}
@@ -237,7 +237,7 @@ function ActionItem({
 
       {action.actionType === "zoom" && (
         <div>
-          <Label className="text-[10px]">Focal Length (mm)</Label>
+           <Label className="text-[10px]">Focal length (mm)</Label>
           <Input
             type="number"
             value={params.focalLength ?? 24}

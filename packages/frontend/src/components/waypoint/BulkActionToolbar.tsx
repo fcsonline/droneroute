@@ -232,7 +232,7 @@ export function BulkActionToolbar() {
             <div className="grid grid-cols-2 gap-3">
               {/* Heading mode */}
               <div>
-                <Label className="text-[10px] text-muted-foreground">Heading Mode</Label>
+                <Label className="text-[10px] text-muted-foreground">Heading mode</Label>
                 <Select
                   value={headingSelectValue}
                   onValueChange={(v) => {
@@ -254,11 +254,11 @@ export function BulkActionToolbar() {
                     {headingSelectValue === "mixed" && (
                       <SelectItem value="mixed" disabled>Mixed</SelectItem>
                     )}
-                    <SelectItem value="global">Use Global ({config.globalHeadingMode})</SelectItem>
-                    <SelectItem value="followWayline">Follow Wayline</SelectItem>
+                    <SelectItem value="global">Use global ({config.globalHeadingMode})</SelectItem>
+                    <SelectItem value="followWayline">Follow wayline</SelectItem>
                     <SelectItem value="manually">Manual</SelectItem>
                     <SelectItem value="fixed">Fixed</SelectItem>
-                    <SelectItem value="smoothTransition">Smooth Transition</SelectItem>
+                    <SelectItem value="smoothTransition">Smooth transition</SelectItem>
                     <SelectItem value="towardPOI">Toward POI</SelectItem>
                   </SelectContent>
                 </Select>
@@ -292,7 +292,7 @@ export function BulkActionToolbar() {
               {/* Turn mode (when heading is not towardPOI or when there are no POIs) */}
               {(headingSelectValue !== "towardPOI" || pois.length === 0) && (
                 <div>
-                  <Label className="text-[10px] text-muted-foreground">Turn Mode</Label>
+                  <Label className="text-[10px] text-muted-foreground">Turn mode</Label>
                   <Select
                     value={turnSelectValue}
                     onValueChange={(v) => {
@@ -314,11 +314,11 @@ export function BulkActionToolbar() {
                       {turnSelectValue === "mixed" && (
                         <SelectItem value="mixed" disabled>Mixed</SelectItem>
                       )}
-                      <SelectItem value="global">Use Global</SelectItem>
-                      <SelectItem value="coordinateTurn">Coordinated Turn</SelectItem>
-                      <SelectItem value="toPointAndStopWithDiscontinuityCurvature">Stop at Point (sharp)</SelectItem>
-                      <SelectItem value="toPointAndStopWithContinuityCurvature">Stop at Point (curve)</SelectItem>
-                      <SelectItem value="toPointAndPassWithContinuityCurvature">Pass Point (curve)</SelectItem>
+                      <SelectItem value="global">Use global</SelectItem>
+                      <SelectItem value="coordinateTurn">Coordinated turn</SelectItem>
+                      <SelectItem value="toPointAndStopWithDiscontinuityCurvature">Stop at point (sharp)</SelectItem>
+                      <SelectItem value="toPointAndStopWithContinuityCurvature">Stop at point (curve)</SelectItem>
+                      <SelectItem value="toPointAndPassWithContinuityCurvature">Pass point (curve)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

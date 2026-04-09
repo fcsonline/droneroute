@@ -14,10 +14,10 @@ export function MissionConfig() {
 
   return (
     <div className="p-3 space-y-3">
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mission Settings</h3>
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mission settings</h3>
 
       <div>
-        <Label className="text-xs">Drone Model</Label>
+        <Label className="text-xs">Drone model</Label>
         <Select
           value={`${config.droneEnumValue}-${config.droneSubEnumValue}`}
           onValueChange={(v) => {
@@ -68,7 +68,7 @@ export function MissionConfig() {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label className="text-xs">Flight Speed (m/s)</Label>
+          <Label className="text-xs">Flight speed (m/s)</Label>
           <Input
             type="number"
             value={config.autoFlightSpeed}
@@ -80,7 +80,7 @@ export function MissionConfig() {
           />
         </div>
         <div>
-          <Label className="text-xs">Takeoff Height (m)</Label>
+          <Label className="text-xs">Takeoff height (m)</Label>
           <Input
             type="number"
             value={config.takeOffSecurityHeight}
@@ -93,7 +93,7 @@ export function MissionConfig() {
       </div>
 
       <div>
-        <Label className="text-xs">Height Reference</Label>
+        <Label className="text-xs">Height reference</Label>
         <Select
           value={config.heightMode}
           onValueChange={(v) => setConfig({ heightMode: v as HeightMode })}
@@ -102,15 +102,15 @@ export function MissionConfig() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="relativeToStartPoint">Relative to Start</SelectItem>
+            <SelectItem value="relativeToStartPoint">Relative to start</SelectItem>
             <SelectItem value="EGM96">EGM96 (MSL)</SelectItem>
-            <SelectItem value="aboveGroundLevel">Above Ground Level</SelectItem>
+            <SelectItem value="aboveGroundLevel">Above ground level</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label className="text-xs">Heading Mode</Label>
+        <Label className="text-xs">Heading mode</Label>
         <Select
           value={config.globalHeadingMode}
           onValueChange={(v) => setConfig({ globalHeadingMode: v as HeadingMode })}
@@ -119,17 +119,17 @@ export function MissionConfig() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="followWayline">Follow Wayline</SelectItem>
+            <SelectItem value="followWayline">Follow wayline</SelectItem>
             <SelectItem value="manually">Manual</SelectItem>
             <SelectItem value="fixed">Fixed</SelectItem>
-            <SelectItem value="smoothTransition">Smooth Transition</SelectItem>
+            <SelectItem value="smoothTransition">Smooth transition</SelectItem>
             <SelectItem value="towardPOI">Toward POI</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label className="text-xs">Fly-to Mode</Label>
+        <Label className="text-xs">Fly-to mode</Label>
         <Select
           value={config.flyToWaylineMode}
           onValueChange={(v) => setConfig({ flyToWaylineMode: v as FlyToWaylineMode })}
@@ -139,13 +139,13 @@ export function MissionConfig() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="safely">Safely (climb then fly)</SelectItem>
-            <SelectItem value="pointToPoint">Point to Point (direct)</SelectItem>
+            <SelectItem value="pointToPoint">Point to point (direct)</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label className="text-xs">Finish Action</Label>
+        <Label className="text-xs">Finish action</Label>
         <Select
           value={config.finishAction}
           onValueChange={(v) => setConfig({ finishAction: v as FinishAction })}
@@ -154,16 +154,16 @@ export function MissionConfig() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="goHome">Go Home</SelectItem>
-            <SelectItem value="autoLand">Auto Land</SelectItem>
-            <SelectItem value="gotoFirstWaypoint">Go to First WP</SelectItem>
-            <SelectItem value="noAction">No Action (hover)</SelectItem>
+            <SelectItem value="goHome">Go home</SelectItem>
+            <SelectItem value="autoLand">Auto land</SelectItem>
+            <SelectItem value="gotoFirstWaypoint">Go to first WP</SelectItem>
+            <SelectItem value="noAction">No action (hover)</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label className="text-xs">RC Lost Action</Label>
+        <Label className="text-xs">RC lost action</Label>
         <Select
           value={config.executeRCLostAction}
           onValueChange={(v) => setConfig({ executeRCLostAction: v as RCLostAction })}
@@ -172,7 +172,7 @@ export function MissionConfig() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="goBack">Go Back (RTH)</SelectItem>
+            <SelectItem value="goBack">Go back (RTH)</SelectItem>
             <SelectItem value="landing">Land</SelectItem>
             <SelectItem value="hover">Hover</SelectItem>
           </SelectContent>
@@ -180,7 +180,7 @@ export function MissionConfig() {
       </div>
 
       <div>
-        <Label className="text-xs">Transit Speed (m/s)</Label>
+        <Label className="text-xs">Transit speed (m/s)</Label>
         <Input
           type="number"
           value={config.globalTransitionalSpeed}

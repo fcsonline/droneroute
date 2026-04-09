@@ -213,7 +213,7 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
               <div>
                 <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <Route className="h-5 w-5 text-primary" />
-                  Shared Route
+                   Shared route
                 </h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Someone shared a drone mission with you
@@ -248,7 +248,7 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
                     setCurrentPage("editor");
                   }}
                 >
-                  Go to Editor
+                   Go to editor
                 </Button>
               </div>
             )}
@@ -270,7 +270,7 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
                   <div className="p-6">
                     {/* Mission name */}
                     <h2 className="text-2xl font-bold text-foreground mb-2">
-                      {mission.name || "Untitled Route"}
+                      {mission.name || "Untitled route"}
                     </h2>
 
                     {/* Owner + date */}
@@ -351,11 +351,11 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
                     <div className="flex flex-wrap gap-3">
                       <Button onClick={handleLoadReadOnly} className="gap-2">
                         <Route className="h-4 w-4" />
-                        Open in Editor
+                         Open in editor
                       </Button>
                       <Button variant="outline" onClick={handleClone} disabled={cloning} className="gap-2">
                         <Copy className="h-4 w-4" />
-                        {cloning ? "Cloning..." : token ? "Clone to My Routes" : "Sign in to Clone"}
+                         {cloning ? "Cloning..." : token ? "Clone to my routes" : "Sign in to clone"}
                       </Button>
                       {mission.waypoints.length >= 2 && (
                         <Button variant="outline" onClick={handleExportKmz} className="gap-2">

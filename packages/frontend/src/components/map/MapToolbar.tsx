@@ -9,9 +9,9 @@ const inactiveClass = "bg-background/90 backdrop-blur-sm";
 
 const TEMPLATE_OPTIONS: { type: TemplateType; label: string; shortLabel: string; icon: typeof Orbit; description: string; key: string }[] = [
   { type: "orbit", label: "Orbit", shortLabel: "Orbit", icon: Orbit, description: "Circle around a point", key: "O" },
-  { type: "grid", label: "Grid Survey", shortLabel: "Grid", icon: Grid3X3, description: "Lawn-mower scan area", key: "G" },
-  { type: "facade", label: "Facade Scan", shortLabel: "Facade", icon: Building2, description: "Vertical wall scan", key: "F" },
-  { type: "pencil", label: "Pencil Path", shortLabel: "Pencil", icon: PenLine, description: "Draw a freehand path", key: "Z" },
+  { type: "grid", label: "Grid survey", shortLabel: "Grid", icon: Grid3X3, description: "Lawn-mower scan area", key: "G" },
+  { type: "facade", label: "Facade scan", shortLabel: "Facade", icon: Building2, description: "Vertical wall scan", key: "F" },
+  { type: "pencil", label: "Pencil path", shortLabel: "Pencil", icon: PenLine, description: "Draw a freehand path", key: "Z" },
 ];
 
 export function MapToolbar() {
