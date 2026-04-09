@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, ArrowUp, Plane, Download } from "lucide-react";
+import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, ArrowUp, Plane, Download, Share2, Link, Link2Off, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
@@ -15,6 +15,7 @@ interface SavedMission {
   config: string;
   waypoints: string;
   pois: string;
+  share_token: string | null;
 }
 
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -133,6 +134,53 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
   };
 
   const [exportingId, setExportingId] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleShare = async (mission: SavedMission) => {
+    setSharingId(mission.id);
+    try {
+      if (mission.share_token) {
+        // Already shared — copy the link
+        const shareUrl = `${window.location.origin}/shared/${mission.share_token}`;
+        await navigator.clipboard.writeText(shareUrl);
+        setCopiedId(mission.id);
+        setTimeout(() => setCopiedId(null), 2000);
+      } else {
+        // Enable sharing
+        const result = await api.post<{ shareToken: string; shareUrl: string }>(
+          `/missions/${mission.id}/share`
+        );
+        // Update local state
+        setMissions((prev) =>
+          prev.map((m) =>
+            m.id === mission.id ? { ...m, share_token: result.shareToken } : m
+          )
+        );
+        await navigator.clipboard.writeText(result.shareUrl);
+        setCopiedId(mission.id);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
+    } catch (e: any) {
+      alert("Failed to share: " + (e.message || "Unknown error"));
+    } finally {
+      setSharingId(null);
+    }
+  };
+
+  const handleUnshare = async (mission: SavedMission) => {
+    if (!confirm("Revoke sharing? Anyone with the link will lose access.")) return;
+    try {
+      await api.delete(`/missions/${mission.id}/share`);
+      setMissions((prev) =>
+        prev.map((m) =>
+          m.id === mission.id ? { ...m, share_token: null } : m
+        )
+      );
+    } catch (e: any) {
+      alert("Failed to unshare: " + (e.message || "Unknown error"));
+    }
+  };
 
   const handleExportKmz = async (mission: SavedMission) => {
     setExportingId(mission.id);
@@ -312,6 +360,39 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className={`h-7 w-7 ${mission.share_token ? "text-emerald-400 hover:text-emerald-300" : "text-muted-foreground hover:text-foreground"}`}
+                              disabled={sharingId === mission.id}
+                              title={mission.share_token ? (copiedId === mission.id ? "Link copied!" : "Copy share link") : "Share route"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleShare(mission);
+                              }}
+                            >
+                              {copiedId === mission.id ? (
+                                <Check className="h-3.5 w-3.5" />
+                              ) : mission.share_token ? (
+                                <Link className="h-3.5 w-3.5" />
+                              ) : (
+                                <Share2 className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                            {mission.share_token && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                title="Revoke sharing"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUnshare(mission);
+                                }}
+                              >
+                                <Link2Off className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-7 w-7 text-muted-foreground hover:text-foreground"
                               disabled={exportingId === mission.id}
                               title="Download KMZ"
@@ -337,13 +418,21 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                           </div>
                         </div>
 
-                        {/* Drone model */}
-                        {droneLabel && (
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-2">
-                            <Plane className="h-3 w-3 text-purple-400" />
-                            {droneLabel}
-                          </div>
-                        )}
+                        {/* Drone model + shared badge */}
+                        <div className="flex items-center gap-2 mb-2">
+                          {droneLabel && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                              <Plane className="h-3 w-3 text-purple-400" />
+                              {droneLabel}
+                            </div>
+                          )}
+                          {mission.share_token && (
+                            <div className="flex items-center gap-1 text-[11px] text-emerald-400">
+                              <Share2 className="h-3 w-3" />
+                              Shared
+                            </div>
+                          )}
+                        </div>
 
                         {/* Stats row */}
                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2">

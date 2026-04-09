@@ -6,6 +6,7 @@ import { initDb } from "./models/db.js";
 import { missionRoutes } from "./routes/missions.js";
 import { kmzRoutes } from "./routes/kmz.js";
 import { authRoutes } from "./routes/auth.js";
+import { sharedRoutes } from "./routes/shared.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,6 +24,7 @@ app.use(express.static(frontendDist));
 app.use("/api/auth", authRoutes);
 app.use("/api/missions", missionRoutes);
 app.use("/api/kmz", kmzRoutes);
+app.use("/api", sharedRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {

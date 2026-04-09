@@ -11,20 +11,25 @@ missionRoutes.get("/", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
   const rows = db
     .prepare(
-      "SELECT id, name, config, waypoints, pois, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC"
+      "SELECT id, name, config, waypoints, pois, share_token, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC"
     )
     .all(req.userId!) as any[];
 
   res.json(rows);
 });
 
-// Get single mission
-missionRoutes.get("/:id", optionalAuth, (req: AuthRequest, res) => {
+// Get single mission (owner only)
+missionRoutes.get("/:id", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
   const row = db.prepare("SELECT * FROM missions WHERE id = ?").get(req.params.id) as any;
 
   if (!row) {
     res.status(404).json({ error: "Mission not found" });
+    return;
+  }
+
+  if (row.user_id !== req.userId) {
+    res.status(403).json({ error: "Not authorized" });
     return;
   }
 
@@ -59,14 +64,19 @@ missionRoutes.post("/", optionalAuth, (req: AuthRequest, res) => {
   res.status(201).json({ id, name });
 });
 
-// Update mission
-missionRoutes.put("/:id", optionalAuth, (req: AuthRequest, res) => {
+// Update mission (owner only)
+missionRoutes.put("/:id", authMiddleware, (req: AuthRequest, res) => {
   const { name, config, waypoints, pois } = req.body;
   const db = getDb();
 
   const existing = db.prepare("SELECT user_id FROM missions WHERE id = ?").get(req.params.id) as any;
   if (!existing) {
     res.status(404).json({ error: "Mission not found" });
+    return;
+  }
+
+  if (existing.user_id !== req.userId) {
+    res.status(403).json({ error: "Not authorized" });
     return;
   }
 

@@ -27,6 +27,7 @@ import { BulkActionToolbar } from "@/components/waypoint/BulkActionToolbar";
 import { MissionConfig } from "@/components/mission/MissionConfig";
 import { PoiList } from "@/components/mission/PoiList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
+import { SharedMissionPage } from "@/components/routes/SharedMissionPage";
 import { ElevationGraph } from "@/components/mission/ElevationGraph";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { AccountModal } from "@/components/auth/AccountModal";
@@ -50,6 +51,8 @@ export default function App() {
     loadMission,
     currentPage,
     setCurrentPage,
+    shareToken,
+    setShareToken,
     dirty,
     setDirty,
   } = useMissionStore();
@@ -73,6 +76,15 @@ export default function App() {
   // Restore auth session on mount
   useEffect(() => {
     restore();
+  }, []);
+
+  // Detect /shared/:token URL on mount
+  useEffect(() => {
+    const match = window.location.pathname.match(/^\/shared\/([^/]+)$/);
+    if (match) {
+      setShareToken(match[1]);
+      setCurrentPage("shared");
+    }
   }, []);
 
   // Warn before closing/navigating away with unsaved changes
@@ -260,6 +272,19 @@ export default function App() {
     return (
       <>
         <RoutesPage onRequestAuth={() => setShowAuthModal(true)} />
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </>
+    );
+  }
+
+  // Show shared mission page
+  if (currentPage === "shared" && shareToken) {
+    return (
+      <>
+        <SharedMissionPage
+          shareToken={shareToken}
+          onRequestAuth={() => setShowAuthModal(true)}
+        />
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </>
     );

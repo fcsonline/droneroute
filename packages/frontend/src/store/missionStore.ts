@@ -27,8 +27,10 @@ interface MissionState {
   isAddingWaypoint: boolean;
   isAddingPoi: boolean;
   templateMode: TemplateType | null;
-  currentPage: "editor" | "routes";
-  setCurrentPage: (page: "editor" | "routes") => void;
+  currentPage: "editor" | "routes" | "shared";
+  shareToken: string | null;
+  setCurrentPage: (page: "editor" | "routes" | "shared") => void;
+  setShareToken: (token: string | null) => void;
 
   // Waypoint actions
   setMissionName: (name: string) => void;
@@ -85,7 +87,9 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   isAddingPoi: false,
   templateMode: null,
   currentPage: "editor",
+  shareToken: null,
   setCurrentPage: (page) => set({ currentPage: page }),
+  setShareToken: (token) => set({ shareToken: token }),
 
   setMissionName: (name) => set({ missionName: name, dirty: true }),
   setMissionId: (id) => set({ missionId: id }),

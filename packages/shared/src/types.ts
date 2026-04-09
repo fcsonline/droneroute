@@ -267,6 +267,20 @@ export interface Mission {
   pois: PointOfInterest[];
 }
 
+// ── Shared Mission ──────────────────────────────────────
+
+export interface SharedMission {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  shareToken: string;
+  ownerEmail?: string;
+  config: MissionConfig;
+  waypoints: Waypoint[];
+  pois: PointOfInterest[];
+}
+
 // ── Default Config ───────────────────────────────────────
 
 export const DEFAULT_MISSION_CONFIG: MissionConfig = {
