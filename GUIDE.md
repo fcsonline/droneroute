@@ -41,6 +41,7 @@ That's it. The rest of this guide covers every feature in detail.
 | `O` | Start orbit template — click and drag on the map to define center + radius |
 | `G` | Start grid survey template — click and drag to define the survey area |
 | `F` | Start facade scan template — click and drag to define the wall line |
+| `Z` | Start pencil path template — click and draw freehand on the map |
 | `Esc` | Cancel current mode / deselect all |
 | `Delete` / `Backspace` | Remove selected waypoint(s) |
 | `Ctrl+A` / `Cmd+A` | Select all waypoints |
@@ -225,6 +226,25 @@ The drone flies back and forth in a zigzag pattern at increasing altitudes. Head
 
 ![Facade scan template with vertical scanning pattern along a building wall](docs/screenshots/template-facade.jpg)
 
+### Pencil Path
+
+**Shortcut: Z**
+
+Draw a freehand flight path directly on the map. Click and drag to sketch the path, then adjust how many waypoints approximate it.
+
+**Configuration:**
+- **Waypoints** — number of waypoints along the path (2–200, default 10). More waypoints = closer approximation of the drawn shape
+- **Altitude** — flight height (default 50m)
+- **Speed** — flight speed (default 7 m/s)
+- **Gimbal Pitch** — camera tilt angle (default -45°)
+- **Reverse** — fly the path in the opposite direction
+
+**Use cases:** Custom flight paths that don't fit a template, following roads or rivers, tracing building perimeters, artistic cinematic routes.
+
+The waypoints are placed at equal arc-length intervals along the drawn path using equidistant resampling. The heading is set to "Follow Wayline" so the drone naturally faces the direction of travel, and the turn mode uses smooth continuity curvature to keep the flight fluid. After generating, a faded outline of the original drawn path is shown behind the waypoint preview so you can judge approximation quality.
+
+![Pencil path template with freehand drawn S-curve and 10 equidistant waypoints](docs/screenshots/template-pencil.jpg)
+
 ---
 
 ## Mission Configuration
@@ -266,7 +286,7 @@ When waypoints are set to face a POI, thin lines are drawn between them:
 The floating toolbar on the map provides:
 - **Waypoint mode** (W) — click to place waypoints
 - **POI mode** (P) — click to place points of interest
-- **Template dropdown** — Orbit (O), Grid (G), Facade (F)
+- **Template dropdown** — Orbit (O), Grid (G), Facade (F), Pencil (Z)
 
 ### Elevation Graph
 

@@ -54,3 +54,8 @@ body {
 .map-tool-template .leaflet-container {
   cursor: crosshair !important;
 }
+
+/* Pencil cursor for freehand drawing */
+.map-tool-pencil .leaflet-container {
+  cursor: crosshair !important;
+}

@@ -41,7 +41,7 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 
 // ── Template Types ───────────────────────────────────────
 
-export type TemplateType = "orbit" | "grid" | "facade";
+export type TemplateType = "orbit" | "grid" | "facade" | "pencil";
 
 export interface OrbitParams {
   center: [number, number]; // [lat, lng]
@@ -73,7 +73,16 @@ export interface FacadeParams {
   addPhotos: boolean;
 }
 
-export type TemplateParams = OrbitParams | GridParams | FacadeParams;
+export interface PencilParams {
+  path: [number, number][];   // raw drawn points [lat, lng]
+  numPoints: number;          // target waypoint count
+  altitude: number;
+  speed: number;
+  gimbalPitchAngle: number;
+  reverse: boolean;
+}
+
+export type TemplateParams = OrbitParams | GridParams | FacadeParams | PencilParams;
 
 export interface TemplateResult {
   waypoints: Omit<Waypoint, "index" | "name">[];
@@ -104,6 +113,14 @@ export const DEFAULT_FACADE_PARAMS: Omit<FacadeParams, "point1" | "point2"> = {
   numRows: 4,
   numColumns: 8,
   addPhotos: true,
+};
+
+export const DEFAULT_PENCIL_PARAMS: Omit<PencilParams, "path"> = {
+  numPoints: 10,
+  altitude: 50,
+  speed: 7,
+  gimbalPitchAngle: -45,
+  reverse: false,
 };
 
 // ── Generators ───────────────────────────────────────────
@@ -331,6 +348,86 @@ export function generateFacade(params: FacadeParams): TemplateResult {
         ] : [],
       });
     }
+  }
+
+  return { waypoints, pois: [] };
+}
+
+// ── Pencil (freehand path) ──────────────────────────────
+
+/**
+ * Resample a polyline of raw points into exactly `n` equidistant points.
+ * Uses cumulative arc-length along the raw path and linear interpolation.
+ */
+function resamplePath(raw: [number, number][], n: number): [number, number][] {
+  if (raw.length === 0) return [];
+  if (raw.length === 1 || n <= 1) return [raw[0]];
+
+  // 1. Compute cumulative arc-length distances
+  const cumDist: number[] = [0];
+  for (let i = 1; i < raw.length; i++) {
+    cumDist.push(cumDist[i - 1] + haversine(raw[i - 1][0], raw[i - 1][1], raw[i][0], raw[i][1]));
+  }
+  const totalLength = cumDist[cumDist.length - 1];
+
+  if (totalLength === 0) return [raw[0]];
+
+  // 2. Place n points at equal arc-length intervals
+  const result: [number, number][] = [];
+  let segIdx = 0; // current segment index in the raw path
+
+  for (let k = 0; k < n; k++) {
+    const targetDist = (k / (n - 1)) * totalLength;
+
+    // Advance segIdx to find the segment containing targetDist
+    while (segIdx < raw.length - 2 && cumDist[segIdx + 1] < targetDist) {
+      segIdx++;
+    }
+
+    const segLen = cumDist[segIdx + 1] - cumDist[segIdx];
+    const t = segLen > 0 ? (targetDist - cumDist[segIdx]) / segLen : 0;
+
+    const lat = raw[segIdx][0] + t * (raw[segIdx + 1][0] - raw[segIdx][0]);
+    const lng = raw[segIdx][1] + t * (raw[segIdx + 1][1] - raw[segIdx][1]);
+    result.push([lat, lng]);
+  }
+
+  return result;
+}
+
+/** Total arc-length of a polyline in meters */
+export function pathLength(path: [number, number][]): number {
+  let total = 0;
+  for (let i = 1; i < path.length; i++) {
+    total += haversine(path[i - 1][0], path[i - 1][1], path[i][0], path[i][1]);
+  }
+  return total;
+}
+
+export function generatePencil(params: PencilParams): TemplateResult {
+  const { path, numPoints, altitude, speed, gimbalPitchAngle, reverse } = params;
+
+  if (path.length < 2 || numPoints < 2) return { waypoints: [], pois: [] };
+
+  const resampled = resamplePath(path, numPoints);
+
+  const waypoints: TemplateResult["waypoints"] = resampled.map(([lat, lng]) => ({
+    ...DEFAULT_WAYPOINT,
+    latitude: lat,
+    longitude: lng,
+    height: altitude,
+    speed,
+    useGlobalSpeed: false,
+    useGlobalHeadingParam: false,
+    headingMode: "followWayline" as const,
+    gimbalPitchAngle,
+    turnMode: "toPointAndPassWithContinuityCurvature" as const,
+    useGlobalTurnParam: false,
+    actions: [],
+  }));
+
+  if (reverse) {
+    waypoints.reverse();
   }
 
   return { waypoints, pois: [] };

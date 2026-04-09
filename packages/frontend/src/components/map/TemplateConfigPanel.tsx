@@ -4,16 +4,18 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, MapPin } from "lucide-react";
-import type { TemplateType, OrbitParams, GridParams, FacadeParams } from "@/lib/templates";
+import type { TemplateType, OrbitParams, GridParams, FacadeParams, PencilParams } from "@/lib/templates";
 
 interface TemplateConfigPanelProps {
   type: TemplateType;
-  orbitParams: OrbitParams | null;
-  gridParams: GridParams | null;
-  facadeParams: FacadeParams | null;
-  onOrbitChange: (params: OrbitParams) => void;
-  onGridChange: (params: GridParams) => void;
-  onFacadeChange: (params: FacadeParams) => void;
+  orbitParams?: OrbitParams | null;
+  gridParams?: GridParams | null;
+  facadeParams?: FacadeParams | null;
+  pencilParams?: PencilParams | null;
+  onOrbitChange?: (params: OrbitParams) => void;
+  onGridChange?: (params: GridParams) => void;
+  onFacadeChange?: (params: FacadeParams) => void;
+  onPencilChange?: (params: PencilParams) => void;
   onApply: () => void;
   onCancel: () => void;
   waypointCount: number;
@@ -24,20 +26,24 @@ export function TemplateConfigPanel({
   orbitParams,
   gridParams,
   facadeParams,
+  pencilParams,
   onOrbitChange,
   onGridChange,
   onFacadeChange,
+  onPencilChange,
   onApply,
   onCancel,
   waypointCount,
 }: TemplateConfigPanelProps) {
 
-  const title = type === "orbit" ? "Orbit" : type === "grid" ? "Grid Survey" : "Facade Scan";
+  const title = type === "orbit" ? "Orbit" : type === "grid" ? "Grid Survey" : type === "facade" ? "Facade Scan" : "Pencil Path";
   const description = type === "orbit"
     ? "Circular flight path around a center point. Adjust the radius, number of points, and enable POI to keep the camera focused on the center."
     : type === "grid"
     ? "Lawn-mower zigzag pattern for systematic area coverage. Control line spacing for overlap and rotation to align with the terrain."
-    : "Vertical scanning pattern along a wall or building face. Set the standoff distance, altitude range, and grid density for full coverage.";
+    : type === "facade"
+    ? "Vertical scanning pattern along a wall or building face. Set the standoff distance, altitude range, and grid density for full coverage."
+    : "Freehand flight path drawn on the map. Adjust the number of waypoints to control how closely the path is followed.";
 
   // Stop all pointer/keyboard/wheel events from reaching Leaflet (native DOM level)
   const panelRef = useRef<HTMLDivElement>(null);
@@ -71,7 +77,7 @@ export function TemplateConfigPanel({
       <p className="text-[10px] text-muted-foreground mb-3">{description}</p>
 
       {/* Orbit params */}
-      {type === "orbit" && orbitParams && (
+      {type === "orbit" && orbitParams && onOrbitChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Radius (m)</Label>
@@ -130,7 +136,7 @@ export function TemplateConfigPanel({
       )}
 
       {/* Grid params */}
-      {type === "grid" && gridParams && (
+      {type === "grid" && gridParams && onGridChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Altitude (m)</Label>
@@ -190,7 +196,7 @@ export function TemplateConfigPanel({
       )}
 
       {/* Facade params */}
-      {type === "facade" && facadeParams && (
+      {type === "facade" && facadeParams && onFacadeChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Distance from wall (m)</Label>
@@ -259,6 +265,69 @@ export function TemplateConfigPanel({
                 className="rounded"
               />
               Photos
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Pencil params */}
+      {type === "pencil" && pencilParams && onPencilChange && (
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div>
+            <Label className="text-[10px]">Waypoints</Label>
+            <Input
+              type="number"
+              value={pencilParams.numPoints}
+              onChange={(e) => onPencilChange({ ...pencilParams, numPoints: Math.max(2, Math.min(200, parseInt(e.target.value) || 10)) })}
+              min={2}
+              max={200}
+              className="h-7 text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px]">Altitude (m)</Label>
+            <Input
+              type="number"
+              value={pencilParams.altitude}
+              onChange={(e) => onPencilChange({ ...pencilParams, altitude: Math.max(5, parseFloat(e.target.value) || 50) })}
+              min={5}
+              step={5}
+              className="h-7 text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px]">Speed (m/s)</Label>
+            <Input
+              type="number"
+              value={pencilParams.speed}
+              onChange={(e) => onPencilChange({ ...pencilParams, speed: Math.max(1, Math.min(15, parseFloat(e.target.value) || 7)) })}
+              min={1}
+              max={15}
+              step={0.5}
+              className="h-7 text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px]">Gimbal Pitch (°)</Label>
+            <Input
+              type="number"
+              value={pencilParams.gimbalPitchAngle}
+              onChange={(e) => onPencilChange({ ...pencilParams, gimbalPitchAngle: Math.max(-90, Math.min(45, parseFloat(e.target.value) || -45)) })}
+              min={-90}
+              max={45}
+              step={5}
+              className="h-7 text-xs"
+            />
+          </div>
+          <div className="flex items-end pb-1">
+            <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+              <input
+                type="checkbox"
+                checked={pencilParams.reverse}
+                onChange={(e) => onPencilChange({ ...pencilParams, reverse: e.target.checked })}
+                className="rounded"
+              />
+              Reverse
             </label>
           </div>
         </div>

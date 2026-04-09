@@ -6,6 +6,7 @@ import { WaypointMarker } from "./WaypointMarker";
 import { PoiMarker } from "./PoiMarker";
 import { MapToolbar } from "./MapToolbar";
 import { TemplateDrawHandler } from "./TemplateDrawHandler";
+import { PencilDrawHandler } from "./PencilDrawHandler";
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 
@@ -151,13 +152,15 @@ export function MapView() {
   const isAddingPoi = useMissionStore((s) => s.isAddingPoi);
   const templateMode = useMissionStore((s) => s.templateMode);
 
-  const cursorClass = templateMode
-    ? "map-tool-template"
-    : isAddingWaypoint
-      ? "map-tool-waypoint"
-      : isAddingPoi
-        ? "map-tool-poi"
-        : "";
+  const cursorClass = templateMode === "pencil"
+    ? "map-tool-pencil"
+    : templateMode
+      ? "map-tool-template"
+      : isAddingWaypoint
+        ? "map-tool-waypoint"
+        : isAddingPoi
+          ? "map-tool-poi"
+          : "";
 
   return (
     <div className={`relative h-full w-full ${cursorClass}`}>
@@ -176,6 +179,7 @@ export function MapView() {
         <FlightPath />
         <PoiPointingLines />
         <TemplateDrawHandler />
+        <PencilDrawHandler />
         {waypoints.map((wp) => (
           <WaypointMarker key={wp.index} waypoint={wp} />
         ))}

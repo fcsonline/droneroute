@@ -235,6 +235,11 @@ export default function App() {
           e.preventDefault();
           setTemplateMode(templateMode === "facade" ? null : "facade");
           break;
+        case "z":
+          if (e.metaKey || e.ctrlKey) return; // don't intercept Cmd+Z (undo)
+          e.preventDefault();
+          setTemplateMode(templateMode === "pencil" ? null : "pencil");
+          break;
         case "a":
           if (e.metaKey || e.ctrlKey) {
             e.preventDefault();

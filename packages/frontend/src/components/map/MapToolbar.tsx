@@ -1,4 +1,4 @@
-import { MousePointerClick, Hand, Trash2, Crosshair, Orbit, Grid3X3, Building2, ChevronDown } from "lucide-react";
+import { MousePointerClick, Hand, Trash2, Crosshair, Orbit, Grid3X3, Building2, PenLine, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
@@ -11,6 +11,7 @@ const TEMPLATE_OPTIONS: { type: TemplateType; label: string; shortLabel: string;
   { type: "orbit", label: "Orbit", shortLabel: "Orbit", icon: Orbit, description: "Circle around a point", key: "O" },
   { type: "grid", label: "Grid Survey", shortLabel: "Grid", icon: Grid3X3, description: "Lawn-mower scan area", key: "G" },
   { type: "facade", label: "Facade Scan", shortLabel: "Facade", icon: Building2, description: "Vertical wall scan", key: "F" },
+  { type: "pencil", label: "Pencil Path", shortLabel: "Pencil", icon: PenLine, description: "Freehand draw a flight path", key: "Z" },
 ];
 
 export function MapToolbar() {
@@ -85,6 +86,7 @@ export function MapToolbar() {
             {templateMode === "orbit" ? <Orbit className="h-4 w-4" /> :
              templateMode === "grid" ? <Grid3X3 className="h-4 w-4" /> :
              templateMode === "facade" ? <Building2 className="h-4 w-4" /> :
+             templateMode === "pencil" ? <PenLine className="h-4 w-4" /> :
              <Grid3X3 className="h-4 w-4" />}
             <span className="text-xs">
               {templateMode
