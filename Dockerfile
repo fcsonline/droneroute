@@ -1,7 +1,7 @@
 # ── Build stage ────────────────────────────────────────────
 FROM node:22-alpine AS builder
 
-ARG COMMIT_SHA=dev
+RUN apk add --no-cache git
 
 WORKDIR /app
 
@@ -14,7 +14,8 @@ COPY packages/frontend/package.json ./packages/frontend/
 # Install dependencies
 RUN npm install
 
-# Copy source
+# Copy source (including .git for commit SHA resolution)
+COPY .git/ ./.git/
 COPY packages/shared/ ./packages/shared/
 COPY packages/backend/ ./packages/backend/
 COPY packages/frontend/ ./packages/frontend/
@@ -24,7 +25,6 @@ COPY tsconfig.json ./
 RUN npm run build -w packages/shared
 
 # Build frontend
-ENV COMMIT_SHA=${COMMIT_SHA}
 RUN npm run build -w packages/frontend
 
 # Build backend
