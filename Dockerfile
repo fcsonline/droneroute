@@ -1,7 +1,7 @@
 # ── Build stage ────────────────────────────────────────────
 FROM node:22-alpine AS builder
 
-RUN apk add --no-cache git
+ARG COMMIT_SHA=dev
 
 WORKDIR /app
 
@@ -14,8 +14,7 @@ COPY packages/frontend/package.json ./packages/frontend/
 # Install dependencies
 RUN npm install
 
-# Copy source (including .git for commit SHA resolution)
-COPY .git/ ./.git/
+# Copy source
 COPY packages/shared/ ./packages/shared/
 COPY packages/backend/ ./packages/backend/
 COPY packages/frontend/ ./packages/frontend/
@@ -24,7 +23,8 @@ COPY tsconfig.json ./
 # Build shared types (needed by both frontend and backend)
 RUN npm run build -w packages/shared
 
-# Build frontend
+# Build frontend (COMMIT_SHA is read by vite.config.ts)
+ENV COMMIT_SHA=${COMMIT_SHA}
 RUN npm run build -w packages/frontend
 
 # Build backend
