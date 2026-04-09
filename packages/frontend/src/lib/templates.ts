@@ -70,6 +70,7 @@ export interface FacadeParams {
   maxAltitude: number;
   numRows: number;
   numColumns: number;
+  addPhotos: boolean;
 }
 
 export type TemplateParams = OrbitParams | GridParams | FacadeParams;
@@ -102,6 +103,7 @@ export const DEFAULT_FACADE_PARAMS: Omit<FacadeParams, "point1" | "point2"> = {
   maxAltitude: 50,
   numRows: 4,
   numColumns: 8,
+  addPhotos: true,
 };
 
 // ── Generators ───────────────────────────────────────────
@@ -270,7 +272,7 @@ export function generateGrid(params: GridParams): TemplateResult {
 }
 
 export function generateFacade(params: FacadeParams): TemplateResult {
-  const { point1, point2, distanceM, minAltitude, maxAltitude, numRows, numColumns } = params;
+  const { point1, point2, distanceM, minAltitude, maxAltitude, numRows, numColumns, addPhotos } = params;
   const [lat1, lng1] = point1;
   const [lat2, lng2] = point2;
 
@@ -284,7 +286,7 @@ export function generateFacade(params: FacadeParams): TemplateResult {
   // Generate the scan grid along the wall
   for (let row = 0; row < numRows; row++) {
     const altFraction = numRows <= 1 ? 0 : row / (numRows - 1);
-    const alt = minAltitude + altFraction * (maxAltitude - minAltitude);
+    const alt = Math.round(minAltitude + altFraction * (maxAltitude - minAltitude));
     const reverse = row % 2 === 1; // zigzag
 
     for (let col = 0; col < numColumns; col++) {
@@ -320,13 +322,13 @@ export function generateFacade(params: FacadeParams): TemplateResult {
         gimbalPitchAngle: gimbalPitch,
         turnMode: "toPointAndStopWithContinuityCurvature",
         useGlobalTurnParam: false,
-        actions: [
+        actions: addPhotos ? [
           {
             actionId: 0,
             actionType: "takePhoto",
             params: { payloadPositionIndex: 0 },
           },
-        ],
+        ] : [],
       });
     }
   }

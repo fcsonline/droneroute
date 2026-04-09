@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -32,11 +33,30 @@ export function TemplateConfigPanel({
 }: TemplateConfigPanelProps) {
 
   const title = type === "orbit" ? "Orbit" : type === "grid" ? "Grid Survey" : "Facade Scan";
+  const description = type === "orbit"
+    ? "Circular flight path around a center point. Adjust the radius, number of points, and enable POI to keep the camera focused on the center."
+    : type === "grid"
+    ? "Lawn-mower zigzag pattern for systematic area coverage. Control line spacing for overlap and rotation to align with the terrain."
+    : "Vertical scanning pattern along a wall or building face. Set the standoff distance, altitude range, and grid density for full coverage.";
+
+  // Stop all pointer/keyboard/wheel events from reaching Leaflet (native DOM level)
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    const stop = (e: Event) => e.stopPropagation();
+    const events = ["mousedown", "mouseup", "click", "dblclick", "wheel", "keydown", "keyup", "pointerdown", "pointerup", "touchstart", "touchend"];
+    for (const evt of events) el.addEventListener(evt, stop);
+    return () => { for (const evt of events) el.removeEventListener(evt, stop); };
+  }, []);
 
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl p-3 min-w-[320px] max-w-[420px]">
+    <div
+      ref={panelRef}
+      className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-2xl p-3 min-w-[320px] max-w-[420px]"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-purple-400">{title}</span>
           <Badge variant="secondary" className="text-[10px] gap-1">
@@ -48,6 +68,7 @@ export function TemplateConfigPanel({
           <X className="h-4 w-4" />
         </button>
       </div>
+      <p className="text-[10px] text-muted-foreground mb-3">{description}</p>
 
       {/* Orbit params */}
       {type === "orbit" && orbitParams && (
@@ -228,6 +249,17 @@ export function TemplateConfigPanel({
               max={30}
               className="h-7 text-xs"
             />
+          </div>
+          <div className="flex items-end pb-1">
+            <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+              <input
+                type="checkbox"
+                checked={facadeParams.addPhotos}
+                onChange={(e) => onFacadeChange({ ...facadeParams, addPhotos: e.target.checked })}
+                className="rounded"
+              />
+              Photos
+            </label>
           </div>
         </div>
       )}
