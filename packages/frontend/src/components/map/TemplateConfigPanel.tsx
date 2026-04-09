@@ -51,7 +51,7 @@ export function TemplateConfigPanel({
     const el = panelRef.current;
     if (!el) return;
     const stop = (e: Event) => e.stopPropagation();
-    const events = ["mousedown", "mouseup", "click", "dblclick", "wheel", "keydown", "keyup", "pointerdown", "pointerup", "touchstart", "touchend"];
+    const events = ["mousedown", "mouseup", "dblclick", "wheel", "keydown", "keyup", "pointerdown", "pointerup", "touchstart", "touchend"];
     for (const evt of events) el.addEventListener(evt, stop);
     return () => { for (const evt of events) el.removeEventListener(evt, stop); };
   }, []);
