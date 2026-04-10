@@ -27,6 +27,16 @@ function MapClickHandler() {
   return null;
 }
 
+/** Expose the Leaflet map instance on the container for external automation. */
+function ExposeMapInstance() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    (container as any)._leaflet_map = map;
+  }, [map]);
+  return null;
+}
+
 /**
  * Automatically fits the map to show all waypoints when a mission is loaded
  * (import or saved route). Triggers when waypoints go from 0 to N.
@@ -175,6 +185,7 @@ export function MapView() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapClickHandler />
+        <ExposeMapInstance />
         <FitBoundsOnLoad />
         <FlightPath />
         <PoiPointingLines />

@@ -6,6 +6,27 @@ const OUT = path.join(__dirname, '..', 'docs', 'screenshots');
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+// Rural coordinates for realistic drone screenshots (near Cingle Blanc)
+const TARGET_LAT = 41.257517;
+const TARGET_LNG = 0.930963;
+const TARGET_ZOOM = 15;
+
+// Pan the Leaflet map to the target coordinates
+async function panToTarget(page) {
+  // Wait until the ExposeMapInstance React effect has fired
+  await page.waitForFunction(() => {
+    const c = document.querySelector('.leaflet-container');
+    return c && c._leaflet_map;
+  }, { timeout: 10000 });
+
+  await page.evaluate(([lat, lng, zoom]) => {
+    const container = document.querySelector('.leaflet-container');
+    const map = container._leaflet_map;
+    map.setView([lat, lng], zoom, { animate: false });
+  }, [TARGET_LAT, TARGET_LNG, TARGET_ZOOM]);
+  await sleep(2000); // Wait for tiles to load
+}
+
 // Zoom the Leaflet map in by the given number of levels using the scroll wheel
 async function zoomIn(page, map, levels = 3) {
   const box = await map.boundingBox();
@@ -37,6 +58,7 @@ async function zoomIn(page, map, levels = 3) {
     await page.goto(BASE);
     await page.waitForSelector('.leaflet-container');
     await sleep(2000);
+    await panToTarget(page);
 
     const map = page.locator('.leaflet-container');
     const box = await map.boundingBox();
@@ -73,6 +95,7 @@ async function zoomIn(page, map, levels = 3) {
     await page.goto(BASE);
     await page.waitForSelector('.leaflet-container');
     await sleep(2000);
+    await panToTarget(page);
 
     const map = page.locator('.leaflet-container');
     const box = await map.boundingBox();
@@ -115,6 +138,7 @@ async function zoomIn(page, map, levels = 3) {
     await page.goto(BASE);
     await page.waitForSelector('.leaflet-container');
     await sleep(2000);
+    await panToTarget(page);
 
     const map = page.locator('.leaflet-container');
     const box = await map.boundingBox();
@@ -148,6 +172,7 @@ async function zoomIn(page, map, levels = 3) {
     await page.goto(BASE);
     await page.waitForSelector('.leaflet-container');
     await sleep(2000);
+    await panToTarget(page);
 
     const map = page.locator('.leaflet-container');
     const box = await map.boundingBox();
@@ -181,6 +206,7 @@ async function zoomIn(page, map, levels = 3) {
     await page.goto(BASE);
     await page.waitForSelector('.leaflet-container');
     await sleep(2000);
+    await panToTarget(page);
 
     const map = page.locator('.leaflet-container');
     const box = await map.boundingBox();
@@ -224,6 +250,7 @@ async function zoomIn(page, map, levels = 3) {
     await page.goto(BASE);
     await page.waitForSelector('.leaflet-container');
     await sleep(2000);
+    await panToTarget(page);
 
     const map = page.locator('.leaflet-container');
     const box = await map.boundingBox();
