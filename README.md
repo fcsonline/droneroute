@@ -60,16 +60,11 @@ That's it! Open `http://localhost:5173` and start planning missions.
 Prefer Docker? One command:
 
 ```bash
-docker compose up -d
-# Open http://droneroute.localhost
-```
-
-The image is also available on [Docker Hub](https://hub.docker.com/r/fcsonline/droneroute):
-
-```bash
 docker run -d -p 3001:3001 -v droneroute-data:/app/data fcsonline/droneroute:latest
 # Open http://localhost:3001
 ```
+
+A [docker-compose.yml](docker-compose.yml) with Traefik reverse proxy is also available in the repo.
 
 ## Tech Stack
 

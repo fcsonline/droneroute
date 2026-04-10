@@ -20,6 +20,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
   }, [onClose]);
 
   const sha = typeof __COMMIT_SHA__ !== "undefined" ? __COMMIT_SHA__ : "dev";
+  const version = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
@@ -48,6 +49,14 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
           {/* Version */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>Version</span>
+            <a
+              href={`https://github.com/fcsonline/droneroute/releases/tag/v${version}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono bg-muted px-1.5 py-0.5 rounded border border-border hover:text-foreground transition-colors"
+            >
+              v{version}
+            </a>
             <a
               href={`https://github.com/fcsonline/droneroute/commit/${sha}`}
               target="_blank"
