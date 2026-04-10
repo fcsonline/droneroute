@@ -10,7 +10,7 @@
 
 A free, open-source mission planner for DJI drones. Plan waypoint missions on an interactive map, tweak flight parameters, and export KMZ files ready to fly.
 
-**[Try the live demo](https://droneroute.fly.dev)** | **[Read the guide](GUIDE.md)**
+**[Try the live demo](https://app.droneroute.io)** | **[Read the guide](GUIDE.md)**
 
 ![DroneRoute — Mission planner with waypoints, configuration panel, and elevation chart](docs/screenshots/main-map.jpg)
 

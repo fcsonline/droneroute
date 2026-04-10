@@ -67,7 +67,7 @@ body:
     attributes:
       label: Environment
       options:
-        - Live demo (droneroute.fly.dev)
+        - Live demo (app.droneroute.io)
         - Self-hosted (Docker)
         - Local development
     validations:
