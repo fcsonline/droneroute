@@ -6,6 +6,18 @@ const OUT = path.join(__dirname, '..', 'docs', 'screenshots');
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+// Zoom the Leaflet map in by the given number of levels using the scroll wheel
+async function zoomIn(page, map, levels = 3) {
+  const box = await map.boundingBox();
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  for (let i = 0; i < levels; i++) {
+    await page.mouse.move(cx, cy);
+    await page.mouse.wheel(0, -300);
+    await sleep(600);
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
@@ -19,7 +31,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
   });
 
   // ─── MAIN MAP (README hero shot) ─────────────────
-  console.log('0/6 Main map...');
+  console.log('0/7 Main map...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -55,7 +67,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
   }
 
   // ─── ORBIT TEMPLATE ──────────────────────────────
-  console.log('1/6 Orbit template...');
+  console.log('1/7 Orbit template...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -67,20 +79,24 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     const cx = box.x + box.width / 2;
     const cy = box.y + box.height / 2;
 
-    // Press O, drag from center outward
+    // Press O, drag from center outward — large radius for a visible circle
+    await zoomIn(page, map, 2);
     await page.keyboard.press('o');
     await sleep(300);
-    await page.mouse.move(cx, cy);
+    await page.mouse.move(cx - 40, cy - 80);
     await page.mouse.down();
-    for (let i = 0; i <= 30; i++) {
-      await page.mouse.move(cx + i * 5, cy, { steps: 1 });
+    for (let i = 0; i <= 40; i++) {
+      await page.mouse.move(cx - 40 + i * 6, cy - 80, { steps: 1 });
       await sleep(15);
     }
     await page.mouse.up();
     await sleep(1500);
 
-    // Config panel should be visible with preview
-    await page.screenshot({ path: path.join(OUT, 'template-orbit.jpg'), type: 'jpeg', quality: 85 });
+    // Config panel should be visible with preview — crop to map area only
+    await page.screenshot({
+      path: path.join(OUT, 'template-orbit.jpg'), type: 'jpeg', quality: 85,
+      clip: { x: box.x, y: box.y, width: box.width, height: box.height },
+    });
     console.log('  -> saved template-orbit.jpg');
 
     // Apply so we can reuse the pattern
@@ -93,7 +109,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
   }
 
   // ─── GRID SURVEY TEMPLATE ────────────────────────
-  console.log('2/6 Grid survey template...');
+  console.log('2/7 Grid survey template...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -105,24 +121,28 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     const cx = box.x + box.width / 2;
     const cy = box.y + box.height / 2;
 
+    await zoomIn(page, map, 2);
     await page.keyboard.press('g');
     await sleep(300);
-    await page.mouse.move(cx - 100, cy - 70);
+    await page.mouse.move(cx - 180, cy - 140);
     await page.mouse.down();
-    for (let i = 0; i <= 30; i++) {
-      await page.mouse.move(cx - 100 + i * 7, cy - 70 + i * 5, { steps: 1 });
+    for (let i = 0; i <= 40; i++) {
+      await page.mouse.move(cx - 180 + i * 9, cy - 140 + i * 7, { steps: 1 });
       await sleep(15);
     }
     await page.mouse.up();
     await sleep(1500);
 
-    await page.screenshot({ path: path.join(OUT, 'template-grid.jpg'), type: 'jpeg', quality: 85 });
+    await page.screenshot({
+      path: path.join(OUT, 'template-grid.jpg'), type: 'jpeg', quality: 85,
+      clip: { x: box.x, y: box.y, width: box.width, height: box.height },
+    });
     console.log('  -> saved template-grid.jpg');
     await page.close();
   }
 
   // ─── FACADE SCAN TEMPLATE ────────────────────────
-  console.log('3/6 Facade scan template...');
+  console.log('3/7 Facade scan template...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -134,24 +154,71 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     const cx = box.x + box.width / 2;
     const cy = box.y + box.height / 2;
 
+    await zoomIn(page, map, 2);
     await page.keyboard.press('f');
     await sleep(300);
-    await page.mouse.move(cx - 120, cy);
+    await page.mouse.move(cx - 200, cy - 60);
     await page.mouse.down();
-    for (let i = 0; i <= 30; i++) {
-      await page.mouse.move(cx - 120 + i * 8, cy + i * 1, { steps: 1 });
+    for (let i = 0; i <= 40; i++) {
+      await page.mouse.move(cx - 200 + i * 10, cy - 60 + i * 1, { steps: 1 });
       await sleep(15);
     }
     await page.mouse.up();
     await sleep(1500);
 
-    await page.screenshot({ path: path.join(OUT, 'template-facade.jpg'), type: 'jpeg', quality: 85 });
+    await page.screenshot({
+      path: path.join(OUT, 'template-facade.jpg'), type: 'jpeg', quality: 85,
+      clip: { x: box.x, y: box.y, width: box.width, height: box.height },
+    });
     console.log('  -> saved template-facade.jpg');
     await page.close();
   }
 
+  // ─── PENCIL PATH TEMPLATE ─────────────────────────
+  console.log('4/7 Pencil path template...');
+  {
+    const page = await context.newPage();
+    await page.goto(BASE);
+    await page.waitForSelector('.leaflet-container');
+    await sleep(2000);
+
+    const map = page.locator('.leaflet-container');
+    const box = await map.boundingBox();
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+
+    await zoomIn(page, map, 2);
+    await page.keyboard.press('z');
+    await sleep(300);
+
+    // Draw a freehand S-curve across the map — wide sweep
+    await page.mouse.move(cx - 250, cy - 80);
+    await page.mouse.down();
+    const curvePoints = [];
+    for (let i = 0; i <= 60; i++) {
+      const t = i / 60;
+      const x = cx - 250 + t * 500;
+      const y = cy - 80 + Math.sin(t * Math.PI * 2) * 120;
+      curvePoints.push([x, y]);
+    }
+    for (const [x, y] of curvePoints) {
+      await page.mouse.move(x, y, { steps: 1 });
+      await sleep(10);
+    }
+    await page.mouse.up();
+    await sleep(1500);
+
+    // Config panel should be visible with preview — crop to map area only
+    await page.screenshot({
+      path: path.join(OUT, 'template-pencil.jpg'), type: 'jpeg', quality: 85,
+      clip: { x: box.x, y: box.y, width: box.width, height: box.height },
+    });
+    console.log('  -> saved template-pencil.jpg');
+    await page.close();
+  }
+
   // ─── MISSION WITH WAYPOINTS + POI (for multiselect, elevation, gimbal) ───
-  console.log('4/6 Building mission with waypoints + POI...');
+  console.log('5/7 Building mission with waypoints + POI...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -199,7 +266,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     });
 
     // ─── MULTISELECT SCREENSHOT ───
-    console.log('5/6 Multiselect...');
+    console.log('6/7 Multiselect...');
     // Click waypoints in the sidebar list with Cmd held to multiselect
     const wpItems = page.locator('[class*="flex items-center gap-2 rounded-md px-2"]');
     const count = await wpItems.count();
@@ -218,7 +285,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     console.log('  -> saved multiselect.jpg');
 
     // ─── ELEVATION GRAPH SCREENSHOT ───
-    console.log('6/6 Elevation graph...');
+    console.log('7/7 Elevation graph...');
     await page.keyboard.press('Escape');
     await sleep(300);
 
