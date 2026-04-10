@@ -26,6 +26,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
+  <!-- Analytics -->
+  <script defer data-domain="droneroute.io" src="https://stats.thegreenvintage.com/js/script.js"></script>
+
   <style>
     /* ── Reset & Base ─────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -618,7 +621,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
       Free &amp; open source &mdash; MIT License
     </div>
-    <h1>Plan drone missions<br /><span class="text-gradient">visually.</span></h1>
+    <h1>Plan drone missions<br /><span class="text-gradient">visually</span></h1>
     <p>A free, open-source mission planner for DJI drones. Place waypoints on an interactive map, configure every flight parameter, and export KMZ files ready to load on your controller.</p>
     <div class="hero-actions">
       <a href="https://app.droneroute.io" class="btn btn-primary" target="_blank">
@@ -871,20 +874,9 @@
       <p>Your data, your server. No third-party services. Full privacy.</p>
     </div>
     <div class="code-block">
-      <span class="comment"># Clone and start with Docker</span><br />
-      <span class="cmd">git clone https://github.com/fcsonline/droneroute.git</span><br />
-      <span class="cmd">cd droneroute</span><br />
-      <span class="cmd">docker compose up -d</span><br /><br />
-      <span class="comment"># Open http://droneroute.localhost</span>
-    </div>
-    <div style="text-align:center; margin-top: 32px;">
-      <p style="color: #64748b; font-size: 0.9rem;">Or run without Docker:</p>
-      <div class="code-block" style="margin-top: 12px;">
-        <span class="cmd">npm install</span><br />
-        <span class="cmd">npm run build -w packages/shared</span><br />
-        <span class="cmd">npm run dev</span><br /><br />
-        <span class="comment"># Open http://localhost:5173</span>
-      </div>
+      <span class="comment"># Self-host with Docker</span><br />
+      <span class="cmd">docker run -d -p 3001:3001 -v droneroute-data:/app/data fcsonline/droneroute:latest</span><br /><br />
+      <span class="comment"># Open http://localhost:3001</span>
     </div>
   </div>
 </section>
