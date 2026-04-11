@@ -95,6 +95,10 @@ DroneRoute is built and maintained in my spare time. If it saves you time planni
 
 [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/fcsonline)
 
+## Disclaimer
+
+DroneRoute is an independent, community-driven project. It is not affiliated with, endorsed by, or sponsored by DJI. "DJI" and related product names are trademarks of SZ DJI Technology Co., Ltd.
+
 ## License
 
 MIT

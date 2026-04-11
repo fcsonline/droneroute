@@ -437,3 +437,9 @@ Choose your height reference carefully:
 ### Self-hosting for privacy
 
 DroneRoute can be fully self-hosted with Docker. Your mission data stays on your own server — no data is sent to any third-party service.
+
+---
+
+## Disclaimer
+
+DroneRoute is an independent, community-driven project. It is not affiliated with, endorsed by, or sponsored by DJI. "DJI" and related product names are trademarks of SZ DJI Technology Co., Ltd.
