@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/fcsonline/droneroute/main/droneroute.png" alt="DroneRoute" width="120" />
+</p>
+
 # droneroute
 
 Upload DJI waypoint mission KMZ files to RC controllers via USB.
