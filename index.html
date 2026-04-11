@@ -375,39 +375,6 @@
       .showcase, .showcase.reverse { grid-template-columns: 1fr; direction: ltr; }
     }
 
-    /* ── Tech Stack ──────────────────────────────────────── */
-    .tech-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-    @media (max-width: 768px) {
-      .tech-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    .tech-card {
-      padding: 28px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      text-align: center;
-    }
-    .tech-card .tech-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #64748b;
-      margin-bottom: 12px;
-    }
-    .tech-card .tech-name {
-      font-weight: 700;
-      font-size: 1rem;
-    }
-    .tech-card .tech-detail {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-
     /* ── Testimonials ────────────────────────────────────── */
     .testimonial-grid {
       display: grid;
@@ -711,13 +678,6 @@
         <h3>Share missions</h3>
         <p>Generate a read-only link for any saved route. Recipients can preview flight stats, open the mission in the editor, clone it, or export the KMZ — no account needed.</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon icon-green">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-        </div>
-        <h3>Upload to your controller</h3>
-        <p>Plug your DJI RC via USB and run <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-size:0.85em;">npx droneroute mission.kmz</code>. The CLI detects your controller automatically and places the file where DJI Pilot 2 expects it.</p>
-      </div>
     </div>
   </div>
 </section>
@@ -847,58 +807,6 @@
   </div>
 </section>
 
-<!-- ─── Tech Stack ────────────────────────────────────── -->
-<section id="tech">
-  <div class="container">
-    <div class="section-header">
-      <h2>Built with <span class="text-gradient">modern tools</span></h2>
-      <p>A clean monorepo architecture with shared types between frontend and backend.</p>
-    </div>
-    <div class="tech-grid">
-      <div class="tech-card">
-        <div class="tech-label">Frontend</div>
-        <div class="tech-name">React 19</div>
-        <div class="tech-detail">TypeScript, Vite 6, Tailwind CSS v4, shadcn/ui, Zustand</div>
-      </div>
-      <div class="tech-card">
-        <div class="tech-label">Map</div>
-        <div class="tech-name">Leaflet</div>
-        <div class="tech-detail">react-leaflet + OpenStreetMap tiles</div>
-      </div>
-      <div class="tech-card">
-        <div class="tech-label">Backend</div>
-        <div class="tech-name">Express 5</div>
-        <div class="tech-detail">Node.js 22, better-sqlite3, JWT</div>
-      </div>
-      <div class="tech-card">
-        <div class="tech-label">Infrastructure</div>
-        <div class="tech-name">Docker</div>
-        <div class="tech-detail">Multi-stage build, Traefik, SQLite</div>
-      </div>
-      <div class="tech-card">
-        <div class="tech-label">CLI</div>
-        <div class="tech-name">Node.js</div>
-        <div class="tech-detail">Commander, ADB, cross-platform USB detection</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── Self-hosting ──────────────────────────────────── -->
-<section style="background: rgba(255,255,255,0.01);">
-  <div class="container">
-    <div class="section-header">
-      <h2>Self-host in <span class="text-gradient">one command</span></h2>
-      <p>Your data, your server. No third-party services. Full privacy.</p>
-    </div>
-    <div class="code-block">
-      <span class="comment"># Self-host with Docker</span><br />
-      <span class="cmd">docker run -d -p 3001:3001 -v droneroute-data:/app/data fcsonline/droneroute:latest</span><br /><br />
-      <span class="comment"># Open http://localhost:3001</span>
-    </div>
-  </div>
-</section>
-
 <!-- ─── CLI Upload ────────────────────────────────────── -->
 <section id="cli">
   <div class="container">
@@ -919,6 +827,21 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
         View on npm
       </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Self-hosting ──────────────────────────────────── -->
+<section style="background: rgba(255,255,255,0.01);">
+  <div class="container">
+    <div class="section-header">
+      <h2>Self-host in <span class="text-gradient">one command</span></h2>
+      <p>Your data, your server. No third-party services. Full privacy.</p>
+    </div>
+    <div class="code-block">
+      <span class="comment"># Self-host with Docker</span><br />
+      <span class="cmd">docker run -d -p 3001:3001 -v droneroute-data:/app/data fcsonline/droneroute:latest</span><br /><br />
+      <span class="comment"># Open http://localhost:3001</span>
     </div>
   </div>
 </section>
