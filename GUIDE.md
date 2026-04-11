@@ -308,26 +308,22 @@ Click the **KMZ** button in the toolbar to download a `.kmz` file. This file fol
 
 **Requirements:** You need at least 2 waypoints to export.
 
-### Loading onto your DJI Controller
+### Upload to your DJI controller
 
-DJI Fly does not have a built-in import function for waypoint files. To load a KMZ you need to manually replace a placeholder mission on the controller's filesystem. Here's how:
+Use the `droneroute` CLI to upload a KMZ file directly to a USB-connected DJI controller:
 
-1. **Create a placeholder mission** — On your DJI RC / RC 2 / RC Pro, open DJI Fly and create a simple dummy waypoint mission with 2 waypoints. Save it. This creates the folder structure you'll use.
+```bash
+npx droneroute mission.kmz
+```
 
-2. **Connect the controller to your computer** — Use the USB-C port on the controller. You may need a file transfer app (e.g. Android File Transfer) to browse the controller's internal storage.
+The tool automatically detects connected DJI RC controllers (via USB or mounted SD cards), creates a new mission slot, and places the KMZ file in the correct location. If multiple controllers are connected, it will ask you to choose one.
 
-3. **Navigate to the waypoint folder** — Browse to:
-   ```
-   Android/data/dji.go.v5/files/waypoint
-   ```
+**Prerequisites:**
 
-4. **Find the placeholder mission** — Look for the most recently modified folder. Folder names are long UUIDs like `550E8400-E29B-41D4-A716-446655440000`. Inside it you'll find a `.KMZ` file with the same name.
+- **Node.js 18+** — required to run `npx`
+- **adb (Android Debug Bridge)** — needed for USB-connected controllers. Install with `brew install android-platform-tools` (macOS) or `apt install adb` (Linux). Not needed if you insert the controller's SD card directly.
 
-5. **Replace the file** — Copy your exported KMZ into this folder, delete the original placeholder KMZ, and rename your file to match the original filename exactly (the UUID name).
-
-6. **Verify on the controller** — Disconnect, open DJI Fly, and select the mission. It will still show the old thumbnail, but once you open it in the editor the imported mission will appear.
-
-> **Tip:** You can also peek inside `waypoint/map_preview` — it contains thumbnail images of each mission, making it easier to identify which folder is which.
+> **Tip:** On the controller, open DJI Fly and go to the waypoint mission list. The uploaded mission will appear as a new entry. Select it to load and verify.
 
 ### Importing
 

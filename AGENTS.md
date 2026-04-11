@@ -15,3 +15,7 @@ Bad: `"Grid Survey"`, `"Heading Mode"`, `"Go to First WP"`, `"Above Ground Level
 
 This applies to both source code and documentation (GUIDE.md, README.md).
 Markdown section headings (`## Like This`) may use standard title case since they are structural, not UI text.
+
+## Package versioning
+
+The `droneroute` npm package (`packages/cli`) must always have the same version as the root workspace and the other packages. When bumping the version, update `packages/cli/package.json` to match.

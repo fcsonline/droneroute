@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { X, Github, BookOpen } from "lucide-react";
+import { X, Github, BookOpen, Terminal } from "lucide-react";
 
 interface AboutDialogProps {
   onClose: () => void;
@@ -86,6 +86,15 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             >
               <BookOpen className="h-4 w-4 shrink-0" />
               User Guide — Features, shortcuts &amp; tips
+            </a>
+            <a
+              href="https://www.npmjs.com/package/droneroute"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Terminal className="h-4 w-4 shrink-0" />
+              Upload to RC — npx droneroute mission.kmz
             </a>
             <div className="mt-2 pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground mb-2">

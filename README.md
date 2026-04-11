@@ -22,6 +22,7 @@ A free, open-source mission planner for DJI drones. Plan waypoint missions on an
 - **Smart gimbal pitch** — Automatically calculates the optimal gimbal angle based on distance and height to a POI
 - **Waypoint actions** — Add photo, video, gimbal rotate, yaw, hover, zoom, and focus actions
 - **KMZ export & import** — Generates DJI WPML-compliant KMZ files, or load existing ones
+- **Upload to controller** — Push KMZ files directly to USB-connected DJI RC controllers with `npx droneroute`
 - **Save & load** — Persist missions to a local database with user accounts
 - **Share missions** — Generate a read-only link to share any saved route; recipients can preview stats, open in the editor, clone to their account, or export the KMZ directly
 - **Mission templates** — Orbit, grid survey, facade scan, and pencil path presets to get you flying faster
@@ -66,6 +67,16 @@ docker run -d -p 3001:3001 -v droneroute-data:/app/data fcsonline/droneroute:lat
 
 A [docker-compose.yml](docker-compose.yml) with Traefik reverse proxy is also available in the repo.
 
+## Upload to Your DJI Controller
+
+After exporting a KMZ file, push it directly to a USB-connected DJI RC controller:
+
+```bash
+npx droneroute mission.kmz
+```
+
+The CLI detects connected controllers (via adb or mounted SD cards), creates a new mission slot, and places the file. See the [droneroute CLI docs](packages/cli/README.md) for details and prerequisites.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -75,7 +86,7 @@ A [docker-compose.yml](docker-compose.yml) with Traefik reverse proxy is also av
 | Shared | TypeScript types package shared between frontend and backend |
 | Infrastructure | Docker, Traefik, SQLite |
 
-The project is organized as an npm monorepo with three packages: `shared`, `backend`, and `frontend`.
+The project is organized as an npm monorepo with four packages: `shared`, `backend`, `frontend`, and `cli`.
 
 ## Contributing
 
