@@ -529,16 +529,21 @@
     }
     footer .container {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
+      text-align: center;
       gap: 16px;
     }
     footer p {
       font-size: 0.85rem;
       color: #64748b;
     }
-    .footer-links { display: flex; gap: 24px; }
+    footer .disclaimer {
+      font-size: 0.75rem;
+      color: #475569;
+      max-width: 640px;
+    }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
     .footer-links a {
       font-size: 0.85rem;
       color: #64748b;
@@ -951,8 +956,6 @@
 <!-- ─── Footer ────────────────────────────────────────── -->
 <footer>
   <div class="container">
-    <p>&copy; 2026 Ferran Basora. Released under the MIT License.</p>
-    <p style="font-size: 0.75rem; color: #475569; margin-top: 8px;">DroneRoute is an independent, community-driven project. It is not affiliated with, endorsed by, or sponsored by DJI. "DJI" and related product names are trademarks of SZ DJI Technology Co., Ltd.</p>
     <div class="footer-links">
       <a href="https://github.com/fcsonline/droneroute" target="_blank">GitHub</a>
       <a href="https://app.droneroute.io" target="_blank">Live demo</a>
@@ -960,6 +963,8 @@
       <a href="https://github.com/fcsonline/droneroute/issues" target="_blank">Report a bug</a>
       <a href="https://www.buymeacoffee.com/fcsonline" target="_blank">Support</a>
     </div>
+    <p>&copy; 2026 Ferran Basora. Released under the MIT License.</p>
+    <p class="disclaimer">DroneRoute is an independent, community-driven project. It is not affiliated with, endorsed by, or sponsored by DJI. "DJI" and related product names are trademarks of SZ DJI Technology Co., Ltd.</p>
   </div>
 </footer>
 
