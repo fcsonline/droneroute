@@ -86,6 +86,23 @@ POIs are placed on the map and can be referenced by waypoints via the `towardPOI
 heading mode. When a waypoint uses `towardPOI`, it stores the `poiId` linking to
 which POI the drone nose should face during flight toward/at that waypoint.
 
+### Obstacle
+
+```typescript
+interface Obstacle {
+  id: string;            // UUID
+  name: string;          // User-assigned label
+  description: string;   // Free-text notes
+  vertices: [number, number][];  // Array of [latitude, longitude] pairs
+}
+```
+
+Obstacles are polygonal areas drawn on the map representing no-fly zones, buildings,
+towers, or other hazards. They are persisted with the mission and visible on shared
+missions. When the flight path crosses an obstacle polygon, the affected segment is
+highlighted in red and a warning count appears in the footer. Obstacles are a
+DroneRoute-only planning concept and are **not** exported to the DJI KMZ file.
+
 ### Waypoint
 
 ```typescript
@@ -145,6 +162,7 @@ interface Mission {
   config: MissionConfig;
   waypoints: Waypoint[];
   pois: PointOfInterest[];
+  obstacles: Obstacle[];
 }
 ```
 
@@ -192,6 +210,8 @@ Actions are executed sequentially when the drone reaches the waypoint.
 - **POI markers** - Distinct target-style markers for Points of Interest
 - **POI pointing lines** - Dotted red lines from waypoints to their referenced POI
 - **Add POI mode** - Separate toolbar button for placing POIs on the map
+- **Obstacle polygons** - Draw polygon obstacles on the map; flight segments crossing them are shown in red
+- **Obstacle editing** - Click to select an obstacle, drag vertex handles to reshape, click midpoint handles to add vertices, right-click a vertex to remove it
 
 ### Sidebar
 
@@ -206,6 +226,11 @@ Actions are executed sequentially when the drone reaches the waypoint.
   - List of POIs with name, coordinates, height badge
   - Click to select and expand inline editor (name, height, coords)
   - X to delete (clears `poiId` references on waypoints automatically)
+- **Obstacles section** (collapsible)
+  - List of obstacles with name, vertex count badge
+  - Click to select and highlight on map; double-click to rename
+  - Inline editor for name, description
+  - X to delete
 - **Mission Config section** (collapsible)
   - Drone model + payload selector
   - Flight speed, takeoff height
@@ -220,7 +245,8 @@ Actions are executed sequentially when the drone reaches the waypoint.
   - Coordinate display
   - Action editor (add/remove/configure actions)
 - **Footer stats bar**
-  - Waypoint count and POI count
+  - Waypoint count, POI count, and obstacle count
+  - Obstacle warning count (when flight path crosses obstacles)
   - Estimated total distance (Haversine) and flight time
   - Time is calculated per-segment using each waypoint's speed
     (or global `autoFlightSpeed` when `useGlobalSpeed` is true)
@@ -274,17 +300,18 @@ CREATE TABLE users (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE TABLE missions (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  user_id TEXT,
-  config TEXT NOT NULL,       -- JSON
-  waypoints TEXT NOT NULL,    -- JSON
-  pois TEXT DEFAULT '[]',     -- JSON
-  created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT DEFAULT (datetime('now')),
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
+    CREATE TABLE missions (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      user_id TEXT,
+      config TEXT NOT NULL,       -- JSON
+      waypoints TEXT NOT NULL,    -- JSON
+      pois TEXT DEFAULT '[]',     -- JSON
+      obstacles TEXT DEFAULT '[]', -- JSON
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
 ```
 
 ## Self-Hosting with Docker
@@ -378,7 +405,9 @@ packages/
         MapView.tsx                # Leaflet map container
         WaypointMarker.tsx         # Draggable numbered markers
         PoiMarker.tsx              # POI target markers
-        MapToolbar.tsx             # Add/Pan/POI/Clear tools
+        MapToolbar.tsx             # Add/Pan/POI/Obstacle/Clear tools
+        ObstacleDrawHandler.tsx    # Click-to-draw polygon interaction
+        ObstaclePolygon.tsx        # Polygon rendering + vertex editing
       waypoint/
         WaypointList.tsx           # Sortable waypoint list
         WaypointEditor.tsx         # Edit selected waypoint
@@ -386,6 +415,7 @@ packages/
       mission/
         MissionConfig.tsx          # Global mission settings
         PoiList.tsx                # POI list + editor
+        ObstacleList.tsx           # Obstacle list + editor
       ui/                          # shadcn/ui primitives
 ```
 
@@ -402,8 +432,11 @@ packages/
 | [=] 3  60m 10m/s |        (Leaflet + OpenStreetMap)               |
 |                  |                                     [Add WP]  |
 | v POIS (1)       |        o---1---2---3  (flight path) [Add POI] |
-| [*] Tower        |        |             [Pan]         [Clear]    |
+| [*] Tower        |        |             [Obstacle]     [Clear]    |
 |                  |        * POI                                   |
+| v OBSTACLES (1)  |        /---\  obstacle polygon                 |
+| [▲] Building A   |        \---/                                   |
+|                  |                                               |
 | > MISSION CONFIG |                                               |
 |                  |                                               |
 | v EDIT WP 2      |                                               |

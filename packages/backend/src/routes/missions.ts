@@ -11,7 +11,7 @@ missionRoutes.get("/", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
   const rows = db
     .prepare(
-      "SELECT id, name, config, waypoints, pois, share_token, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC"
+      "SELECT id, name, config, waypoints, pois, obstacles, share_token, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC"
     )
     .all(req.userId!) as any[];
 
@@ -42,6 +42,7 @@ missionRoutes.get("/:id", authMiddleware, (req: AuthRequest, res) => {
     config: JSON.parse(row.config),
     waypoints: JSON.parse(row.waypoints),
     pois: JSON.parse(row.pois || "[]"),
+    obstacles: JSON.parse(row.obstacles || "[]"),
   };
 
   res.json(mission);
@@ -49,7 +50,7 @@ missionRoutes.get("/:id", authMiddleware, (req: AuthRequest, res) => {
 
 // Create mission
 missionRoutes.post("/", optionalAuth, (req: AuthRequest, res) => {
-  const { name, config, waypoints, pois } = req.body;
+  const { name, config, waypoints, pois, obstacles } = req.body;
   if (!name || !config || !waypoints) {
     res.status(400).json({ error: "name, config, and waypoints are required" });
     return;
@@ -58,15 +59,15 @@ missionRoutes.post("/", optionalAuth, (req: AuthRequest, res) => {
   const db = getDb();
   const id = uuidv4();
   db.prepare(
-    "INSERT INTO missions (id, name, user_id, config, waypoints, pois) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(id, name, req.userId || null, JSON.stringify(config), JSON.stringify(waypoints), JSON.stringify(pois || []));
+    "INSERT INTO missions (id, name, user_id, config, waypoints, pois, obstacles) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  ).run(id, name, req.userId || null, JSON.stringify(config), JSON.stringify(waypoints), JSON.stringify(pois || []), JSON.stringify(obstacles || []));
 
   res.status(201).json({ id, name });
 });
 
 // Update mission (owner only)
 missionRoutes.put("/:id", authMiddleware, (req: AuthRequest, res) => {
-  const { name, config, waypoints, pois } = req.body;
+  const { name, config, waypoints, pois, obstacles } = req.body;
   const db = getDb();
 
   const existing = db.prepare("SELECT user_id FROM missions WHERE id = ?").get(req.params.id) as any;
@@ -98,6 +99,10 @@ missionRoutes.put("/:id", authMiddleware, (req: AuthRequest, res) => {
   if (pois !== undefined) {
     updates.push("pois = ?");
     values.push(JSON.stringify(pois));
+  }
+  if (obstacles !== undefined) {
+    updates.push("obstacles = ?");
+    values.push(JSON.stringify(obstacles));
   }
 
   updates.push("updated_at = datetime('now')");

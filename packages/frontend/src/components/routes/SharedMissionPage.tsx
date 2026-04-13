@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   MapPin,
   Crosshair,
@@ -11,12 +11,16 @@ import {
   User,
   ArrowLeft,
 } from "lucide-react";
+import { MapContainer, TileLayer, Polyline, Polygon, CircleMarker, useMap } from "react-leaflet";
+import L from "leaflet";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
-import type { Waypoint, MissionConfig, PointOfInterest } from "@droneroute/shared";
+import { getObstacleWarnings } from "@/lib/geo";
+import type { Waypoint, MissionConfig, PointOfInterest, Obstacle } from "@droneroute/shared";
+import "leaflet/dist/leaflet.css";
 
 interface SharedMissionData {
   id: string;
@@ -28,6 +32,7 @@ interface SharedMissionData {
   config: MissionConfig;
   waypoints: Waypoint[];
   pois: PointOfInterest[];
+  obstacles: Obstacle[];
 }
 
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -92,6 +97,133 @@ interface SharedMissionPageProps {
   onRequestAuth: () => void;
 }
 
+/** Fit map to show all waypoints, POIs, and obstacle vertices. */
+function FitBounds({ waypoints, pois, obstacles }: { waypoints: Waypoint[]; pois: PointOfInterest[]; obstacles: Obstacle[] }) {
+  const map = useMap();
+  useEffect(() => {
+    const points: L.LatLngExpression[] = [
+      ...waypoints.map((wp) => [wp.latitude, wp.longitude] as [number, number]),
+      ...pois.map((p) => [p.latitude, p.longitude] as [number, number]),
+      ...obstacles.flatMap((o) => o.vertices.map((v) => [v[0], v[1]] as [number, number])),
+    ];
+    if (points.length > 0) {
+      map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 16 });
+    }
+  }, [waypoints, pois, obstacles, map]);
+  return null;
+}
+
+/** Read-only map preview showing the flight path, waypoints, POIs, and obstacle polygons. */
+function SharedMissionMap({ waypoints, pois, obstacles }: { waypoints: Waypoint[]; pois: PointOfInterest[]; obstacles: Obstacle[] }) {
+  const warnings = useMemo(() => getObstacleWarnings(waypoints, obstacles), [waypoints, obstacles]);
+  const warningSegments = useMemo(() => {
+    const set = new Set<number>();
+    for (const w of warnings) {
+      if (w.type === "crosses") set.add(w.waypointIndex);
+    }
+    return set;
+  }, [warnings]);
+
+  // Build flight path segments
+  const segments = waypoints.length >= 2
+    ? waypoints.slice(0, -1).map((wp, i) => {
+        const next = waypoints[i + 1];
+        const hasWarning = warningSegments.has(wp.index);
+        return {
+          key: `seg-${wp.index}-${next.index}`,
+          positions: [
+            [wp.latitude, wp.longitude] as [number, number],
+            [next.latitude, next.longitude] as [number, number],
+          ],
+          hasWarning,
+        };
+      })
+    : [];
+
+  // Default center: first waypoint, or Barcelona
+  const center: [number, number] =
+    waypoints.length > 0
+      ? [waypoints[0].latitude, waypoints[0].longitude]
+      : [41.3874, 2.1686];
+
+  return (
+    <div className="h-[360px] w-full rounded-lg overflow-hidden border border-border">
+      <MapContainer
+        center={center}
+        zoom={14}
+        className="h-full w-full z-0"
+        zoomControl={true}
+        dragging={true}
+        scrollWheelZoom={true}
+        doubleClickZoom={false}
+        attributionControl={false}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <FitBounds waypoints={waypoints} pois={pois} obstacles={obstacles} />
+
+        {/* Flight path */}
+        {segments.map((seg) => (
+          <Polyline
+            key={seg.key}
+            positions={seg.positions}
+            pathOptions={{
+              color: seg.hasWarning ? "#ef4444" : "#3b82f6",
+              weight: 3,
+              opacity: 0.8,
+              dashArray: "10, 6",
+            }}
+          />
+        ))}
+
+        {/* Obstacle polygons */}
+        {obstacles.map((obs) => (
+          <Polygon
+            key={`obs-${obs.id}`}
+            positions={obs.vertices.map(([lat, lng]) => [lat, lng] as [number, number])}
+            pathOptions={{
+              color: "#ef4444",
+              fillColor: "#ef4444",
+              fillOpacity: 0.12,
+              weight: 2,
+              opacity: 0.7,
+            }}
+          />
+        ))}
+
+        {/* Waypoint markers */}
+        {waypoints.map((wp, i) => (
+          <CircleMarker
+            key={`wp-${wp.index}`}
+            center={[wp.latitude, wp.longitude]}
+            radius={6}
+            pathOptions={{
+              color: "#3b82f6",
+              fillColor: i === 0 ? "#22c55e" : i === waypoints.length - 1 ? "#ef4444" : "#3b82f6",
+              fillOpacity: 1,
+              weight: 2,
+            }}
+          />
+        ))}
+
+        {/* POI markers */}
+        {pois.map((poi) => (
+          <CircleMarker
+            key={`poi-${poi.id}`}
+            center={[poi.latitude, poi.longitude]}
+            radius={5}
+            pathOptions={{
+              color: "#f59e0b",
+              fillColor: "#f59e0b",
+              fillOpacity: 0.8,
+              weight: 2,
+            }}
+          />
+        ))}
+      </MapContainer>
+    </div>
+  );
+}
+
 export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPageProps) {
   const { loadMission, setCurrentPage } = useMissionStore();
   const { token } = useAuthStore();
@@ -123,6 +255,7 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
       config: mission.config,
       waypoints: mission.waypoints,
       pois: mission.pois,
+      obstacles: mission.obstacles,
     });
     // Clear URL so we go back to normal editor
     window.history.pushState({}, "", "/");
@@ -146,6 +279,7 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
         config: mission.config,
         waypoints: mission.waypoints,
         pois: mission.pois,
+        obstacles: mission.obstacles,
       });
       window.history.pushState({}, "", "/");
       setCurrentPage("editor");
@@ -346,6 +480,17 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
                         </div>
                       )}
                     </div>
+
+                    {/* Map preview */}
+                    {mission.waypoints.length > 0 && (
+                      <div className="mb-6">
+                        <SharedMissionMap
+                          waypoints={mission.waypoints}
+                          pois={mission.pois}
+                          obstacles={mission.obstacles}
+                        />
+                      </div>
+                    )}
 
                     {/* Action buttons */}
                     <div className="flex flex-wrap gap-3">

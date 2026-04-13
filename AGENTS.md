@@ -19,3 +19,7 @@ Markdown section headings (`## Like This`) may use standard title case since the
 ## Package versioning
 
 The `droneroute` npm package (`packages/cli`) must always have the same version as the root workspace and the other packages. When bumping the version, update `packages/cli/package.json` to match.
+
+## Public page
+
+The "public page" refers to the GitHub Pages site hosted from the `gh-pages` branch — not the app's AboutDialog or SharedMissionPage. When asked to change the public page, switch to the `gh-pages` branch and edit its static assets.

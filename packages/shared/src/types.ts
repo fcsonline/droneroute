@@ -213,6 +213,15 @@ export interface PointOfInterest {
   height: number;
 }
 
+// ── Obstacle ─────────────────────────────────────────────
+
+export interface Obstacle {
+  id: string;
+  name: string;
+  description: string;
+  vertices: [number, number][]; // Array of [latitude, longitude] pairs
+}
+
 // ── Waypoint ─────────────────────────────────────────────
 
 export interface Waypoint {
@@ -265,6 +274,7 @@ export interface Mission {
   config: MissionConfig;
   waypoints: Waypoint[];
   pois: PointOfInterest[];
+  obstacles: Obstacle[];
 }
 
 // ── Shared Mission ──────────────────────────────────────
@@ -279,6 +289,7 @@ export interface SharedMission {
   config: MissionConfig;
   waypoints: Waypoint[];
   pois: PointOfInterest[];
+  obstacles: Obstacle[];
 }
 
 // ── Default Config ───────────────────────────────────────

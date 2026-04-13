@@ -1,4 +1,4 @@
-import { MousePointerClick, Hand, Trash2, Crosshair, Orbit, Grid3X3, Building2, PenLine, ChevronDown } from "lucide-react";
+import { MousePointerClick, Hand, Trash2, Crosshair, Orbit, Grid3X3, Building2, PenLine, ChevronDown, Triangle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
@@ -18,12 +18,15 @@ export function MapToolbar() {
   const {
     isAddingWaypoint,
     isAddingPoi,
+    isDrawingObstacle,
     templateMode,
     setIsAddingWaypoint,
     setIsAddingPoi,
+    setIsDrawingObstacle,
     setTemplateMode,
     waypoints,
     pois,
+    obstacles,
     clearMission,
   } = useMissionStore();
 
@@ -42,7 +45,7 @@ export function MapToolbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showTemplateMenu]);
 
-  const isPanning = !isAddingWaypoint && !isAddingPoi && !templateMode;
+  const isPanning = !isAddingWaypoint && !isAddingPoi && !isDrawingObstacle && !templateMode;
 
   return (
     <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 min-w-[130px]">
@@ -71,6 +74,19 @@ export function MapToolbar() {
           <span className="text-xs">Add POI</span>
         </span>
         <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">P</kbd>
+      </Button>
+      <Button
+        variant={isDrawingObstacle ? "default" : "outline"}
+        size="sm"
+        onClick={() => setIsDrawingObstacle(!isDrawingObstacle)}
+        title="Draw obstacle polygon (B)"
+        className={`justify-between ${isDrawingObstacle ? activeClass : inactiveClass}`}
+      >
+        <span className="flex items-center gap-1.5">
+          <Triangle className="h-4 w-4" />
+          <span className="text-xs">Obstacle</span>
+        </span>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">B</kbd>
       </Button>
 
       {/* Template dropdown */}
@@ -130,6 +146,7 @@ export function MapToolbar() {
         onClick={() => {
           setIsAddingWaypoint(false);
           setIsAddingPoi(false);
+          setIsDrawingObstacle(false);
           setTemplateMode(null);
         }}
         title="Pan / select mode (Esc)"
@@ -141,14 +158,14 @@ export function MapToolbar() {
         </span>
         <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">Esc</kbd>
       </Button>
-      {(waypoints.length > 0 || pois.length > 0) && (
+      {(waypoints.length > 0 || pois.length > 0 || obstacles.length > 0) && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => {
-            if (confirm("Clear all waypoints and POIs?")) clearMission();
+            if (confirm("Clear all waypoints, POIs, and obstacles?")) clearMission();
           }}
-          title="Clear all waypoints and POIs"
+          title="Clear all waypoints, POIs, and obstacles"
           className="bg-background/90 backdrop-blur-sm text-destructive hover:text-destructive"
         >
           <Trash2 className="h-4 w-4" />

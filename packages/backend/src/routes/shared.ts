@@ -61,7 +61,7 @@ sharedRoutes.get("/shared/:token", (req, res) => {
   const db = getDb();
   const row = db
     .prepare(
-      `SELECT m.id, m.name, m.config, m.waypoints, m.pois, m.share_token, m.created_at, m.updated_at, u.email
+      `SELECT m.id, m.name, m.config, m.waypoints, m.pois, m.obstacles, m.share_token, m.created_at, m.updated_at, u.email
        FROM missions m
        LEFT JOIN users u ON m.user_id = u.id
        WHERE m.share_token = ?`
@@ -83,6 +83,7 @@ sharedRoutes.get("/shared/:token", (req, res) => {
     config: JSON.parse(row.config),
     waypoints: JSON.parse(row.waypoints),
     pois: JSON.parse(row.pois || "[]"),
+    obstacles: JSON.parse(row.obstacles || "[]"),
   };
 
   res.json(mission);
@@ -92,7 +93,7 @@ sharedRoutes.get("/shared/:token", (req, res) => {
 sharedRoutes.post("/shared/:token/clone", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
   const row = db
-    .prepare("SELECT name, config, waypoints, pois FROM missions WHERE share_token = ?")
+    .prepare("SELECT name, config, waypoints, pois, obstacles FROM missions WHERE share_token = ?")
     .get(req.params.token) as any;
 
   if (!row) {
@@ -104,8 +105,8 @@ sharedRoutes.post("/shared/:token/clone", authMiddleware, (req: AuthRequest, res
   const name = `${row.name} (copy)`;
 
   db.prepare(
-    "INSERT INTO missions (id, name, user_id, config, waypoints, pois) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(id, name, req.userId!, row.config, row.waypoints, row.pois || "[]");
+    "INSERT INTO missions (id, name, user_id, config, waypoints, pois, obstacles) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  ).run(id, name, req.userId!, row.config, row.waypoints, row.pois || "[]", row.obstacles || "[]");
 
   res.status(201).json({ id, name });
 });

@@ -29,6 +29,7 @@ kmzRoutes.post("/generate", async (req, res) => {
       config,
       waypoints,
       pois: pois || [],
+      obstacles: [],
     };
 
     const buffer = await generateKmzBuffer(mission);
@@ -62,6 +63,7 @@ kmzRoutes.get("/download/:missionId", async (req, res) => {
       config: JSON.parse(row.config),
       waypoints: JSON.parse(row.waypoints),
       pois: JSON.parse(row.pois || "[]"),
+      obstacles: JSON.parse(row.obstacles || "[]"),
     };
 
     const buffer = await generateKmzBuffer(mission);
@@ -94,8 +96,8 @@ kmzRoutes.post("/import", optionalAuth, upload.single("file"), async (req: AuthR
       missionId = uuidv4();
       const name = req.file.originalname.replace(/\.kmz$/i, "") || "Imported Mission";
       db.prepare(
-        "INSERT INTO missions (id, name, user_id, config, waypoints, pois) VALUES (?, ?, ?, ?, ?, ?)"
-      ).run(missionId, name, req.userId || null, JSON.stringify(config), JSON.stringify(waypoints), JSON.stringify(pois));
+        "INSERT INTO missions (id, name, user_id, config, waypoints, pois, obstacles) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      ).run(missionId, name, req.userId || null, JSON.stringify(config), JSON.stringify(waypoints), JSON.stringify(pois), "[]");
     }
 
     res.json({ id: missionId, config, waypoints, pois });

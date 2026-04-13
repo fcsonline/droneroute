@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Waypoint, MissionConfig, WaypointAction, PointOfInterest } from "@droneroute/shared";
+import type { Waypoint, MissionConfig, WaypointAction, PointOfInterest, Obstacle } from "@droneroute/shared";
 import { DEFAULT_MISSION_CONFIG, DEFAULT_WAYPOINT } from "@droneroute/shared";
 import type { TemplateType } from "@/lib/templates";
 
@@ -22,6 +22,12 @@ interface MissionState {
   // POIs
   pois: PointOfInterest[];
   selectedPoiId: string | null;
+
+  // Obstacles
+  obstacles: Obstacle[];
+  selectedObstacleId: string | null;
+  isDrawingObstacle: boolean;
+  drawingVertices: [number, number][];
 
   // UI state
   isAddingWaypoint: boolean;
@@ -61,6 +67,17 @@ interface MissionState {
   setTemplateMode: (mode: TemplateType | null) => void;
   appendWaypoints: (waypoints: Omit<Waypoint, "index" | "name">[], pois?: Omit<PointOfInterest, "id">[]) => void;
 
+  // Obstacle actions
+  addObstacle: (vertices: [number, number][]) => void;
+  updateObstacle: (id: string, updates: Partial<Obstacle>) => void;
+  removeObstacle: (id: string) => void;
+  moveObstacleVertex: (id: string, vertexIndex: number, lat: number, lng: number) => void;
+  addObstacleVertex: (id: string, afterIndex: number, lat: number, lng: number) => void;
+  removeObstacleVertex: (id: string, vertexIndex: number) => void;
+  selectObstacle: (id: string | null) => void;
+  setIsDrawingObstacle: (drawing: boolean) => void;
+  setDrawingVertices: (vertices: [number, number][]) => void;
+
   // Mission actions
   loadMission: (data: {
     id?: string;
@@ -68,6 +85,7 @@ interface MissionState {
     config: MissionConfig;
     waypoints: Waypoint[];
     pois?: PointOfInterest[];
+    obstacles?: Obstacle[];
   }) => void;
   clearMission: () => void;
   setDirty: (dirty: boolean) => void;
@@ -83,6 +101,10 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   lastSelectedWaypointIndex: null,
   pois: [],
   selectedPoiId: null,
+  obstacles: [],
+  selectedObstacleId: null,
+  isDrawingObstacle: false,
+  drawingVertices: [],
   isAddingWaypoint: true,
   isAddingPoi: false,
   templateMode: null,
@@ -263,7 +285,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     }),
 
   setIsAddingWaypoint: (adding) =>
-    set((state) => ({ isAddingWaypoint: adding, isAddingPoi: adding ? false : state.isAddingPoi, templateMode: adding ? null : state.templateMode })),
+    set((state) => ({ isAddingWaypoint: adding, isAddingPoi: adding ? false : state.isAddingPoi, isDrawingObstacle: adding ? false : state.isDrawingObstacle, templateMode: adding ? null : state.templateMode })),
 
   addAction: (waypointIndex, action) =>
     set((state) => ({
@@ -348,10 +370,88 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   selectPoi: (id) => set({ selectedPoiId: id }),
 
   setIsAddingPoi: (adding) =>
-    set((state) => ({ isAddingPoi: adding, isAddingWaypoint: adding ? false : state.isAddingWaypoint, templateMode: adding ? null : state.templateMode })),
+    set((state) => ({ isAddingPoi: adding, isAddingWaypoint: adding ? false : state.isAddingWaypoint, isDrawingObstacle: adding ? false : state.isDrawingObstacle, templateMode: adding ? null : state.templateMode })),
+
+  // Obstacle actions
+  addObstacle: (vertices) =>
+    set((state) => {
+      const obstacle: Obstacle = {
+        id: crypto.randomUUID(),
+        name: `Obstacle ${state.obstacles.length + 1}`,
+        description: "",
+        vertices,
+      };
+      return {
+        obstacles: [...state.obstacles, obstacle],
+        selectedObstacleId: obstacle.id,
+        isDrawingObstacle: false,
+        drawingVertices: [],
+        dirty: true,
+      };
+    }),
+
+  updateObstacle: (id, updates) =>
+    set((state) => ({
+      obstacles: state.obstacles.map((o) => (o.id === id ? { ...o, ...updates } : o)),
+      dirty: true,
+    })),
+
+  removeObstacle: (id) =>
+    set((state) => ({
+      obstacles: state.obstacles.filter((o) => o.id !== id),
+      selectedObstacleId: state.selectedObstacleId === id ? null : state.selectedObstacleId,
+      dirty: true,
+    })),
+
+  moveObstacleVertex: (id, vertexIndex, lat, lng) =>
+    set((state) => ({
+      obstacles: state.obstacles.map((o) => {
+        if (o.id !== id) return o;
+        const vertices = [...o.vertices] as [number, number][];
+        vertices[vertexIndex] = [lat, lng];
+        return { ...o, vertices };
+      }),
+      dirty: true,
+    })),
+
+  addObstacleVertex: (id, afterIndex, lat, lng) =>
+    set((state) => ({
+      obstacles: state.obstacles.map((o) => {
+        if (o.id !== id) return o;
+        const vertices = [...o.vertices] as [number, number][];
+        vertices.splice(afterIndex + 1, 0, [lat, lng]);
+        return { ...o, vertices };
+      }),
+      dirty: true,
+    })),
+
+  removeObstacleVertex: (id, vertexIndex) =>
+    set((state) => ({
+      obstacles: state.obstacles.map((o) => {
+        if (o.id !== id || o.vertices.length <= 3) return o;
+        const vertices = o.vertices.filter((_: [number, number], i: number) => i !== vertexIndex);
+        return { ...o, vertices };
+      }),
+      dirty: true,
+    })),
+
+  selectObstacle: (id) => set({ selectedObstacleId: id }),
+
+  setIsDrawingObstacle: (drawing) =>
+    set((state) => ({
+      isDrawingObstacle: drawing,
+      isAddingWaypoint: drawing ? false : state.isAddingWaypoint,
+      isAddingPoi: drawing ? false : state.isAddingPoi,
+      templateMode: drawing ? null : state.templateMode,
+      selectedWaypointIndices: drawing ? new Set<number>() : state.selectedWaypointIndices,
+      selectedPoiId: drawing ? null : state.selectedPoiId,
+      drawingVertices: drawing ? [] : state.drawingVertices,
+    })),
+
+  setDrawingVertices: (vertices) => set({ drawingVertices: vertices }),
 
   setTemplateMode: (mode) =>
-    set({ templateMode: mode, isAddingWaypoint: false, isAddingPoi: false, selectedWaypointIndices: new Set(), selectedPoiId: null }),
+    set({ templateMode: mode, isAddingWaypoint: false, isAddingPoi: false, isDrawingObstacle: false, selectedWaypointIndices: new Set(), selectedPoiId: null }),
 
   appendWaypoints: (newWps, newPois) =>
     set((state) => {
@@ -396,9 +496,11 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       config: data.config,
       waypoints: data.waypoints,
       pois: data.pois || [],
+      obstacles: data.obstacles || [],
       selectedWaypointIndices: new Set<number>(),
       lastSelectedWaypointIndex: null,
       selectedPoiId: null,
+      selectedObstacleId: null,
       dirty: false,
     }),
 
@@ -409,9 +511,13 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       config: { ...DEFAULT_MISSION_CONFIG },
       waypoints: [],
       pois: [],
+      obstacles: [],
       selectedWaypointIndices: new Set<number>(),
       lastSelectedWaypointIndex: null,
       selectedPoiId: null,
+      selectedObstacleId: null,
+      isDrawingObstacle: false,
+      drawingVertices: [],
       dirty: false,
     }),
 

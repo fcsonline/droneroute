@@ -59,3 +59,8 @@ body {
 .map-tool-pencil .leaflet-container {
   cursor: crosshair !important;
 }
+
+/* Crosshair cursor for obstacle polygon drawing */
+.map-tool-obstacle .leaflet-container {
+  cursor: crosshair !important;
+}

@@ -1,21 +1,23 @@
 import { MapContainer, TileLayer, useMapEvents, useMap, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
-import { calculateIdealGimbalPitch } from "@/lib/geo";
+import { calculateIdealGimbalPitch, getObstacleWarnings } from "@/lib/geo";
 import { WaypointMarker } from "./WaypointMarker";
 import { PoiMarker } from "./PoiMarker";
 import { MapToolbar } from "./MapToolbar";
 import { TemplateDrawHandler } from "./TemplateDrawHandler";
 import { PencilDrawHandler } from "./PencilDrawHandler";
-import { useEffect, useRef } from "react";
+import { ObstacleDrawHandler } from "./ObstacleDrawHandler";
+import { ObstaclePolygon } from "./ObstaclePolygon";
+import { useEffect, useRef, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 
 function MapClickHandler() {
-  const { isAddingWaypoint, isAddingPoi, templateMode, addWaypoint, addPoi } = useMissionStore();
+  const { isAddingWaypoint, isAddingPoi, templateMode, isDrawingObstacle, addWaypoint, addPoi } = useMissionStore();
 
   useMapEvents({
     click(e) {
-      if (templateMode) return; // Template mode handles its own interactions
+      if (templateMode || isDrawingObstacle) return; // These modes handle their own interactions
       if (isAddingWaypoint) {
         addWaypoint(e.latlng.lat, e.latlng.lng);
       } else if (isAddingPoi) {
@@ -45,6 +47,7 @@ function FitBoundsOnLoad() {
   const map = useMap();
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
+  const obstacles = useMissionStore((s) => s.obstacles);
   const prevCountRef = useRef(0);
 
   useEffect(() => {
@@ -57,28 +60,42 @@ function FitBoundsOnLoad() {
     const points: L.LatLngExpression[] = [
       ...waypoints.map((wp) => [wp.latitude, wp.longitude] as [number, number]),
       ...pois.map((p) => [p.latitude, p.longitude] as [number, number]),
+      ...obstacles.flatMap((o) => o.vertices.map((v) => [v[0], v[1]] as [number, number])),
     ];
 
     if (points.length > 0) {
       const bounds = L.latLngBounds(points);
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
     }
-  }, [waypoints, pois, map]);
+  }, [waypoints, pois, obstacles, map]);
 
   return null;
 }
 
 function FlightPath() {
   const waypoints = useMissionStore((s) => s.waypoints);
+  const obstacles = useMissionStore((s) => s.obstacles);
+
+  const warnings = useMemo(
+    () => getObstacleWarnings(waypoints, obstacles),
+    [waypoints, obstacles]
+  );
+
+  // Set of segment start indices that have crossing warnings
+  const warningSegments = useMemo(() => {
+    const set = new Set<number>();
+    for (const w of warnings) {
+      if (w.type === "crosses") set.add(w.waypointIndex);
+    }
+    return set;
+  }, [warnings]);
 
   if (waypoints.length < 2) return null;
 
-  // Render each segment as its own Polyline so animation speed
-  // matches the departing waypoint's speed.
-  // Baseline: 7 m/s → 2s duration, scales inversely, clamped 0.5s–5s.
   const segments = waypoints.slice(0, -1).map((wp, i) => {
     const next = waypoints[i + 1];
     const duration = Math.max(0.5, Math.min(5, 2 * (7 / wp.speed)));
+    const hasWarning = warningSegments.has(wp.index);
     return {
       key: `seg-${wp.index}-${next.index}`,
       positions: [
@@ -86,6 +103,7 @@ function FlightPath() {
         [next.latitude, next.longitude] as [number, number],
       ],
       duration,
+      hasWarning,
     };
   });
 
@@ -96,7 +114,7 @@ function FlightPath() {
           key={seg.key}
           positions={seg.positions}
           pathOptions={{
-            color: "#3b82f6",
+            color: seg.hasWarning ? "#ef4444" : "#3b82f6",
             weight: 3,
             opacity: 0.8,
             dashArray: "10, 6",
@@ -158,19 +176,23 @@ function PoiPointingLines() {
 export function MapView() {
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
+  const obstacles = useMissionStore((s) => s.obstacles);
   const isAddingWaypoint = useMissionStore((s) => s.isAddingWaypoint);
   const isAddingPoi = useMissionStore((s) => s.isAddingPoi);
+  const isDrawingObstacle = useMissionStore((s) => s.isDrawingObstacle);
   const templateMode = useMissionStore((s) => s.templateMode);
 
   const cursorClass = templateMode === "pencil"
     ? "map-tool-pencil"
     : templateMode
       ? "map-tool-template"
-      : isAddingWaypoint
-        ? "map-tool-waypoint"
-        : isAddingPoi
-          ? "map-tool-poi"
-          : "";
+      : isDrawingObstacle
+        ? "map-tool-obstacle"
+        : isAddingWaypoint
+          ? "map-tool-waypoint"
+          : isAddingPoi
+            ? "map-tool-poi"
+            : "";
 
   return (
     <div className={`relative h-full w-full ${cursorClass}`}>
@@ -191,6 +213,10 @@ export function MapView() {
         <PoiPointingLines />
         <TemplateDrawHandler />
         <PencilDrawHandler />
+        <ObstacleDrawHandler />
+        {obstacles.map((obstacle) => (
+          <ObstaclePolygon key={obstacle.id} obstacle={obstacle} />
+        ))}
         {waypoints.map((wp) => (
           <WaypointMarker key={wp.index} waypoint={wp} />
         ))}

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Download,
   Upload,
@@ -18,6 +18,8 @@ import {
   TrendingUp,
   UserCog,
   CircleHelp,
+  Triangle,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +28,7 @@ import { WaypointList } from "@/components/waypoint/WaypointList";
 import { BulkActionToolbar } from "@/components/waypoint/BulkActionToolbar";
 import { MissionConfig } from "@/components/mission/MissionConfig";
 import { PoiList } from "@/components/mission/PoiList";
+import { ObstacleList } from "@/components/mission/ObstacleList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
 import { SharedMissionPage } from "@/components/routes/SharedMissionPage";
 import { ElevationGraph } from "@/components/mission/ElevationGraph";
@@ -36,8 +39,9 @@ import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
+import { getObstacleWarnings } from "@/lib/geo";
 
-type SidebarSection = "waypoints" | "pois" | "config";
+type SidebarSection = "waypoints" | "pois" | "obstacles" | "config";
 
 export default function App() {
   const {
@@ -48,6 +52,7 @@ export default function App() {
     config,
     waypoints,
     pois,
+    obstacles,
     loadMission,
     currentPage,
     setCurrentPage,
@@ -60,6 +65,7 @@ export default function App() {
   const [expandedSections, setExpandedSections] = useState<Record<SidebarSection, boolean>>({
     waypoints: true,
     pois: false,
+    obstacles: false,
     config: false,
   });
 
@@ -90,13 +96,19 @@ export default function App() {
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (dirty && (waypoints.length > 1 || pois.length > 0)) {
+      if (dirty && (waypoints.length > 1 || pois.length > 0 || obstacles.length > 0)) {
         e.preventDefault();
       }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, [dirty, waypoints.length, pois.length]);
+  }, [dirty, waypoints.length, pois.length, obstacles.length]);
+
+  // Obstacle warnings
+  const obstacleWarnings = useMemo(
+    () => getObstacleWarnings(waypoints, obstacles),
+    [waypoints, obstacles]
+  );
 
   // Compute Gravatar URL when email changes
   useEffect(() => {
@@ -151,13 +163,14 @@ export default function App() {
     setSaving(true);
     try {
       if (missionId) {
-        await api.put(`/missions/${missionId}`, { name: missionName, config, waypoints, pois });
+        await api.put(`/missions/${missionId}`, { name: missionName, config, waypoints, pois, obstacles });
       } else {
         const result = await api.post<{ id: string }>("/missions", {
           name: missionName,
           config,
           waypoints,
           pois,
+          obstacles,
         });
         setMissionId(result.id);
       }
@@ -202,6 +215,7 @@ export default function App() {
       const {
         setIsAddingWaypoint,
         setIsAddingPoi,
+        setIsDrawingObstacle,
         setTemplateMode,
         clearWaypointSelection,
         removeSelectedWaypoints,
@@ -240,6 +254,11 @@ export default function App() {
           e.preventDefault();
           setTemplateMode(templateMode === "pencil" ? null : "pencil");
           break;
+        case "b":
+          if (e.metaKey || e.ctrlKey) return;
+          e.preventDefault();
+          setIsDrawingObstacle(!useMissionStore.getState().isDrawingObstacle);
+          break;
         case "a":
           if (e.metaKey || e.ctrlKey) {
             e.preventDefault();
@@ -251,6 +270,7 @@ export default function App() {
           clearWaypointSelection();
           setIsAddingWaypoint(false);
           setIsAddingPoi(false);
+          setIsDrawingObstacle(false);
           setTemplateMode(null);
           break;
         case "delete":
@@ -394,6 +414,23 @@ export default function App() {
             )}
           </div>
 
+          {/* Obstacles section — RED accent */}
+          <div className="border-l-2 border-red-500/70 bg-red-500/[0.03]">
+            <button
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-red-500/10 text-red-400"
+              onClick={() => toggleSection("obstacles")}
+            >
+              {expandedSections.obstacles ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              <Triangle className="h-3 w-3" />
+               Obstacles ({obstacles.length})
+            </button>
+            {expandedSections.obstacles && (
+              <div className="max-h-[30vh] overflow-y-auto">
+                <ObstacleList />
+              </div>
+            )}
+          </div>
+
           {/* Mission Settings section — PURPLE accent */}
           <div className="border-l-2 border-purple-500/70 bg-purple-500/[0.03]">
             <button
@@ -418,14 +455,10 @@ export default function App() {
         {/* Footer stats with colored icons */}
         <div className="px-3 py-2 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-[11px]" title="Waypoints">
-              <MapPin className="h-3 w-3 text-blue-400" />
-              <span className="text-blue-300 font-medium">{waypoints.length}</span>
-            </span>
-            {pois.length > 0 && (
-              <span className="flex items-center gap-1 text-[11px]" title="Points of Interest">
-                <Crosshair className="h-3 w-3 text-amber-400" />
-                <span className="text-amber-300 font-medium">{pois.length}</span>
+            {obstacles.length > 0 && obstacleWarnings.length > 0 && (
+              <span className="flex items-center gap-1 text-[11px]" title={`${obstacleWarnings.length} obstacle warning(s)`}>
+                <AlertTriangle className="h-3 w-3 text-orange-400" />
+                <span className="text-orange-300 font-medium">{obstacleWarnings.length}</span>
               </span>
             )}
             {(() => {
