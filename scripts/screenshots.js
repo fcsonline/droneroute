@@ -52,7 +52,7 @@ async function zoomIn(page, map, levels = 3) {
   });
 
   // ─── MAIN MAP (README hero shot) ─────────────────
-  console.log('0/7 Main map...');
+  console.log('0/8 Main map...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -89,7 +89,7 @@ async function zoomIn(page, map, levels = 3) {
   }
 
   // ─── ORBIT TEMPLATE ──────────────────────────────
-  console.log('1/7 Orbit template...');
+  console.log('1/8 Orbit template...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -132,7 +132,7 @@ async function zoomIn(page, map, levels = 3) {
   }
 
   // ─── GRID SURVEY TEMPLATE ────────────────────────
-  console.log('2/7 Grid survey template...');
+  console.log('2/8 Grid survey template...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -166,7 +166,7 @@ async function zoomIn(page, map, levels = 3) {
   }
 
   // ─── FACADE SCAN TEMPLATE ────────────────────────
-  console.log('3/7 Facade scan template...');
+  console.log('3/8 Facade scan template...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -200,7 +200,7 @@ async function zoomIn(page, map, levels = 3) {
   }
 
   // ─── PENCIL PATH TEMPLATE ─────────────────────────
-  console.log('4/7 Pencil path template...');
+  console.log('4/8 Pencil path template...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -243,8 +243,8 @@ async function zoomIn(page, map, levels = 3) {
     await page.close();
   }
 
-  // ─── MISSION WITH WAYPOINTS + POI (for multiselect, elevation, gimbal) ───
-  console.log('5/7 Building mission with waypoints + POI...');
+  // ─── MISSION WITH WAYPOINTS + POI (for multiselect + elevation) ───
+  console.log('5/8 Building mission with waypoints + POI...');
   {
     const page = await context.newPage();
     await page.goto(BASE);
@@ -285,15 +285,8 @@ async function zoomIn(page, map, levels = 3) {
     await page.keyboard.press('Escape');
     await sleep(500);
 
-    // Set varying heights via the store for a nicer elevation graph
-    await page.evaluate(() => {
-      const store = (window).__missionStore;
-      if (!store) return;
-      // We can't easily access the store, so skip
-    });
-
     // ─── MULTISELECT SCREENSHOT ───
-    console.log('6/7 Multiselect...');
+    console.log('6/8 Multiselect...');
     // Click waypoints in the sidebar list with Cmd held to multiselect
     const wpItems = page.locator('[class*="flex items-center gap-2 rounded-md px-2"]');
     const count = await wpItems.count();
@@ -312,7 +305,7 @@ async function zoomIn(page, map, levels = 3) {
     console.log('  -> saved multiselect.jpg');
 
     // ─── ELEVATION GRAPH SCREENSHOT ───
-    console.log('7/7 Elevation graph...');
+    console.log('7/8 Elevation graph...');
     await page.keyboard.press('Escape');
     await sleep(300);
 
@@ -336,55 +329,60 @@ async function zoomIn(page, map, levels = 3) {
       console.log('  -> saved elevation-graph.jpg');
     }
 
-    // ─── GIMBAL PITCH SCREENSHOT ───
-    // Select a waypoint, configure it to face the POI, show perfect pitch
-    // Click first waypoint to select & expand editor
-    if (count >= 1) {
-      await wpItems.nth(0).click();
-      await sleep(800);
+    await page.close();
+  }
 
-      // Try to find the heading mode dropdown and set it to "Toward POI"
-      // The inline editor should be visible now
-      // Look for a select trigger that contains heading-related text
-      const headingTriggers = page.locator('button[role="combobox"]');
-      const triggerCount = await headingTriggers.count();
+  // ─── GIMBAL PITCH (orbit template with all-green POI lines) ───
+  console.log('8/8 Gimbal pitch (orbit)...');
+  {
+    const page = await context.newPage();
+    await page.goto(BASE);
+    await page.waitForSelector('.leaflet-container');
+    await sleep(2000);
+    await panToTarget(page);
 
-      for (let i = 0; i < triggerCount; i++) {
-        const text = await headingTriggers.nth(i).textContent();
-        if (text && (text.includes('Follow') || text.includes('Manual') || text.includes('Fixed') || text.includes('Smooth') || text.includes('POI'))) {
-          await headingTriggers.nth(i).click();
-          await sleep(300);
-          const poiOption = page.getByRole('option', { name: /Toward POI/i });
-          if (await poiOption.isVisible({ timeout: 500 }).catch(() => false)) {
-            await poiOption.click();
-            await sleep(500);
+    const map = page.locator('.leaflet-container');
+    const box = await map.boundingBox();
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
 
-            // Now look for POI dropdown and select the POI
-            const poiTriggers = page.locator('button[role="combobox"]');
-            const ptCount = await poiTriggers.count();
-            for (let j = 0; j < ptCount; j++) {
-              const pt = await poiTriggers.nth(j).textContent();
-              if (pt && pt.includes('POI')) {
-                await poiTriggers.nth(j).click();
-                await sleep(300);
-                const poiItem = page.getByRole('option').first();
-                if (await poiItem.isVisible({ timeout: 500 }).catch(() => false)) {
-                  await poiItem.click();
-                  await sleep(800);
-                }
-                break;
-              }
-            }
-          }
-          break;
-        }
-      }
+    // Zoom in for a clear orbit view
+    await zoomIn(page, map, 2);
 
-      await sleep(1000);
-      await page.screenshot({ path: path.join(OUT, 'gimbal-pitch.jpg'), type: 'jpeg', quality: 85 });
-      console.log('  -> saved gimbal-pitch.jpg');
+    // Create orbit via template (press O, drag from center outward)
+    await page.keyboard.press('o');
+    await sleep(500);
+    await page.mouse.move(cx - 40, cy - 60);
+    await page.mouse.down();
+    const dragRadius = 180;
+    for (let i = 0; i <= 40; i++) {
+      await page.mouse.move(cx - 40 + i * (dragRadius / 40), cy - 60, { steps: 1 });
+      await sleep(15);
+    }
+    await page.mouse.up();
+    await sleep(1500);
+
+    // Apply the orbit template — the store auto-converts orbit waypoints to
+    // headingMode "towardPOI" linked to the orbit center POI, and the
+    // pre-calculated gimbal pitch matches calculateIdealGimbalPitch, so all
+    // POI-pointing lines are green.
+    const applyBtn = page.getByRole('button', { name: /apply/i });
+    if (await applyBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await applyBtn.click();
+      await sleep(1500);
     }
 
+    // Select the first waypoint to show the editor sidebar
+    await page.keyboard.press('Escape');
+    await sleep(300);
+    const wp1 = page.locator('text=Waypoint 1').first();
+    if (await wp1.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await wp1.click();
+      await sleep(800);
+    }
+
+    await page.screenshot({ path: path.join(OUT, 'gimbal-pitch.jpg'), type: 'jpeg', quality: 85 });
+    console.log('  -> saved gimbal-pitch.jpg');
     await page.close();
   }
 

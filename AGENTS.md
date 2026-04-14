@@ -23,3 +23,7 @@ The `droneroute` npm package (`packages/cli`) must always have the same version 
 ## Public page
 
 The "public page" refers to the GitHub Pages site hosted from the `gh-pages` branch — not the app's AboutDialog or SharedMissionPage. When asked to change the public page, switch to the `gh-pages` branch and edit its static assets.
+
+## Screenshots
+
+All application screenshots are taken at these coordinates: 41.25797725781744, 0.9322907667035154.

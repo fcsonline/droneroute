@@ -1,38 +1,38 @@
 const { chromium } = require('playwright');
 const path = require('path');
 
-const BASE = 'http://localhost:5173';
+const BASE = process.env.BASE_URL || 'http://droneroute.localhost';
 const OUT = path.join(__dirname, '..', 'docs', 'screenshots');
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-async function setWaypointTowardPOI(page, wpName) {
-  // Click waypoint in sidebar
-  await page.locator(`text=${wpName}`).first().click();
-  await sleep(400);
+// Same target coordinates used by screenshots.js
+const TARGET_LAT = 41.257517;
+const TARGET_LNG = 0.930963;
+const TARGET_ZOOM = 15;
 
-  // Find and click the Heading Mode trigger (the one showing "Use Global" or "followWayline")
-  const headingTrigger = page.locator('button[role="combobox"]').filter({ hasText: /Global.*follow|followWayline/i }).first();
-  if (await headingTrigger.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await headingTrigger.click();
-    await sleep(200);
-    await page.getByRole('option', { name: /Toward POI/i }).click();
-    await sleep(300);
-  }
+async function panToTarget(page) {
+  await page.waitForFunction(() => {
+    const c = document.querySelector('.leaflet-container');
+    return c && c._leaflet_map;
+  }, { timeout: 10000 });
 
-  // Now select the Target POI (dropdown showing "None")
-  const poiTrigger = page.locator('button[role="combobox"]').filter({ hasText: /None/i }).first();
-  if (await poiTrigger.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await poiTrigger.click();
-    await sleep(200);
-    // Select "POI 1" (the first/only POI)
-    const poiOption = page.getByRole('option', { name: /POI 1/i });
-    if (await poiOption.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await poiOption.click();
-      await sleep(300);
-    } else {
-      console.log(`  No POI option found for ${wpName}`);
-    }
+  await page.evaluate(([lat, lng, zoom]) => {
+    const container = document.querySelector('.leaflet-container');
+    const map = container._leaflet_map;
+    map.setView([lat, lng], zoom, { animate: false });
+  }, [TARGET_LAT, TARGET_LNG, TARGET_ZOOM]);
+  await sleep(2000);
+}
+
+async function zoomIn(page, map, levels = 3) {
+  const box = await map.boundingBox();
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  for (let i = 0; i < levels; i++) {
+    await page.mouse.move(cx, cy);
+    await page.mouse.wheel(0, -300);
+    await sleep(600);
   }
 }
 
@@ -52,71 +52,57 @@ async function setWaypointTowardPOI(page, wpName) {
   await page.goto(BASE);
   await page.waitForSelector('.leaflet-container');
   await sleep(2000);
+  await panToTarget(page);
 
   const map = page.locator('.leaflet-container');
   const box = await map.boundingBox();
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
 
-  // Place a POI (press P, click on map) — right-center area
-  await page.keyboard.press('p');
-  await sleep(300);
-  await page.mouse.click(box.x + box.width * 0.62, box.y + box.height * 0.42);
+  // Zoom in for a nice orbit view
+  await zoomIn(page, map, 2);
+
+  // Create orbit via template (press O, drag from center outward)
+  await page.keyboard.press('o');
   await sleep(500);
+  await page.mouse.move(cx - 40, cy - 60);
+  await page.mouse.down();
+  const dragRadius = 180;
+  for (let i = 0; i <= 40; i++) {
+    await page.mouse.move(cx - 40 + i * (dragRadius / 40), cy - 60, { steps: 1 });
+    await sleep(15);
+  }
+  await page.mouse.up();
+  await sleep(1500);
+
+  // Apply the orbit template
+  const applyBtn = page.getByRole('button', { name: /apply/i });
+  if (await applyBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await applyBtn.click();
+    await sleep(1500);
+  }
+  console.log('Orbit template applied');
+
+  // The store auto-converts orbit waypoints to headingMode "towardPOI" with
+  // the orbit center POI linked, and the gimbal pitch is pre-calculated to
+  // match calculateIdealGimbalPitch — so all POI lines should be green.
+
+  // Select the first waypoint to show the editor sidebar with the
+  // "Perfect pitch" badge visible
   await page.keyboard.press('Escape');
   await sleep(300);
-
-  // Place 3 waypoints around the POI
-  await page.keyboard.press('w');
-  await sleep(300);
-  await page.mouse.click(box.x + box.width * 0.38, box.y + box.height * 0.30);
-  await sleep(400);
-  await page.mouse.click(box.x + box.width * 0.52, box.y + box.height * 0.58);
-  await sleep(400);
-  await page.mouse.click(box.x + box.width * 0.75, box.y + box.height * 0.32);
-  await sleep(400);
-  await page.keyboard.press('Escape');
-  await sleep(500);
-
-  // Set all 3 waypoints to "Toward POI" → "POI 1"
-  console.log('Setting Waypoint 1...');
-  await setWaypointTowardPOI(page, 'Waypoint 1');
-  console.log('Setting Waypoint 2...');
-  await setWaypointTowardPOI(page, 'Waypoint 2');
-  console.log('Setting Waypoint 3...');
-  await setWaypointTowardPOI(page, 'Waypoint 3');
-
-  // Now go back to Waypoint 1 and click the "Perfect pitch" button to apply it
-  console.log('Applying perfect pitch to Waypoint 1...');
-  await page.locator('text=Waypoint 1').first().click();
-  await sleep(400);
-  const perfectPitch = page.locator('button').filter({ hasText: /Perfect pitch/i }).first();
-  if (await perfectPitch.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await perfectPitch.click();
-    await sleep(300);
-    console.log('  Perfect pitch applied to WP1');
-  } else {
-    console.log('  Perfect pitch button not found for WP1');
+  const wpItems = page.locator('text=Waypoint 1').first();
+  if (await wpItems.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await wpItems.click();
+    await sleep(800);
   }
-
-  // Apply perfect pitch to WP3 too (so it's green), leave WP2 as red
-  console.log('Applying perfect pitch to Waypoint 3...');
-  await page.locator('text=Waypoint 3').first().click();
-  await sleep(400);
-  const perfectPitch3 = page.locator('button').filter({ hasText: /Perfect pitch/i }).first();
-  if (await perfectPitch3.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await perfectPitch3.click();
-    await sleep(300);
-    console.log('  Perfect pitch applied to WP3');
-  } else {
-    console.log('  Perfect pitch button not found for WP3');
-  }
-
-  // Go back to Waypoint 1 so we can see the perfect pitch button in the sidebar
-  await page.locator('text=Waypoint 1').first().click();
-  await sleep(500);
 
   // Take the final screenshot
   await page.screenshot({ path: path.join(OUT, 'gimbal-pitch.jpg'), type: 'jpeg', quality: 90 });
   console.log('Screenshot saved: gimbal-pitch.jpg');
 
   await browser.close();
-})();
+})().catch(err => {
+  console.error('Screenshot script failed:', err);
+  process.exit(1);
+});
