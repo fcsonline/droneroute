@@ -19,7 +19,6 @@ import {
   UserCog,
   CircleHelp,
   Triangle,
-  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +31,8 @@ import { ObstacleList } from "@/components/mission/ObstacleList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
 import { SharedMissionPage } from "@/components/routes/SharedMissionPage";
 import { ElevationGraph } from "@/components/mission/ElevationGraph";
+import { WarningsPanel } from "@/components/mission/WarningsPanel";
+import type { Warning } from "@/components/mission/WarningsPanel";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { AccountModal } from "@/components/auth/AccountModal";
 import { AboutDialog } from "@/components/AboutDialog";
@@ -109,6 +110,32 @@ export default function App() {
     () => getObstacleWarnings(waypoints, obstacles),
     [waypoints, obstacles]
   );
+
+  // Compute flight stats for warnings
+  const flightStats = useMemo(
+    () => waypoints.length >= 2 ? estimateFlightStats(waypoints, config.autoFlightSpeed) : null,
+    [waypoints, config.autoFlightSpeed]
+  );
+
+  // Aggregated warnings for overlay
+  const warnings = useMemo(() => {
+    const result: Warning[] = [];
+    if (obstacles.length > 0 && obstacleWarnings.length > 0) {
+      result.push({
+        id: "obstacle",
+        type: "obstacle",
+        message: `${obstacleWarnings.length} obstacle warning${obstacleWarnings.length > 1 ? "s" : ""} — waypoints conflict with restricted zones`,
+      });
+    }
+    if (flightStats && flightStats.time > config.maxBatteryMinutes * 60) {
+      result.push({
+        id: "battery",
+        type: "battery",
+        message: `Flight time (${formatDuration(flightStats.time)}) exceeds max battery (${config.maxBatteryMinutes}min)`,
+      });
+    }
+    return result;
+  }, [obstacleWarnings, obstacles.length, flightStats, config.maxBatteryMinutes]);
 
   // Compute Gravatar URL when email changes
   useEffect(() => {
@@ -455,12 +482,6 @@ export default function App() {
         {/* Footer stats with colored icons */}
         <div className="px-3 py-2 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {obstacles.length > 0 && obstacleWarnings.length > 0 && (
-              <span className="flex items-center gap-1 text-[11px]" title={`${obstacleWarnings.length} obstacle warning(s)`}>
-                <AlertTriangle className="h-3 w-3 text-orange-400" />
-                <span className="text-orange-300 font-medium">{obstacleWarnings.length}</span>
-              </span>
-            )}
             {(() => {
               const photoCount = waypoints.reduce((sum, wp) => sum + wp.actions.filter((a) => a.actionType === "takePhoto").length, 0);
               const videoCount = waypoints.reduce((sum, wp) => sum + wp.actions.filter((a) => a.actionType === "startRecord").length, 0);
@@ -483,14 +504,15 @@ export default function App() {
             })()}
           </div>
           <div className="flex items-center gap-3">
-            {waypoints.length >= 2
+            {waypoints.length >= 2 && flightStats
               ? (() => {
-                  const { distance, time } = estimateFlightStats(waypoints, config.autoFlightSpeed);
+                  const { distance, time } = flightStats;
                   const elevGain = waypoints.reduce((sum, wp, i) => {
                     if (i === 0) return 0;
                     const diff = wp.height - waypoints[i - 1].height;
                     return sum + (diff > 0 ? diff : 0);
                   }, 0);
+                  const exceedsBattery = time > config.maxBatteryMinutes * 60;
                   return (
                     <>
                       {elevGain > 0 && (
@@ -507,9 +529,9 @@ export default function App() {
                             : `~${distance.toFixed(0)}m`}
                         </span>
                       </span>
-                      <span className="flex items-center gap-1 text-[11px]" title="Estimated flight time">
-                        <Clock className="h-3 w-3 text-yellow-400" />
-                        <span className="text-yellow-300 font-medium">{formatDuration(time)}</span>
+                      <span className="flex items-center gap-1 text-[11px]" title={exceedsBattery ? `Exceeds max battery (${config.maxBatteryMinutes}min)` : "Estimated flight time"}>
+                        <Clock className={`h-3 w-3 ${exceedsBattery ? "text-orange-400" : "text-yellow-400"}`} />
+                        <span className={`font-medium ${exceedsBattery ? "text-orange-300" : "text-yellow-300"}`}>{formatDuration(time)}</span>
                       </span>
                     </>
                   );
@@ -581,6 +603,7 @@ export default function App() {
       <div className="flex-1 relative">
         <MapView />
         <BulkActionToolbar />
+        <WarningsPanel warnings={warnings} />
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}

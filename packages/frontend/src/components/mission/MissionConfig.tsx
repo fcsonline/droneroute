@@ -91,6 +91,22 @@ export function MissionConfig() {
       </div>
 
       <div>
+        <Label className="text-xs">Max battery (min)</Label>
+        <Input
+          type="number"
+          value={config.maxBatteryMinutes}
+          onChange={(e) => setConfig({ maxBatteryMinutes: Math.max(1, parseInt(e.target.value) || 1) })}
+          min={1}
+          max={120}
+          step={1}
+          className="h-8 text-xs"
+        />
+        <div className="text-[10px] text-muted-foreground mt-0.5">
+          Warning when flight time exceeds this limit
+        </div>
+      </div>
+
+      <div>
         <Label className="text-xs">Height reference</Label>
         <Select
           value={config.heightMode}

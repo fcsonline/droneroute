@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMissionStore } from "@/store/missionStore";
+import type { SelectionMode } from "@/store/missionStore";
 
 const GRAPH_HEIGHT = 100;
 const PAD_TOP = 14;
@@ -19,11 +20,14 @@ export function ElevationGraph() {
   const waypoints = useMissionStore((s) => s.waypoints);
   const selectedIndices = useMissionStore((s) => s.selectedWaypointIndices);
   const updateWaypoint = useMissionStore((s) => s.updateWaypoint);
+  const selectWaypoint = useMissionStore((s) => s.selectWaypoint);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const pointerStart = useRef<{ x: number; y: number; index: number; event: React.PointerEvent } | null>(null);
+  const didDrag = useRef(false);
   const [expanded, setExpanded] = useState(
     () => localStorage.getItem(LS_KEY) !== "false",
   );
@@ -94,11 +98,15 @@ export function ElevationGraph() {
     [yMin, yMax, plotH, rawMin],
   );
 
-  // Drag handlers
+  // Drag handlers (with click-to-select detection)
+  const CLICK_THRESHOLD = 3; // px — below this, treat as click
+
   const handlePointerDown = useCallback(
     (e: React.PointerEvent, wpIndex: number) => {
       e.preventDefault();
       (e.target as SVGElement).setPointerCapture(e.pointerId);
+      pointerStart.current = { x: e.clientX, y: e.clientY, index: wpIndex, event: e };
+      didDrag.current = false;
       setDraggingIndex(wpIndex);
     },
     [],
@@ -109,6 +117,15 @@ export function ElevationGraph() {
       if (draggingIndex === null) return;
       const svg = svgRef.current;
       if (!svg) return;
+
+      // Check if pointer moved enough to be a drag
+      if (pointerStart.current && !didDrag.current) {
+        const dx = e.clientX - pointerStart.current.x;
+        const dy = e.clientY - pointerStart.current.y;
+        if (Math.sqrt(dx * dx + dy * dy) < CLICK_THRESHOLD) return;
+        didDrag.current = true;
+      }
+
       const rect = svg.getBoundingClientRect();
       const py = e.clientY - rect.top;
       const newHeight = fromY(py);
@@ -117,8 +134,30 @@ export function ElevationGraph() {
     [draggingIndex, fromY, updateWaypoint],
   );
 
-  const handlePointerUp = useCallback(() => {
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (draggingIndex !== null && pointerStart.current && !didDrag.current) {
+        // This was a click, not a drag — select the waypoint
+        const nativeEvent = e.nativeEvent;
+        let mode: SelectionMode = "replace";
+        if (nativeEvent.ctrlKey || nativeEvent.metaKey) {
+          mode = "toggle";
+        } else if (nativeEvent.shiftKey) {
+          mode = "range";
+        }
+        selectWaypoint(pointerStart.current.index, mode);
+      }
+      setDraggingIndex(null);
+      pointerStart.current = null;
+      didDrag.current = false;
+    },
+    [draggingIndex, selectWaypoint],
+  );
+
+  const handlePointerLeave = useCallback(() => {
     setDraggingIndex(null);
+    pointerStart.current = null;
+    didDrag.current = false;
   }, []);
 
   if (waypoints.length === 0) return null;
@@ -181,7 +220,7 @@ export function ElevationGraph() {
             className="select-none"
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
+            onPointerLeave={handlePointerLeave}
           >
             {/* Full-pane background grid */}
             {(() => {

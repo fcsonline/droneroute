@@ -54,8 +54,9 @@ function FitBoundsOnLoad() {
     const wasEmpty = prevCountRef.current === 0;
     prevCountRef.current = waypoints.length;
 
-    // Only fit bounds when loading a mission (0 → N waypoints)
-    if (!wasEmpty || waypoints.length === 0) return;
+    // Only fit bounds when loading a mission (0 → 2+ waypoints at once),
+    // not when manually placing the first waypoint (0 → 1)
+    if (!wasEmpty || waypoints.length < 2) return;
 
     const points: L.LatLngExpression[] = [
       ...waypoints.map((wp) => [wp.latitude, wp.longitude] as [number, number]),

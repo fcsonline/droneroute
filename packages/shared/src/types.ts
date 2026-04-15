@@ -257,6 +257,7 @@ export interface MissionConfig {
   takeOffSecurityHeight: number;
   globalTransitionalSpeed: number;
   autoFlightSpeed: number;
+  maxBatteryMinutes: number;
   heightMode: HeightMode;
   globalHeadingMode: HeadingMode;
   globalTurnMode: TurnMode;
@@ -305,6 +306,7 @@ export const DEFAULT_MISSION_CONFIG: MissionConfig = {
   takeOffSecurityHeight: 20,
   globalTransitionalSpeed: 10,
   autoFlightSpeed: 7,
+  maxBatteryMinutes: 25,
   heightMode: "relativeToStartPoint",
   globalHeadingMode: "followWayline",
   globalTurnMode: "toPointAndStopWithDiscontinuityCurvature",
