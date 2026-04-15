@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { X, Github, BookOpen, Terminal } from "lucide-react";
+import { X, Github, BookOpen, Terminal, Lightbulb } from "lucide-react";
 
 interface AboutDialogProps {
   onClose: () => void;
@@ -95,6 +95,15 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             >
               <Terminal className="h-4 w-4 shrink-0" />
               Upload to RC — npx droneroute mission.kmz
+            </a>
+            <a
+              href="https://github.com/fcsonline/droneroute/issues?q=is%3Aissue%20state%3Aopen%20label%3Aenhancement"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Lightbulb className="h-4 w-4 shrink-0" />
+              Feature Requests — Vote &amp; suggest ideas
             </a>
             <div className="mt-2 pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground mb-2">

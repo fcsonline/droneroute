@@ -1,0 +1,49 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an idea! Please describe what you'd like to see in DroneRoute.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like?
+      description: A clear description of the feature or improvement.
+      placeholder: "I'd like to be able to import GPX tracks and convert them to waypoint missions."
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the use case or workflow this would improve.
+      placeholder: "I plan routes in other apps and currently have to re-enter every waypoint manually."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: drone
+    attributes:
+      label: Drone model (if relevant)
+      options:
+        - N/A
+        - DJI M300 RTK
+        - DJI M350 RTK
+        - DJI M30 / M30T
+        - DJI Mavic 3E / 3T / 3M
+        - DJI Mavic 3D / 3TD
+        - DJI Mini 4 Pro
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, mockups, links to similar tools, or any other context.
+    validations:
+      required: false
