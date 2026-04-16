@@ -19,7 +19,46 @@
   <meta name="twitter:description" content="Plan DJI drone missions visually on a map. Export KMZ files ready to fly." />
   <meta name="twitter:image" content="https://raw.githubusercontent.com/fcsonline/droneroute/main/docs/og-image.jpg" />
 
+  <link rel="canonical" href="https://droneroute.io/" />
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/fcsonline/droneroute/main/droneroute.png" />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "DroneRoute",
+    "url": "https://droneroute.io",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web, Docker",
+    "description": "A free, open-source mission planner for DJI drones. Place waypoints on an interactive map, configure flight parameters, and export KMZ files ready to fly.",
+    "screenshot": "https://raw.githubusercontent.com/fcsonline/droneroute/main/docs/screenshots/main-map.jpg",
+    "softwareVersion": "1.0",
+    "license": "https://opensource.org/licenses/MIT",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Ferran Basora",
+      "url": "https://github.com/fcsonline"
+    },
+    "codeRepository": "https://github.com/fcsonline/droneroute",
+    "featureList": [
+      "Interactive waypoint placement on map",
+      "DJI KMZ file export and import",
+      "Mission templates (orbit, grid survey, facade scan, pencil path)",
+      "Points of interest with smart gimbal pitch",
+      "Obstacle zone drawing",
+      "Mission sharing via read-only links",
+      "CLI tool for uploading missions to DJI controllers",
+      "Self-hostable with Docker"
+    ]
+  }
+  </script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
