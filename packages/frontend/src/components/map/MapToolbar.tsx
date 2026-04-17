@@ -172,6 +172,7 @@ export function MapToolbar() {
           <span className="text-xs">Clear</span>
         </Button>
       )}
+
     </div>
   );
 }

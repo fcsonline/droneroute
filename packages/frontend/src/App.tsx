@@ -34,13 +34,14 @@ import { ElevationGraph } from "@/components/mission/ElevationGraph";
 import { WarningsPanel } from "@/components/mission/WarningsPanel";
 import type { Warning } from "@/components/mission/WarningsPanel";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { AccountModal } from "@/components/auth/AccountModal";
+import { SettingsModal } from "@/components/SettingsModal";
 import { AboutDialog } from "@/components/AboutDialog";
 import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
+import { useAirspaceStore } from "@/store/airspaceStore";
 import { api } from "@/lib/api";
-import { getObstacleWarnings } from "@/lib/geo";
+import { getObstacleWarnings, getAirspaceWarnings } from "@/lib/geo";
 
 type SidebarSection = "waypoints" | "pois" | "obstacles" | "config";
 
@@ -111,6 +112,14 @@ export default function App() {
     [waypoints, obstacles]
   );
 
+  // Airspace warnings
+  const airspaceZones = useAirspaceStore((s) => s.zones);
+  const airspaceEnabled = useAirspaceStore((s) => s.enabled);
+  const airspaceWarnings = useMemo(
+    () => airspaceEnabled ? getAirspaceWarnings(waypoints, airspaceZones) : [],
+    [waypoints, airspaceZones, airspaceEnabled]
+  );
+
   // Compute flight stats for warnings
   const flightStats = useMemo(
     () => waypoints.length >= 2 ? estimateFlightStats(waypoints, config.autoFlightSpeed) : null,
@@ -134,8 +143,25 @@ export default function App() {
         message: `Flight time (${formatDuration(flightStats.time)}) exceeds max battery (${config.maxBatteryMinutes}min)`,
       });
     }
+    // Airspace zone warnings
+    const prohibitedCount = airspaceWarnings.filter((w) => w.severity === "prohibited").length;
+    const restrictedCount = airspaceWarnings.filter((w) => w.severity === "restricted").length;
+    if (prohibitedCount > 0) {
+      result.push({
+        id: "airspace-prohibited",
+        type: "airspace",
+        message: `Flight path enters ${prohibitedCount} prohibited airspace zone${prohibitedCount > 1 ? "s" : ""} — flight is not allowed`,
+      });
+    }
+    if (restrictedCount > 0) {
+      result.push({
+        id: "airspace-restricted",
+        type: "airspace",
+        message: `Flight path enters ${restrictedCount} restricted airspace zone${restrictedCount > 1 ? "s" : ""} — authorization may be required`,
+      });
+    }
     return result;
-  }, [obstacleWarnings, obstacles.length, flightStats, config.maxBatteryMinutes]);
+  }, [obstacleWarnings, obstacles.length, flightStats, config.maxBatteryMinutes, airspaceWarnings]);
 
   // Compute Gravatar URL when email changes
   useEffect(() => {
@@ -290,6 +316,10 @@ export default function App() {
           if (e.metaKey || e.ctrlKey) {
             e.preventDefault();
             selectAllWaypoints();
+          } else {
+            e.preventDefault();
+            const as = useAirspaceStore.getState();
+            as.setEnabled(!as.enabled);
           }
           break;
         case "escape":
@@ -607,7 +637,7 @@ export default function App() {
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-      {showAccountMenu && <AccountModal onClose={() => setShowAccountMenu(false)} />}
+      {showAccountMenu && <SettingsModal onClose={() => setShowAccountMenu(false)} onRequestAuth={() => { setShowAccountMenu(false); setShowAuthModal(true); }} />}
       {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
       <WelcomeDialog />
     </div>
