@@ -201,3 +201,86 @@ export function formatArea(areaM2: number): string {
   if (areaM2 >= 10_000) return `${(areaM2 / 10_000).toFixed(2)} ha`;
   return `${Math.round(areaM2)} m²`;
 }
+
+// ── Airspace zone intersection utilities ─────────────────
+
+export interface AirspaceWarning {
+  zoneId: string;
+  zoneName: string;
+  severity: "prohibited" | "restricted";
+  type: "crosses" | "inside";
+}
+
+/**
+ * Extract [lat, lng] polygon rings from a GeoJSON geometry.
+ * Handles Polygon and MultiPolygon. GeoJSON coordinates are [lng, lat],
+ * so we swap them to [lat, lng] to match our convention.
+ */
+function extractPolygons(geometry: GeoJSON.Geometry): [number, number][][] {
+  const rings: [number, number][][] = [];
+  if (geometry.type === "Polygon") {
+    // Only use the outer ring (index 0)
+    rings.push(geometry.coordinates[0].map(([lng, lat]) => [lat, lng] as [number, number]));
+  } else if (geometry.type === "MultiPolygon") {
+    for (const poly of geometry.coordinates) {
+      rings.push(poly[0].map(([lng, lat]) => [lat, lng] as [number, number]));
+    }
+  }
+  return rings;
+}
+
+/**
+ * Check all waypoints and flight path segments against airspace zones.
+ * Returns deduplicated warnings (one per zone).
+ */
+export function getAirspaceWarnings(
+  waypoints: { latitude: number; longitude: number }[],
+  zones: { id: string; name: string; severity: "prohibited" | "restricted"; geometry: GeoJSON.Geometry }[],
+): AirspaceWarning[] {
+  if (zones.length === 0 || waypoints.length === 0) return [];
+
+  const warnings = new Map<string, AirspaceWarning>();
+
+  for (const zone of zones) {
+    const polygons = extractPolygons(zone.geometry);
+    if (polygons.length === 0) continue;
+
+    for (const ring of polygons) {
+      if (ring.length < 3) continue;
+
+      // Check if any waypoint is inside
+      for (const wp of waypoints) {
+        if (pointInPolygon([wp.latitude, wp.longitude], ring)) {
+          warnings.set(zone.id, {
+            zoneId: zone.id,
+            zoneName: zone.name,
+            severity: zone.severity,
+            type: "inside",
+          });
+          break;
+        }
+      }
+
+      if (warnings.has(zone.id)) break;
+
+      // Check if any segment crosses the polygon
+      for (let i = 0; i < waypoints.length - 1; i++) {
+        const p1: [number, number] = [waypoints[i].latitude, waypoints[i].longitude];
+        const p2: [number, number] = [waypoints[i + 1].latitude, waypoints[i + 1].longitude];
+        if (segmentIntersectsPolygon(p1, p2, ring)) {
+          warnings.set(zone.id, {
+            zoneId: zone.id,
+            zoneName: zone.name,
+            severity: zone.severity,
+            type: "crosses",
+          });
+          break;
+        }
+      }
+
+      if (warnings.has(zone.id)) break;
+    }
+  }
+
+  return Array.from(warnings.values());
+}

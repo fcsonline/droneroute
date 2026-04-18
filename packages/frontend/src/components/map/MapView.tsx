@@ -9,6 +9,7 @@ import { TemplateDrawHandler } from "./TemplateDrawHandler";
 import { PencilDrawHandler } from "./PencilDrawHandler";
 import { ObstacleDrawHandler } from "./ObstacleDrawHandler";
 import { ObstaclePolygon } from "./ObstaclePolygon";
+import { AirspaceOverlay } from "./AirspaceOverlay";
 import { useEffect, useRef, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 
@@ -215,6 +216,7 @@ export function MapView() {
         <TemplateDrawHandler />
         <PencilDrawHandler />
         <ObstacleDrawHandler />
+        <AirspaceOverlay />
         {obstacles.map((obstacle) => (
           <ObstaclePolygon key={obstacle.id} obstacle={obstacle} />
         ))}
