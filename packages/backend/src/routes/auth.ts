@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getDb } from "../models/db.js";
 import { hashPassword, comparePassword, generateToken } from "../services/authService.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
+import { SELF_HOSTED, ADMIN_EMAIL } from "../middleware/admin.js";
 
 export const authRoutes = Router();
 
@@ -26,14 +27,19 @@ authRoutes.post("/register", (req, res) => {
 
   const id = uuidv4();
   const passwordHash = hashPassword(password);
-  db.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)").run(
+
+  // Determine admin status: in cloud mode, match ADMIN_EMAIL
+  const isAdmin = !SELF_HOSTED && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 1 : 0;
+
+  db.prepare("INSERT INTO users (id, email, password_hash, is_admin) VALUES (?, ?, ?, ?)").run(
     id,
     email,
-    passwordHash
+    passwordHash,
+    isAdmin
   );
 
-  const token = generateToken(id);
-  res.status(201).json({ token, userId: id, email });
+  const token = generateToken(id, !!isAdmin);
+  res.status(201).json({ token, userId: id, email, isAdmin: !!isAdmin });
 });
 
 authRoutes.post("/login", (req, res) => {
@@ -45,7 +51,7 @@ authRoutes.post("/login", (req, res) => {
 
   const db = getDb();
   const user = db
-    .prepare("SELECT id, email, password_hash FROM users WHERE email = ?")
+    .prepare("SELECT id, email, password_hash, is_admin, is_banned FROM users WHERE email = ?")
     .get(email) as any;
 
   if (!user || !comparePassword(password, user.password_hash)) {
@@ -53,8 +59,13 @@ authRoutes.post("/login", (req, res) => {
     return;
   }
 
-  const token = generateToken(user.id);
-  res.json({ token, userId: user.id, email: user.email });
+  if (user.is_banned) {
+    res.status(403).json({ error: "Your account has been suspended", banned: true });
+    return;
+  }
+
+  const token = generateToken(user.id, !!user.is_admin);
+  res.json({ token, userId: user.id, email: user.email, isAdmin: !!user.is_admin });
 });
 
 authRoutes.post("/change-password", authMiddleware, (req: AuthRequest, res) => {

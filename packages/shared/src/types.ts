@@ -293,6 +293,24 @@ export interface SharedMission {
   obstacles: Obstacle[];
 }
 
+// ── Admin ────────────────────────────────────────────────
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  createdAt: string;
+  isAdmin: boolean;
+  isBanned: boolean;
+  missionCount: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  perPage: number;
+  total: number;
+}
+
 // ── Default Config ───────────────────────────────────────
 
 export const DEFAULT_MISSION_CONFIG: MissionConfig = {

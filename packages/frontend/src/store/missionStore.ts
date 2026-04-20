@@ -33,9 +33,9 @@ interface MissionState {
   isAddingWaypoint: boolean;
   isAddingPoi: boolean;
   templateMode: TemplateType | null;
-  currentPage: "editor" | "routes" | "shared";
+  currentPage: "editor" | "routes" | "shared" | "admin";
   shareToken: string | null;
-  setCurrentPage: (page: "editor" | "routes" | "shared") => void;
+  setCurrentPage: (page: "editor" | "routes" | "shared" | "admin") => void;
   setShareToken: (token: string | null) => void;
 
   // Waypoint actions

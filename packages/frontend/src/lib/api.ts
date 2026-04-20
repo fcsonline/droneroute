@@ -1,3 +1,5 @@
+import type { AdminUser, PaginatedResponse } from "@droneroute/shared";
+
 const API_BASE = "/api";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -21,6 +23,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
+
+    // Handle banned user — force logout
+    if (res.status === 403 && err.banned) {
+      localStorage.removeItem("droneroute_token");
+      localStorage.removeItem("droneroute_email");
+      localStorage.removeItem("droneroute_is_admin");
+      window.location.reload();
+      throw new Error(err.error || "Your account has been suspended");
+    }
+
     throw new Error(err.error || "Request failed");
   }
 
@@ -46,4 +58,14 @@ export const api = {
       body: JSON.stringify(body),
     }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+};
+
+// Admin API
+export const adminApi = {
+  getUsers: (page = 1, perPage = 20) =>
+    api.get<PaginatedResponse<AdminUser>>(`/admin/users?page=${page}&perPage=${perPage}`),
+  banUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/ban`),
+  unbanUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/unban`),
+  promoteUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/promote`),
+  demoteUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/demote`),
 };
