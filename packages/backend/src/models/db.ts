@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
+import { SELF_HOSTED, ADMIN_EMAIL } from "../middleware/admin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, "../../data/genmap.db");
@@ -80,6 +81,11 @@ export function initDb(): void {
     database.exec(`ALTER TABLE users ADD COLUMN is_banned INTEGER NOT NULL DEFAULT 0`);
   } catch {
     // Column already exists — ignore
+  }
+
+  // Ensure ADMIN_EMAIL user has admin privileges (cloud mode)
+  if (!SELF_HOSTED && ADMIN_EMAIL) {
+    database.prepare("UPDATE users SET is_admin = 1 WHERE LOWER(email) = LOWER(?)").run(ADMIN_EMAIL);
   }
 
   console.log("Database initialized at", DB_PATH);
