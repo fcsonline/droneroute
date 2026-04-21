@@ -1,7 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
-import { isSelfHosted, getAdminEmail } from "../config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, "../../data/genmap.db");
@@ -84,8 +83,10 @@ export function initDb(): void {
   }
 
   // Ensure ADMIN_EMAIL user has admin privileges (cloud mode)
-  if (!isSelfHosted() && getAdminEmail()) {
-    database.prepare("UPDATE users SET is_admin = 1 WHERE LOWER(email) = LOWER(?)").run(getAdminEmail());
+  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
+  const adminEmail = process.env.ADMIN_EMAIL || "";
+  if (!selfHosted && adminEmail) {
+    database.prepare("UPDATE users SET is_admin = 1 WHERE LOWER(email) = LOWER(?)").run(adminEmail);
   }
 
   console.log("Database initialized at", DB_PATH);

@@ -1,12 +1,34 @@
-import { Router } from "express";
+import { Router, type Response, type NextFunction } from "express";
 import { getDb } from "../models/db.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
-import { adminMiddleware } from "../middleware/admin.js";
 
 export const adminRoutes = Router();
 
+// Admin guard — reads env at request time to avoid module initialization issues
+function adminGuard(req: AuthRequest, res: Response, next: NextFunction): void {
+  if ((process.env.SELF_HOSTED ?? "true") === "true") {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+
+  if (!req.userId) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
+  const db = getDb();
+  const user = db.prepare("SELECT is_admin FROM users WHERE id = ?").get(req.userId) as any;
+
+  if (!user || !user.is_admin) {
+    res.status(403).json({ error: "Admin access required" });
+    return;
+  }
+
+  next();
+}
+
 // All admin routes require auth + admin
-adminRoutes.use(authMiddleware, adminMiddleware);
+adminRoutes.use(authMiddleware, adminGuard);
 
 // GET /api/admin/users?page=1&perPage=20
 adminRoutes.get("/users", (req: AuthRequest, res) => {

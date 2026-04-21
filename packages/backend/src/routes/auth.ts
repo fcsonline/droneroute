@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from "uuid";
 import { getDb } from "../models/db.js";
 import { hashPassword, comparePassword, generateToken } from "../services/authService.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
-import { isSelfHosted, getAdminEmail } from "../config.js";
 
 export const authRoutes = Router();
 
@@ -28,18 +27,24 @@ authRoutes.post("/register", (req, res) => {
   const id = uuidv4();
   const passwordHash = hashPassword(password);
 
-  // Determine admin status: in cloud mode, match ADMIN_EMAIL
-  const isAdmin = !isSelfHosted() && getAdminEmail() && email.toLowerCase() === getAdminEmail().toLowerCase() ? 1 : 0;
-
-  db.prepare("INSERT INTO users (id, email, password_hash, is_admin) VALUES (?, ?, ?, ?)").run(
+  // Insert user first
+  db.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)").run(
     id,
     email,
-    passwordHash,
-    isAdmin
+    passwordHash
   );
 
-  const token = generateToken(id, !!isAdmin);
-  res.status(201).json({ token, userId: id, email, isAdmin: !!isAdmin });
+  // Promote to admin if cloud mode and email matches ADMIN_EMAIL
+  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
+  const adminEmail = process.env.ADMIN_EMAIL || "";
+  let isAdmin = false;
+  if (!selfHosted && adminEmail && email.toLowerCase() === adminEmail.toLowerCase()) {
+    db.prepare("UPDATE users SET is_admin = 1 WHERE id = ?").run(id);
+    isAdmin = true;
+  }
+
+  const token = generateToken(id, isAdmin);
+  res.status(201).json({ token, userId: id, email, isAdmin });
 });
 
 authRoutes.post("/login", (req, res) => {
