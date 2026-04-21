@@ -8,6 +8,7 @@ import { kmzRoutes } from "./routes/kmz.js";
 import { authRoutes } from "./routes/auth.js";
 import { sharedRoutes } from "./routes/shared.js";
 import { adminRoutes } from "./routes/admin.js";
+import { SELF_HOSTED, ADMIN_EMAIL } from "./middleware/admin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -42,4 +43,5 @@ app.get("/{*splat}", (_req, res) => {
 initDb();
 app.listen(PORT, () => {
   console.log(`DroneRoute server running on http://localhost:${PORT}`);
+  console.log(`Mode: ${SELF_HOSTED ? "self-hosted" : "cloud"}${!SELF_HOSTED && ADMIN_EMAIL ? ` (admin: ${ADMIN_EMAIL})` : ""}`);
 });
