@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { X, Github, BookOpen, Terminal, Lightbulb } from "lucide-react";
+import { X, BookOpen, Terminal, Lightbulb } from "lucide-react";
+import { GithubIcon } from "@/components/icons/GithubIcon";
 
 interface AboutDialogProps {
   onClose: () => void;
@@ -83,7 +84,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
               rel="noopener noreferrer"
               className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Github className="h-4 w-4 shrink-0" />
+              <GithubIcon className="h-4 w-4 shrink-0" />
               GitHub — Star the repo, report bugs, contribute
             </a>
             <a

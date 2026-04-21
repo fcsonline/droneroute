@@ -21,9 +21,9 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "lefthook": "^1.11.0",
-    "oxlint": "^0.16.0",
+    "lefthook": "^2.1.6",
+    "oxlint": "^1.61.0",
     "prettier": "^3.5.0",
-    "typescript": "^5.7.3"
+    "typescript": "^6.0.3"
   }
 }
