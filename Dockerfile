@@ -41,7 +41,10 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/backend/package.json ./packages/backend/
 COPY packages/frontend/package.json ./packages/frontend/
 
-RUN npm install --omit=dev --ignore-scripts
+RUN apk add --no-cache python3 make g++ && \
+    npm install --omit=dev --ignore-scripts && \
+    npm rebuild better-sqlite3 && \
+    apk del python3 make g++
 
 # Copy shared compiled output (needed at runtime for imports)
 COPY packages/shared/package.json ./packages/shared/
