@@ -1,12 +1,10 @@
 import type { Response, NextFunction } from "express";
 import { getDb } from "../models/db.js";
 import type { AuthRequest } from "./auth.js";
-import { SELF_HOSTED } from "../config.js";
-
-export { SELF_HOSTED, ADMIN_EMAIL } from "../config.js";
+import { isSelfHosted } from "../config.js";
 
 export function adminMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
-  if (SELF_HOSTED) {
+  if (isSelfHosted()) {
     res.status(404).json({ error: "Not found" });
     return;
   }

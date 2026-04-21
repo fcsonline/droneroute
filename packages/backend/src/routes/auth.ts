@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getDb } from "../models/db.js";
 import { hashPassword, comparePassword, generateToken } from "../services/authService.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
-import { SELF_HOSTED, ADMIN_EMAIL } from "../config.js";
+import { isSelfHosted, getAdminEmail } from "../config.js";
 
 export const authRoutes = Router();
 
@@ -29,7 +29,7 @@ authRoutes.post("/register", (req, res) => {
   const passwordHash = hashPassword(password);
 
   // Determine admin status: in cloud mode, match ADMIN_EMAIL
-  const isAdmin = !SELF_HOSTED && ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 1 : 0;
+  const isAdmin = !isSelfHosted() && getAdminEmail() && email.toLowerCase() === getAdminEmail().toLowerCase() ? 1 : 0;
 
   db.prepare("INSERT INTO users (id, email, password_hash, is_admin) VALUES (?, ?, ?, ?)").run(
     id,
