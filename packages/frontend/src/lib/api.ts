@@ -63,9 +63,15 @@ export const api = {
 // Admin API
 export const adminApi = {
   getUsers: (page = 1, perPage = 20) =>
-    api.get<PaginatedResponse<AdminUser>>(`/admin/users?page=${page}&perPage=${perPage}`),
-  banUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/ban`),
-  unbanUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/unban`),
-  promoteUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/promote`),
-  demoteUser: (id: string) => api.post<{ message: string }>(`/admin/users/${id}/demote`),
+    api.get<PaginatedResponse<AdminUser>>(
+      `/admin/users?page=${page}&perPage=${perPage}`,
+    ),
+  banUser: (id: string) =>
+    api.post<{ message: string }>(`/admin/users/${id}/ban`),
+  unbanUser: (id: string) =>
+    api.post<{ message: string }>(`/admin/users/${id}/unban`),
+  promoteUser: (id: string) =>
+    api.post<{ message: string }>(`/admin/users/${id}/promote`),
+  demoteUser: (id: string) =>
+    api.post<{ message: string }>(`/admin/users/${id}/demote`),
 };

@@ -27,13 +27,17 @@ export function authMiddleware(
 
   // Check if user is banned
   const db = getDb();
-  const user = db.prepare("SELECT is_banned, is_admin FROM users WHERE id = ?").get(payload.userId) as any;
+  const user = db
+    .prepare("SELECT is_banned, is_admin FROM users WHERE id = ?")
+    .get(payload.userId) as any;
   if (!user) {
     res.status(401).json({ error: "User not found" });
     return;
   }
   if (user.is_banned) {
-    res.status(403).json({ error: "Your account has been suspended", banned: true });
+    res
+      .status(403)
+      .json({ error: "Your account has been suspended", banned: true });
     return;
   }
 

@@ -17,7 +17,9 @@ function adminGuard(req: AuthRequest, res: Response, next: NextFunction): void {
   }
 
   const db = getDb();
-  const user = db.prepare("SELECT is_admin FROM users WHERE id = ?").get(req.userId) as any;
+  const user = db
+    .prepare("SELECT is_admin FROM users WHERE id = ?")
+    .get(req.userId) as any;
 
   if (!user || !user.is_admin) {
     res.status(403).json({ error: "Admin access required" });
@@ -33,12 +35,16 @@ adminRoutes.use(authMiddleware, adminGuard);
 // GET /api/admin/users?page=1&perPage=20
 adminRoutes.get("/users", (req: AuthRequest, res) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const perPage = Math.min(100, Math.max(1, parseInt(req.query.perPage as string) || 20));
+  const perPage = Math.min(
+    100,
+    Math.max(1, parseInt(req.query.perPage as string) || 20),
+  );
   const offset = (page - 1) * perPage;
 
   const db = getDb();
 
-  const total = (db.prepare("SELECT COUNT(*) as count FROM users").get() as any).count;
+  const total = (db.prepare("SELECT COUNT(*) as count FROM users").get() as any)
+    .count;
 
   const users = db
     .prepare(
@@ -48,7 +54,7 @@ adminRoutes.get("/users", (req: AuthRequest, res) => {
        LEFT JOIN missions m ON m.user_id = u.id
        GROUP BY u.id
        ORDER BY u.created_at DESC
-       LIMIT ? OFFSET ?`
+       LIMIT ? OFFSET ?`,
     )
     .all(perPage, offset) as any[];
 
@@ -75,7 +81,9 @@ adminRoutes.post("/users/:id/ban", (req: AuthRequest, res) => {
   }
 
   const db = getDb();
-  const result = db.prepare("UPDATE users SET is_banned = 1 WHERE id = ?").run(req.params.id);
+  const result = db
+    .prepare("UPDATE users SET is_banned = 1 WHERE id = ?")
+    .run(req.params.id);
   if (result.changes === 0) {
     res.status(404).json({ error: "User not found" });
     return;
@@ -91,7 +99,9 @@ adminRoutes.post("/users/:id/unban", (req: AuthRequest, res) => {
   }
 
   const db = getDb();
-  const result = db.prepare("UPDATE users SET is_banned = 0 WHERE id = ?").run(req.params.id);
+  const result = db
+    .prepare("UPDATE users SET is_banned = 0 WHERE id = ?")
+    .run(req.params.id);
   if (result.changes === 0) {
     res.status(404).json({ error: "User not found" });
     return;
@@ -107,7 +117,9 @@ adminRoutes.post("/users/:id/promote", (req: AuthRequest, res) => {
   }
 
   const db = getDb();
-  const result = db.prepare("UPDATE users SET is_admin = 1 WHERE id = ?").run(req.params.id);
+  const result = db
+    .prepare("UPDATE users SET is_admin = 1 WHERE id = ?")
+    .run(req.params.id);
   if (result.changes === 0) {
     res.status(404).json({ error: "User not found" });
     return;
@@ -123,7 +135,9 @@ adminRoutes.post("/users/:id/demote", (req: AuthRequest, res) => {
   }
 
   const db = getDb();
-  const result = db.prepare("UPDATE users SET is_admin = 0 WHERE id = ?").run(req.params.id);
+  const result = db
+    .prepare("UPDATE users SET is_admin = 0 WHERE id = ?")
+    .run(req.params.id);
   if (result.changes === 0) {
     res.status(404).json({ error: "User not found" });
     return;
