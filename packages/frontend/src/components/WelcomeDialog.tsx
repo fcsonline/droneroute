@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Github, BookOpen } from "lucide-react";
+import { X, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "droneroute_welcome_dismissed";

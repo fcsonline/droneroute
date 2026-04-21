@@ -88,8 +88,8 @@ function listSubdirs(dir: string): string[] {
   try {
     return fs
       .readdirSync(dir, { withFileTypes: true })
-      .filter((d) => d.isDirectory() || d.isSymbolicLink())
-      .map((d) => path.join(dir, d.name));
+      .filter((d: fs.Dirent) => d.isDirectory() || d.isSymbolicLink())
+      .map((d: fs.Dirent) => path.join(dir, d.name));
   } catch {
     return [];
   }
