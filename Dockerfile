@@ -11,8 +11,8 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/backend/package.json ./packages/backend/
 COPY packages/frontend/package.json ./packages/frontend/
 
-# Install dependencies
-RUN npm install
+# Install dependencies (skip prepare/lefthook — not needed in Docker)
+RUN npm install --ignore-scripts
 
 # Copy source
 COPY packages/shared/ ./packages/shared/
@@ -41,7 +41,7 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/backend/package.json ./packages/backend/
 COPY packages/frontend/package.json ./packages/frontend/
 
-RUN npm install --omit=dev
+RUN npm install --omit=dev --ignore-scripts
 
 # Copy shared compiled output (needed at runtime for imports)
 COPY packages/shared/package.json ./packages/shared/
