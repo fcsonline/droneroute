@@ -19,6 +19,7 @@ import {
   UserCog,
   CircleHelp,
   Triangle,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ import { PoiList } from "@/components/mission/PoiList";
 import { ObstacleList } from "@/components/mission/ObstacleList";
 import { RoutesPage } from "@/components/routes/RoutesPage";
 import { SharedMissionPage } from "@/components/routes/SharedMissionPage";
+import { AdminPage } from "@/pages/AdminPage";
 import { ElevationGraph } from "@/components/mission/ElevationGraph";
 import { WarningsPanel } from "@/components/mission/WarningsPanel";
 import type { Warning } from "@/components/mission/WarningsPanel";
@@ -76,7 +78,7 @@ export default function App() {
   const [showAbout, setShowAbout] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { token, email: userEmail, logout, restore } = useAuthStore();
+  const { token, email: userEmail, logout, restore, isAdmin } = useAuthStore();
   const [gravatarUrl, setGravatarUrl] = useState<string | null>(null);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
 
@@ -319,6 +321,11 @@ export default function App() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  // Show admin page
+  if (currentPage === "admin") {
+    return <AdminPage />;
+  }
+
   // Show routes page
   if (currentPage === "routes") {
     return (
@@ -372,6 +379,17 @@ export default function App() {
               >
                 <FolderOpen className="h-4 w-4" />
               </Button>
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCurrentPage("admin")}
+                  className="h-7 w-7 text-purple-400 hover:text-purple-300"
+                  title="User management"
+                >
+                  <Shield className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           <Input

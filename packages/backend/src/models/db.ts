@@ -25,6 +25,8 @@ export function initDb(): void {
       id TEXT PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
+      is_admin INTEGER NOT NULL DEFAULT 0,
+      is_banned INTEGER NOT NULL DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now'))
     );
 
@@ -65,6 +67,27 @@ export function initDb(): void {
 
   // Ensure unique index on share_token
   database.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_missions_share_token ON missions(share_token) WHERE share_token IS NOT NULL`);
+
+  // Migration: add is_admin column if missing (for existing DBs)
+  try {
+    database.exec(`ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0`);
+  } catch {
+    // Column already exists — ignore
+  }
+
+  // Migration: add is_banned column if missing (for existing DBs)
+  try {
+    database.exec(`ALTER TABLE users ADD COLUMN is_banned INTEGER NOT NULL DEFAULT 0`);
+  } catch {
+    // Column already exists — ignore
+  }
+
+  // Ensure ADMIN_EMAIL user has admin privileges (cloud mode)
+  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
+  const adminEmail = process.env.ADMIN_EMAIL || "";
+  if (!selfHosted && adminEmail) {
+    database.prepare("UPDATE users SET is_admin = 1 WHERE LOWER(email) = LOWER(?)").run(adminEmail);
+  }
 
   console.log("Database initialized at", DB_PATH);
 }

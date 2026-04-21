@@ -26,14 +26,25 @@ authRoutes.post("/register", (req, res) => {
 
   const id = uuidv4();
   const passwordHash = hashPassword(password);
+
+  // Insert user first
   db.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)").run(
     id,
     email,
     passwordHash
   );
 
-  const token = generateToken(id);
-  res.status(201).json({ token, userId: id, email });
+  // Promote to admin if cloud mode and email matches ADMIN_EMAIL
+  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
+  const adminEmail = process.env.ADMIN_EMAIL || "";
+  let isAdmin = false;
+  if (!selfHosted && adminEmail && email.toLowerCase() === adminEmail.toLowerCase()) {
+    db.prepare("UPDATE users SET is_admin = 1 WHERE id = ?").run(id);
+    isAdmin = true;
+  }
+
+  const token = generateToken(id, isAdmin);
+  res.status(201).json({ token, userId: id, email, isAdmin });
 });
 
 authRoutes.post("/login", (req, res) => {
@@ -45,7 +56,7 @@ authRoutes.post("/login", (req, res) => {
 
   const db = getDb();
   const user = db
-    .prepare("SELECT id, email, password_hash FROM users WHERE email = ?")
+    .prepare("SELECT id, email, password_hash, is_admin, is_banned FROM users WHERE email = ?")
     .get(email) as any;
 
   if (!user || !comparePassword(password, user.password_hash)) {
@@ -53,8 +64,13 @@ authRoutes.post("/login", (req, res) => {
     return;
   }
 
-  const token = generateToken(user.id);
-  res.json({ token, userId: user.id, email: user.email });
+  if (user.is_banned) {
+    res.status(403).json({ error: "Your account has been suspended", banned: true });
+    return;
+  }
+
+  const token = generateToken(user.id, !!user.is_admin);
+  res.json({ token, userId: user.id, email: user.email, isAdmin: !!user.is_admin });
 });
 
 authRoutes.post("/change-password", authMiddleware, (req: AuthRequest, res) => {

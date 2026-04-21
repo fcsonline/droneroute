@@ -7,6 +7,7 @@ import { missionRoutes } from "./routes/missions.js";
 import { kmzRoutes } from "./routes/kmz.js";
 import { authRoutes } from "./routes/auth.js";
 import { sharedRoutes } from "./routes/shared.js";
+import { adminRoutes } from "./routes/admin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,6 +25,7 @@ app.use(express.static(frontendDist));
 app.use("/api/auth", authRoutes);
 app.use("/api/missions", missionRoutes);
 app.use("/api/kmz", kmzRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api", sharedRoutes);
 
 // Health check
@@ -40,4 +42,7 @@ app.get("/{*splat}", (_req, res) => {
 initDb();
 app.listen(PORT, () => {
   console.log(`DroneRoute server running on http://localhost:${PORT}`);
+  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
+  const adminEmail = process.env.ADMIN_EMAIL || "";
+  console.log(`Mode: ${selfHosted ? "self-hosted" : "cloud"}${!selfHosted && adminEmail ? ` (admin: ${adminEmail})` : ""}`);
 });
