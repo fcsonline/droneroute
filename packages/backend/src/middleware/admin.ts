@@ -1,9 +1,9 @@
 import type { Response, NextFunction } from "express";
 import { getDb } from "../models/db.js";
 import type { AuthRequest } from "./auth.js";
+import { SELF_HOSTED } from "../config.js";
 
-export const SELF_HOSTED = (process.env.SELF_HOSTED ?? "true") === "true";
-export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
+export { SELF_HOSTED, ADMIN_EMAIL } from "../config.js";
 
 export function adminMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
   if (SELF_HOSTED) {

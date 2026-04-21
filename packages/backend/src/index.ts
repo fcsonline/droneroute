@@ -8,7 +8,7 @@ import { kmzRoutes } from "./routes/kmz.js";
 import { authRoutes } from "./routes/auth.js";
 import { sharedRoutes } from "./routes/shared.js";
 import { adminRoutes } from "./routes/admin.js";
-import { SELF_HOSTED, ADMIN_EMAIL } from "./middleware/admin.js";
+import { SELF_HOSTED, ADMIN_EMAIL } from "./config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

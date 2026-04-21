@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getDb } from "../models/db.js";
 import { hashPassword, comparePassword, generateToken } from "../services/authService.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
-import { SELF_HOSTED, ADMIN_EMAIL } from "../middleware/admin.js";
+import { SELF_HOSTED, ADMIN_EMAIL } from "../config.js";
 
 export const authRoutes = Router();
 
