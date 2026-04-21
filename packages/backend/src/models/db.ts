@@ -77,14 +77,18 @@ export function initDb(): void {
 
   // Migration: add is_admin column if missing (for existing DBs)
   try {
-    database.exec(`ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0`);
+    database.exec(
+      `ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0`,
+    );
   } catch {
     // Column already exists — ignore
   }
 
   // Migration: add is_banned column if missing (for existing DBs)
   try {
-    database.exec(`ALTER TABLE users ADD COLUMN is_banned INTEGER NOT NULL DEFAULT 0`);
+    database.exec(
+      `ALTER TABLE users ADD COLUMN is_banned INTEGER NOT NULL DEFAULT 0`,
+    );
   } catch {
     // Column already exists — ignore
   }
@@ -93,7 +97,9 @@ export function initDb(): void {
   const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
   const adminEmail = process.env.ADMIN_EMAIL || "";
   if (!selfHosted && adminEmail) {
-    database.prepare("UPDATE users SET is_admin = 1 WHERE LOWER(email) = LOWER(?)").run(adminEmail);
+    database
+      .prepare("UPDATE users SET is_admin = 1 WHERE LOWER(email) = LOWER(?)")
+      .run(adminEmail);
   }
 
   console.log("Database initialized at", DB_PATH);

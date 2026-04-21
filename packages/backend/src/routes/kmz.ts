@@ -6,7 +6,11 @@ import { DEFAULT_MISSION_CONFIG } from "@droneroute/shared";
 import { generateKmzBuffer } from "../services/kmzGenerator.js";
 import { parseKmz } from "../services/kmzParser.js";
 import { getDb } from "../models/db.js";
-import { optionalAuth, type AuthRequest } from "../middleware/auth.js";
+import {
+  authMiddleware,
+  optionalAuth,
+  type AuthRequest,
+} from "../middleware/auth.js";
 
 export const kmzRoutes = Router();
 
@@ -16,7 +20,7 @@ const upload = multer({
 });
 
 // Generate and download KMZ from mission data (POST body)
-kmzRoutes.post("/generate", async (req, res) => {
+kmzRoutes.post("/generate", authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { name, config, waypoints, pois } = req.body;
     if (!config || !waypoints || waypoints.length < 2) {
@@ -44,45 +48,52 @@ kmzRoutes.post("/generate", async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.send(buffer);
   } catch (err: any) {
-    console.error("KMZ generation error:", err);
-    res.status(500).json({ error: err.message || "Failed to generate KMZ" });
+    console.error("KMZ download error:", err);
+    res.status(500).json({ error: "Failed to generate KMZ" });
   }
 });
 
 // Download KMZ for a saved mission
-kmzRoutes.get("/download/:missionId", async (req, res) => {
-  try {
-    const db = getDb();
-    const row = db
-      .prepare("SELECT * FROM missions WHERE id = ?")
-      .get(req.params.missionId) as any;
-    if (!row) {
-      res.status(404).json({ error: "Mission not found" });
-      return;
+kmzRoutes.get(
+  "/download/:missionId",
+  authMiddleware,
+  async (req: AuthRequest, res) => {
+    try {
+      const db = getDb();
+      const row = db
+        .prepare("SELECT * FROM missions WHERE id = ? AND user_id = ?")
+        .get(req.params.missionId, req.userId) as any;
+      if (!row) {
+        res.status(404).json({ error: "Mission not found" });
+        return;
+      }
+
+      const mission: Mission = {
+        id: row.id,
+        name: row.name,
+        userId: row.user_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        config: JSON.parse(row.config),
+        waypoints: JSON.parse(row.waypoints),
+        pois: JSON.parse(row.pois || "[]"),
+        obstacles: JSON.parse(row.obstacles || "[]"),
+      };
+
+      const buffer = await generateKmzBuffer(mission);
+      const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
+      res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+      res.send(buffer);
+    } catch (err: any) {
+      console.error("KMZ download error:", err);
+      res.status(500).json({ error: err.message || "Failed to generate KMZ" });
     }
-
-    const mission: Mission = {
-      id: row.id,
-      name: row.name,
-      userId: row.user_id,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      config: JSON.parse(row.config),
-      waypoints: JSON.parse(row.waypoints),
-      pois: JSON.parse(row.pois || "[]"),
-      obstacles: JSON.parse(row.obstacles || "[]"),
-    };
-
-    const buffer = await generateKmzBuffer(mission);
-    const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
-    res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.send(buffer);
-  } catch (err: any) {
-    console.error("KMZ download error:", err);
-    res.status(500).json({ error: err.message || "Failed to generate KMZ" });
-  }
-});
+  },
+);
 
 // Import KMZ file
 kmzRoutes.post(
@@ -123,7 +134,7 @@ kmzRoutes.post(
       res.json({ id: missionId, config, waypoints, pois });
     } catch (err: any) {
       console.error("KMZ import error:", err);
-      res.status(500).json({ error: err.message || "Failed to parse KMZ" });
+      res.status(500).json({ error: "Failed to parse KMZ" });
     }
   },
 );

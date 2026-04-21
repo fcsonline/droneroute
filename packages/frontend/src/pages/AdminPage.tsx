@@ -61,7 +61,11 @@ export function AdminPage() {
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr + "Z");
-    return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+    return d.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
@@ -100,7 +104,12 @@ export function AdminPage() {
             {error && (
               <div className="flex flex-col items-center justify-center py-20">
                 <p className="text-sm text-destructive">{error}</p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={loadUsers}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={loadUsers}
+                >
                   Retry
                 </Button>
               </div>
@@ -175,7 +184,9 @@ export function AdminPage() {
                                   </span>
                                 )}
                                 {!user.isAdmin && !user.isBanned && (
-                                  <span className="text-[10px] text-muted-foreground">Active</span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    Active
+                                  </span>
                                 )}
                               </div>
                             </td>
@@ -190,7 +201,9 @@ export function AdminPage() {
                                       disabled={actionLoading === user.id}
                                       onClick={() => {
                                         setActionLoading(user.id);
-                                        handleAction(() => adminApi.unbanUser(user.id));
+                                        handleAction(() =>
+                                          adminApi.unbanUser(user.id),
+                                        );
                                       }}
                                       title="Unban user"
                                     >
@@ -205,7 +218,9 @@ export function AdminPage() {
                                       disabled={actionLoading === user.id}
                                       onClick={() => {
                                         setActionLoading(user.id);
-                                        handleAction(() => adminApi.banUser(user.id));
+                                        handleAction(() =>
+                                          adminApi.banUser(user.id),
+                                        );
                                       }}
                                       title="Ban user"
                                     >
@@ -221,7 +236,9 @@ export function AdminPage() {
                                       disabled={actionLoading === user.id}
                                       onClick={() => {
                                         setActionLoading(user.id);
-                                        handleAction(() => adminApi.demoteUser(user.id));
+                                        handleAction(() =>
+                                          adminApi.demoteUser(user.id),
+                                        );
                                       }}
                                       title="Demote from admin"
                                     >
@@ -236,7 +253,9 @@ export function AdminPage() {
                                       disabled={actionLoading === user.id}
                                       onClick={() => {
                                         setActionLoading(user.id);
-                                        handleAction(() => adminApi.promoteUser(user.id));
+                                        handleAction(() =>
+                                          adminApi.promoteUser(user.id),
+                                        );
                                       }}
                                       title="Promote to admin"
                                     >

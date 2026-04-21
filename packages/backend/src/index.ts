@@ -14,7 +14,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// CORS configuration — restrict to configured origins in production
+const corsOrigin = process.env.CORS_ORIGIN;
+app.use(
+  cors(
+    corsOrigin
+      ? {
+          origin: corsOrigin.split(",").map((o) => o.trim()),
+          credentials: true,
+        }
+      : undefined,
+  ),
+);
 app.use(express.json({ limit: "50mb" }));
 
 // Serve frontend static files in production
@@ -44,5 +55,7 @@ app.listen(PORT, () => {
   console.log(`DroneRoute server running on http://localhost:${PORT}`);
   const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
   const adminEmail = process.env.ADMIN_EMAIL || "";
-  console.log(`Mode: ${selfHosted ? "self-hosted" : "cloud"}${!selfHosted && adminEmail ? ` (admin: ${adminEmail})` : ""}`);
+  console.log(
+    `Mode: ${selfHosted ? "self-hosted" : "cloud"}${!selfHosted && adminEmail ? ` (admin: ${adminEmail})` : ""}`,
+  );
 });
