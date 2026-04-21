@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { api } from "@/lib/api";
+import { useMissionStore } from "./missionStore";
 
 interface AuthState {
   token: string | null;
@@ -76,6 +77,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem("droneroute_email");
     localStorage.removeItem("droneroute_is_admin");
     set({ token: null, email: null, userId: null, isAdmin: false });
+    useMissionStore.getState().clearMission();
   },
 
   restore: () => {
