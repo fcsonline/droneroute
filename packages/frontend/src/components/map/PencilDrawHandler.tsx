@@ -4,7 +4,11 @@ import { useMissionStore } from "@/store/missionStore";
 import { TemplateConfigPanel } from "./TemplateConfigPanel";
 import { TemplatePreview } from "./TemplatePreview";
 import type { PencilParams } from "@/lib/templates";
-import { generatePencil, pathLength, DEFAULT_PENCIL_PARAMS } from "@/lib/templates";
+import {
+  generatePencil,
+  pathLength,
+  DEFAULT_PENCIL_PARAMS,
+} from "@/lib/templates";
 
 const MIN_PATH_LENGTH_M = 10; // minimum path length in meters to accept
 
@@ -136,7 +140,7 @@ export function PencilDrawHandler() {
 
       {/* Config panel (shown after drawing completes) */}
       {confirmed && pencilParams && (
-         <TemplateConfigPanel
+        <TemplateConfigPanel
           type="pencil"
           pencilParams={pencilParams}
           onPencilChange={setPencilParams}

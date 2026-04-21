@@ -26,7 +26,12 @@ export function ElevationGraph() {
   const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
-  const pointerStart = useRef<{ x: number; y: number; index: number; event: React.PointerEvent } | null>(null);
+  const pointerStart = useRef<{
+    x: number;
+    y: number;
+    index: number;
+    event: React.PointerEvent;
+  } | null>(null);
   const didDrag = useRef(false);
   const [expanded, setExpanded] = useState(
     () => localStorage.getItem(LS_KEY) !== "false",
@@ -105,7 +110,12 @@ export function ElevationGraph() {
     (e: React.PointerEvent, wpIndex: number) => {
       e.preventDefault();
       (e.target as SVGElement).setPointerCapture(e.pointerId);
-      pointerStart.current = { x: e.clientX, y: e.clientY, index: wpIndex, event: e };
+      pointerStart.current = {
+        x: e.clientX,
+        y: e.clientY,
+        index: wpIndex,
+        event: e,
+      };
       didDrag.current = false;
       setDraggingIndex(wpIndex);
     },
@@ -176,7 +186,9 @@ export function ElevationGraph() {
     const nx = dx / dist;
     const ny = dy / dist;
     const rA =
-      draggingIndex === waypoints[i].index ? CIRCLE_RADIUS_ACTIVE : CIRCLE_RADIUS;
+      draggingIndex === waypoints[i].index
+        ? CIRCLE_RADIUS_ACTIVE
+        : CIRCLE_RADIUS;
     const rB =
       draggingIndex === waypoints[i + 1].index
         ? CIRCLE_RADIUS_ACTIVE

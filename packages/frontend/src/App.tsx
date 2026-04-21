@@ -65,7 +65,9 @@ export default function App() {
     setDirty,
   } = useMissionStore();
 
-  const [expandedSections, setExpandedSections] = useState<Record<SidebarSection, boolean>>({
+  const [expandedSections, setExpandedSections] = useState<
+    Record<SidebarSection, boolean>
+  >({
     waypoints: true,
     pois: false,
     obstacles: false,
@@ -99,7 +101,10 @@ export default function App() {
   // Warn before closing/navigating away with unsaved changes
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (dirty && (waypoints.length > 1 || pois.length > 0 || obstacles.length > 0)) {
+      if (
+        dirty &&
+        (waypoints.length > 1 || pois.length > 0 || obstacles.length > 0)
+      ) {
         e.preventDefault();
       }
     };
@@ -110,13 +115,16 @@ export default function App() {
   // Obstacle warnings
   const obstacleWarnings = useMemo(
     () => getObstacleWarnings(waypoints, obstacles),
-    [waypoints, obstacles]
+    [waypoints, obstacles],
   );
 
   // Compute flight stats for warnings
   const flightStats = useMemo(
-    () => waypoints.length >= 2 ? estimateFlightStats(waypoints, config.autoFlightSpeed) : null,
-    [waypoints, config.autoFlightSpeed]
+    () =>
+      waypoints.length >= 2
+        ? estimateFlightStats(waypoints, config.autoFlightSpeed)
+        : null,
+    [waypoints, config.autoFlightSpeed],
   );
 
   // Aggregated warnings for overlay
@@ -137,7 +145,12 @@ export default function App() {
       });
     }
     return result;
-  }, [obstacleWarnings, obstacles.length, flightStats, config.maxBatteryMinutes]);
+  }, [
+    obstacleWarnings,
+    obstacles.length,
+    flightStats,
+    config.maxBatteryMinutes,
+  ]);
 
   // Compute Gravatar URL when email changes
   useEffect(() => {
@@ -146,10 +159,14 @@ export default function App() {
       return;
     }
     const trimmed = userEmail.trim().toLowerCase();
-    crypto.subtle.digest("SHA-256", new TextEncoder().encode(trimmed)).then((buf) => {
-      const hex = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-      setGravatarUrl(`https://www.gravatar.com/avatar/${hex}?s=64&d=mp`);
-    });
+    crypto.subtle
+      .digest("SHA-256", new TextEncoder().encode(trimmed))
+      .then((buf) => {
+        const hex = Array.from(new Uint8Array(buf))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        setGravatarUrl(`https://www.gravatar.com/avatar/${hex}?s=64&d=mp`);
+      });
   }, [userEmail]);
 
   const toggleSection = (section: SidebarSection) => {
@@ -192,7 +209,13 @@ export default function App() {
     setSaving(true);
     try {
       if (missionId) {
-        await api.put(`/missions/${missionId}`, { name: missionName, config, waypoints, pois, obstacles });
+        await api.put(`/missions/${missionId}`, {
+          name: missionName,
+          config,
+          waypoints,
+          pois,
+          obstacles,
+        });
       } else {
         const result = await api.post<{ id: string }>("/missions", {
           name: missionName,
@@ -219,7 +242,11 @@ export default function App() {
     formData.append("file", file);
 
     try {
-      const result = await api.post<{ config: any; waypoints: any[]; pois?: any[] }>("/kmz/import", formData);
+      const result = await api.post<{
+        config: any;
+        waypoints: any[];
+        pois?: any[];
+      }>("/kmz/import", formData);
       loadMission({
         name: file.name.replace(/\.kmz$/i, ""),
         config: result.config,
@@ -239,7 +266,11 @@ export default function App() {
     const handler = (e: KeyboardEvent) => {
       // Ignore when typing in inputs/selects (except Escape which should always work)
       const tag = (e.target as HTMLElement)?.tagName;
-      if (e.key !== "Escape" && (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")) return;
+      if (
+        e.key !== "Escape" &&
+        (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")
+      )
+        return;
 
       const {
         setIsAddingWaypoint,
@@ -307,7 +338,9 @@ export default function App() {
           if (selectedWaypointIndices.size > 0) {
             e.preventDefault();
             if (selectedWaypointIndices.size > 1) {
-              if (confirm(`Delete ${selectedWaypointIndices.size} waypoints?`)) {
+              if (
+                confirm(`Delete ${selectedWaypointIndices.size} waypoints?`)
+              ) {
                 removeSelectedWaypoints();
               }
             } else {
@@ -375,7 +408,7 @@ export default function App() {
                 size="icon"
                 onClick={() => setCurrentPage("routes")}
                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                 title="My routes"
+                title="My routes"
               >
                 <FolderOpen className="h-4 w-4" />
               </Button>
@@ -402,15 +435,35 @@ export default function App() {
 
         {/* Toolbar */}
         <div className="flex gap-1 p-2 border-b border-border">
-          <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="flex-1 text-xs h-7" title="Save mission to your account">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 text-xs h-7"
+            title="Save mission to your account"
+          >
             <Save className="h-3 w-3" />
             {saving ? "..." : "Save"}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || waypoints.length < 2} className="flex-1 text-xs h-7" title="Export mission as DJI KMZ file">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={exporting || waypoints.length < 2}
+            className="flex-1 text-xs h-7"
+            title="Export mission as DJI KMZ file"
+          >
             <Download className="h-3 w-3" />
             {exporting ? "..." : "Export KMZ"}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="flex-1 text-xs h-7" title="Import a DJI KMZ file">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 text-xs h-7"
+            title="Import a DJI KMZ file"
+          >
             <Upload className="h-3 w-3" />
             Import KMZ
           </Button>
@@ -431,7 +484,11 @@ export default function App() {
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-blue-500/10 text-blue-400"
               onClick={() => toggleSection("waypoints")}
             >
-              {expandedSections.waypoints ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {expandedSections.waypoints ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
               <MapPin className="h-3 w-3" />
               Waypoints ({waypoints.length})
             </button>
@@ -448,9 +505,13 @@ export default function App() {
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-amber-500/10 text-amber-400"
               onClick={() => toggleSection("pois")}
             >
-              {expandedSections.pois ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {expandedSections.pois ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
               <Crosshair className="h-3 w-3" />
-               Points of interest ({pois.length})
+              Points of interest ({pois.length})
             </button>
             {expandedSections.pois && (
               <div className="max-h-[30vh] overflow-y-auto">
@@ -465,9 +526,13 @@ export default function App() {
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-red-500/10 text-red-400"
               onClick={() => toggleSection("obstacles")}
             >
-              {expandedSections.obstacles ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {expandedSections.obstacles ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
               <Triangle className="h-3 w-3" />
-               Obstacles ({obstacles.length})
+              Obstacles ({obstacles.length})
             </button>
             {expandedSections.obstacles && (
               <div className="max-h-[30vh] overflow-y-auto">
@@ -482,9 +547,13 @@ export default function App() {
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-purple-500/10 text-purple-400"
               onClick={() => toggleSection("config")}
             >
-              {expandedSections.config ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {expandedSections.config ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
               <Settings className="h-3 w-3" />
-               Mission settings
+              Mission settings
             </button>
             {expandedSections.config && (
               <div className="max-h-[40vh] overflow-y-auto">
@@ -501,20 +570,41 @@ export default function App() {
         <div className="px-3 py-2 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             {(() => {
-              const photoCount = waypoints.reduce((sum, wp) => sum + wp.actions.filter((a) => a.actionType === "takePhoto").length, 0);
-              const videoCount = waypoints.reduce((sum, wp) => sum + wp.actions.filter((a) => a.actionType === "startRecord").length, 0);
+              const photoCount = waypoints.reduce(
+                (sum, wp) =>
+                  sum +
+                  wp.actions.filter((a) => a.actionType === "takePhoto").length,
+                0,
+              );
+              const videoCount = waypoints.reduce(
+                (sum, wp) =>
+                  sum +
+                  wp.actions.filter((a) => a.actionType === "startRecord")
+                    .length,
+                0,
+              );
               return (
                 <>
                   {photoCount > 0 && (
-                    <span className="flex items-center gap-1 text-[11px]" title="Photo actions">
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      title="Photo actions"
+                    >
                       <Camera className="h-3 w-3 text-sky-400" />
-                      <span className="text-sky-300 font-medium">{photoCount}</span>
+                      <span className="text-sky-300 font-medium">
+                        {photoCount}
+                      </span>
                     </span>
                   )}
                   {videoCount > 0 && (
-                    <span className="flex items-center gap-1 text-[11px]" title="Video actions">
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      title="Video actions"
+                    >
                       <Video className="h-3 w-3 text-red-400" />
-                      <span className="text-red-300 font-medium">{videoCount}</span>
+                      <span className="text-red-300 font-medium">
+                        {videoCount}
+                      </span>
                     </span>
                   )}
                 </>
@@ -522,41 +612,64 @@ export default function App() {
             })()}
           </div>
           <div className="flex items-center gap-3">
-            {waypoints.length >= 2 && flightStats
-              ? (() => {
-                  const { distance, time } = flightStats;
-                  const elevGain = waypoints.reduce((sum, wp, i) => {
-                    if (i === 0) return 0;
-                    const diff = wp.height - waypoints[i - 1].height;
-                    return sum + (diff > 0 ? diff : 0);
-                  }, 0);
-                  const exceedsBattery = time > config.maxBatteryMinutes * 60;
-                  return (
-                    <>
-                      {elevGain > 0 && (
-                        <span className="flex items-center gap-1 text-[11px]" title="Elevation gain">
-                          <TrendingUp className="h-3 w-3 text-orange-400" />
-                          <span className="text-orange-300 font-medium">{elevGain}m</span>
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1 text-[11px]" title="Total distance">
-                        <Route className="h-3 w-3 text-emerald-400" />
-                        <span className="text-emerald-300 font-medium">
-                          {distance >= 1000
-                            ? `${(distance / 1000).toFixed(1)}km`
-                            : `~${distance.toFixed(0)}m`}
+            {waypoints.length >= 2 && flightStats ? (
+              (() => {
+                const { distance, time } = flightStats;
+                const elevGain = waypoints.reduce((sum, wp, i) => {
+                  if (i === 0) return 0;
+                  const diff = wp.height - waypoints[i - 1].height;
+                  return sum + (diff > 0 ? diff : 0);
+                }, 0);
+                const exceedsBattery = time > config.maxBatteryMinutes * 60;
+                return (
+                  <>
+                    {elevGain > 0 && (
+                      <span
+                        className="flex items-center gap-1 text-[11px]"
+                        title="Elevation gain"
+                      >
+                        <TrendingUp className="h-3 w-3 text-orange-400" />
+                        <span className="text-orange-300 font-medium">
+                          {elevGain}m
                         </span>
                       </span>
-                      <span className="flex items-center gap-1 text-[11px]" title={exceedsBattery ? `Exceeds max battery (${config.maxBatteryMinutes}min)` : "Estimated flight time"}>
-                        <Clock className={`h-3 w-3 ${exceedsBattery ? "text-orange-400" : "text-yellow-400"}`} />
-                        <span className={`font-medium ${exceedsBattery ? "text-orange-300" : "text-yellow-300"}`}>{formatDuration(time)}</span>
+                    )}
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      title="Total distance"
+                    >
+                      <Route className="h-3 w-3 text-emerald-400" />
+                      <span className="text-emerald-300 font-medium">
+                        {distance >= 1000
+                          ? `${(distance / 1000).toFixed(1)}km`
+                          : `~${distance.toFixed(0)}m`}
                       </span>
-                    </>
-                  );
-                })()
-              : (
-                <span className="text-[10px] text-muted-foreground">Add 2+ waypoints</span>
-              )}
+                    </span>
+                    <span
+                      className="flex items-center gap-1 text-[11px]"
+                      title={
+                        exceedsBattery
+                          ? `Exceeds max battery (${config.maxBatteryMinutes}min)`
+                          : "Estimated flight time"
+                      }
+                    >
+                      <Clock
+                        className={`h-3 w-3 ${exceedsBattery ? "text-orange-400" : "text-yellow-400"}`}
+                      />
+                      <span
+                        className={`font-medium ${exceedsBattery ? "text-orange-300" : "text-yellow-300"}`}
+                      >
+                        {formatDuration(time)}
+                      </span>
+                    </span>
+                  </>
+                );
+              })()
+            ) : (
+              <span className="text-[10px] text-muted-foreground">
+                Add 2+ waypoints
+              </span>
+            )}
           </div>
         </div>
 
@@ -576,7 +689,10 @@ export default function App() {
                     <User className="h-3 w-3 text-muted-foreground" />
                   </div>
                 )}
-                <span className="text-[11px] text-muted-foreground truncate" title={userEmail || ""}>
+                <span
+                  className="text-[11px] text-muted-foreground truncate"
+                  title={userEmail || ""}
+                >
                   {userEmail}
                 </span>
               </div>
@@ -625,7 +741,9 @@ export default function App() {
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-      {showAccountMenu && <AccountModal onClose={() => setShowAccountMenu(false)} />}
+      {showAccountMenu && (
+        <AccountModal onClose={() => setShowAccountMenu(false)} />
+      )}
       {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
       <WelcomeDialog />
     </div>
@@ -634,8 +752,10 @@ export default function App() {
 
 // Haversine distance between two points (meters)
 function haversine(
-  lat1: number, lon1: number,
-  lat2: number, lon2: number
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
 ): number {
   const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -650,15 +770,25 @@ function haversine(
 
 // Estimate total distance (m) and flight time (s) using per-segment speeds
 function estimateFlightStats(
-  waypoints: { latitude: number; longitude: number; speed: number; useGlobalSpeed: boolean }[],
-  globalSpeed: number
+  waypoints: {
+    latitude: number;
+    longitude: number;
+    speed: number;
+    useGlobalSpeed: boolean;
+  }[],
+  globalSpeed: number,
 ): { distance: number; time: number } {
   let distance = 0;
   let time = 0;
   for (let i = 1; i < waypoints.length; i++) {
     const prev = waypoints[i - 1];
     const curr = waypoints[i];
-    const segDist = haversine(prev.latitude, prev.longitude, curr.latitude, curr.longitude);
+    const segDist = haversine(
+      prev.latitude,
+      prev.longitude,
+      curr.latitude,
+      curr.longitude,
+    );
     const speed = curr.useGlobalSpeed ? globalSpeed : curr.speed;
     distance += segDist;
     time += speed > 0 ? segDist / speed : 0;

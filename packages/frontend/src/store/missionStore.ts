@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import type { Waypoint, MissionConfig, WaypointAction, PointOfInterest, Obstacle } from "@droneroute/shared";
+import type {
+  Waypoint,
+  MissionConfig,
+  WaypointAction,
+  PointOfInterest,
+  Obstacle,
+} from "@droneroute/shared";
 import { DEFAULT_MISSION_CONFIG, DEFAULT_WAYPOINT } from "@droneroute/shared";
 import type { TemplateType } from "@/lib/templates";
 
@@ -54,7 +60,11 @@ interface MissionState {
   reorderWaypoints: (fromIndex: number, toIndex: number) => void;
   setIsAddingWaypoint: (adding: boolean) => void;
   addAction: (waypointIndex: number, action: WaypointAction) => void;
-  updateAction: (waypointIndex: number, actionId: number, updates: Partial<WaypointAction>) => void;
+  updateAction: (
+    waypointIndex: number,
+    actionId: number,
+    updates: Partial<WaypointAction>,
+  ) => void;
   removeAction: (waypointIndex: number, actionId: number) => void;
 
   // POI actions
@@ -65,14 +75,27 @@ interface MissionState {
   selectPoi: (id: string | null) => void;
   setIsAddingPoi: (adding: boolean) => void;
   setTemplateMode: (mode: TemplateType | null) => void;
-  appendWaypoints: (waypoints: Omit<Waypoint, "index" | "name">[], pois?: Omit<PointOfInterest, "id">[]) => void;
+  appendWaypoints: (
+    waypoints: Omit<Waypoint, "index" | "name">[],
+    pois?: Omit<PointOfInterest, "id">[],
+  ) => void;
 
   // Obstacle actions
   addObstacle: (vertices: [number, number][]) => void;
   updateObstacle: (id: string, updates: Partial<Obstacle>) => void;
   removeObstacle: (id: string) => void;
-  moveObstacleVertex: (id: string, vertexIndex: number, lat: number, lng: number) => void;
-  addObstacleVertex: (id: string, afterIndex: number, lat: number, lng: number) => void;
+  moveObstacleVertex: (
+    id: string,
+    vertexIndex: number,
+    lat: number,
+    lng: number,
+  ) => void;
+  addObstacleVertex: (
+    id: string,
+    afterIndex: number,
+    lat: number,
+    lng: number,
+  ) => void;
   removeObstacleVertex: (id: string, vertexIndex: number) => void;
   selectObstacle: (id: string | null) => void;
   setIsDrawingObstacle: (drawing: boolean) => void;
@@ -144,7 +167,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   updateWaypoint: (index, updates) =>
     set((state) => ({
       waypoints: state.waypoints.map((wp) =>
-        wp.index === index ? { ...wp, ...updates } : wp
+        wp.index === index ? { ...wp, ...updates } : wp,
       ),
       dirty: true,
     })),
@@ -168,7 +191,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         lastSelectedWaypointIndex:
           state.lastSelectedWaypointIndex === index
             ? null
-            : state.lastSelectedWaypointIndex !== null && state.lastSelectedWaypointIndex > index
+            : state.lastSelectedWaypointIndex !== null &&
+                state.lastSelectedWaypointIndex > index
               ? state.lastSelectedWaypointIndex - 1
               : state.lastSelectedWaypointIndex,
         dirty: true,
@@ -178,7 +202,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   moveWaypoint: (index, lat, lng) =>
     set((state) => ({
       waypoints: state.waypoints.map((wp) =>
-        wp.index === index ? { ...wp, latitude: lat, longitude: lng } : wp
+        wp.index === index ? { ...wp, latitude: lat, longitude: lng } : wp,
       ),
       dirty: true,
     })),
@@ -264,7 +288,9 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   updateSelectedWaypoints: (updates) =>
     set((state) => ({
       waypoints: state.waypoints.map((wp) =>
-        state.selectedWaypointIndices.has(wp.index) ? { ...wp, ...updates } : wp
+        state.selectedWaypointIndices.has(wp.index)
+          ? { ...wp, ...updates }
+          : wp,
       ),
       dirty: true,
     })),
@@ -285,14 +311,19 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     }),
 
   setIsAddingWaypoint: (adding) =>
-    set((state) => ({ isAddingWaypoint: adding, isAddingPoi: adding ? false : state.isAddingPoi, isDrawingObstacle: adding ? false : state.isDrawingObstacle, templateMode: adding ? null : state.templateMode })),
+    set((state) => ({
+      isAddingWaypoint: adding,
+      isAddingPoi: adding ? false : state.isAddingPoi,
+      isDrawingObstacle: adding ? false : state.isDrawingObstacle,
+      templateMode: adding ? null : state.templateMode,
+    })),
 
   addAction: (waypointIndex, action) =>
     set((state) => ({
       waypoints: state.waypoints.map((wp) =>
         wp.index === waypointIndex
           ? { ...wp, actions: [...wp.actions, action] }
-          : wp
+          : wp,
       ),
       dirty: true,
     })),
@@ -304,10 +335,10 @@ export const useMissionStore = create<MissionState>((set, get) => ({
           ? {
               ...wp,
               actions: wp.actions.map((a) =>
-                a.actionId === actionId ? { ...a, ...updates } : a
+                a.actionId === actionId ? { ...a, ...updates } : a,
               ),
             }
-          : wp
+          : wp,
       ),
       dirty: true,
     })),
@@ -320,7 +351,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
               ...wp,
               actions: wp.actions.filter((a) => a.actionId !== actionId),
             }
-          : wp
+          : wp,
       ),
       dirty: true,
     })),
@@ -354,7 +385,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       selectedPoiId: state.selectedPoiId === id ? null : state.selectedPoiId,
       // Clear poiId references on waypoints
       waypoints: state.waypoints.map((wp) =>
-        wp.poiId === id ? { ...wp, poiId: undefined } : wp
+        wp.poiId === id ? { ...wp, poiId: undefined } : wp,
       ),
       dirty: true,
     })),
@@ -362,7 +393,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   movePoi: (id, lat, lng) =>
     set((state) => ({
       pois: state.pois.map((p) =>
-        p.id === id ? { ...p, latitude: lat, longitude: lng } : p
+        p.id === id ? { ...p, latitude: lat, longitude: lng } : p,
       ),
       dirty: true,
     })),
@@ -370,7 +401,12 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   selectPoi: (id) => set({ selectedPoiId: id }),
 
   setIsAddingPoi: (adding) =>
-    set((state) => ({ isAddingPoi: adding, isAddingWaypoint: adding ? false : state.isAddingWaypoint, isDrawingObstacle: adding ? false : state.isDrawingObstacle, templateMode: adding ? null : state.templateMode })),
+    set((state) => ({
+      isAddingPoi: adding,
+      isAddingWaypoint: adding ? false : state.isAddingWaypoint,
+      isDrawingObstacle: adding ? false : state.isDrawingObstacle,
+      templateMode: adding ? null : state.templateMode,
+    })),
 
   // Obstacle actions
   addObstacle: (vertices) =>
@@ -392,14 +428,17 @@ export const useMissionStore = create<MissionState>((set, get) => ({
 
   updateObstacle: (id, updates) =>
     set((state) => ({
-      obstacles: state.obstacles.map((o) => (o.id === id ? { ...o, ...updates } : o)),
+      obstacles: state.obstacles.map((o) =>
+        o.id === id ? { ...o, ...updates } : o,
+      ),
       dirty: true,
     })),
 
   removeObstacle: (id) =>
     set((state) => ({
       obstacles: state.obstacles.filter((o) => o.id !== id),
-      selectedObstacleId: state.selectedObstacleId === id ? null : state.selectedObstacleId,
+      selectedObstacleId:
+        state.selectedObstacleId === id ? null : state.selectedObstacleId,
       dirty: true,
     })),
 
@@ -429,7 +468,9 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     set((state) => ({
       obstacles: state.obstacles.map((o) => {
         if (o.id !== id || o.vertices.length <= 3) return o;
-        const vertices = o.vertices.filter((_: [number, number], i: number) => i !== vertexIndex);
+        const vertices = o.vertices.filter(
+          (_: [number, number], i: number) => i !== vertexIndex,
+        );
         return { ...o, vertices };
       }),
       dirty: true,
@@ -443,7 +484,9 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       isAddingWaypoint: drawing ? false : state.isAddingWaypoint,
       isAddingPoi: drawing ? false : state.isAddingPoi,
       templateMode: drawing ? null : state.templateMode,
-      selectedWaypointIndices: drawing ? new Set<number>() : state.selectedWaypointIndices,
+      selectedWaypointIndices: drawing
+        ? new Set<number>()
+        : state.selectedWaypointIndices,
       selectedPoiId: drawing ? null : state.selectedPoiId,
       drawingVertices: drawing ? [] : state.drawingVertices,
     })),
@@ -451,7 +494,14 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   setDrawingVertices: (vertices) => set({ drawingVertices: vertices }),
 
   setTemplateMode: (mode) =>
-    set({ templateMode: mode, isAddingWaypoint: false, isAddingPoi: false, isDrawingObstacle: false, selectedWaypointIndices: new Set(), selectedPoiId: null }),
+    set({
+      templateMode: mode,
+      isAddingWaypoint: false,
+      isAddingPoi: false,
+      isDrawingObstacle: false,
+      selectedWaypointIndices: new Set(),
+      selectedPoiId: null,
+    }),
 
   appendWaypoints: (newWps, newPois) =>
     set((state) => {
@@ -483,7 +533,10 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         waypoints: [...state.waypoints, ...fullWaypoints],
         pois: [...state.pois, ...fullPois],
         selectedWaypointIndices: new Set(fullWaypoints.map((wp) => wp.index)),
-        lastSelectedWaypointIndex: fullWaypoints.length > 0 ? fullWaypoints[fullWaypoints.length - 1].index : state.lastSelectedWaypointIndex,
+        lastSelectedWaypointIndex:
+          fullWaypoints.length > 0
+            ? fullWaypoints[fullWaypoints.length - 1].index
+            : state.lastSelectedWaypointIndex,
         templateMode: null,
         dirty: true,
       };

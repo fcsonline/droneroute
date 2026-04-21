@@ -7,7 +7,11 @@ export interface AuthRequest extends Request {
   isAdmin?: boolean;
 }
 
-export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
+export function authMiddleware(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): void {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) {
     res.status(401).json({ error: "Missing or invalid authorization header" });
@@ -39,7 +43,11 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 }
 
 /** Optional auth - sets userId if token present, but doesn't reject */
-export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): void {
+export function optionalAuth(
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction,
+): void {
   const header = req.headers.authorization;
   if (header?.startsWith("Bearer ")) {
     const token = header.slice(7);

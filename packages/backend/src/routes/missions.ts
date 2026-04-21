@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { getDb } from "../models/db.js";
-import { authMiddleware, optionalAuth, type AuthRequest } from "../middleware/auth.js";
+import {
+  authMiddleware,
+  optionalAuth,
+  type AuthRequest,
+} from "../middleware/auth.js";
 import type { Mission } from "@droneroute/shared";
 
 export const missionRoutes = Router();
@@ -11,7 +15,7 @@ missionRoutes.get("/", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
   const rows = db
     .prepare(
-      "SELECT id, name, config, waypoints, pois, obstacles, share_token, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC"
+      "SELECT id, name, config, waypoints, pois, obstacles, share_token, created_at, updated_at FROM missions WHERE user_id = ? ORDER BY updated_at DESC",
     )
     .all(req.userId!) as any[];
 
@@ -21,7 +25,9 @@ missionRoutes.get("/", authMiddleware, (req: AuthRequest, res) => {
 // Get single mission (owner only)
 missionRoutes.get("/:id", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
-  const row = db.prepare("SELECT * FROM missions WHERE id = ?").get(req.params.id) as any;
+  const row = db
+    .prepare("SELECT * FROM missions WHERE id = ?")
+    .get(req.params.id) as any;
 
   if (!row) {
     res.status(404).json({ error: "Mission not found" });
@@ -59,8 +65,16 @@ missionRoutes.post("/", optionalAuth, (req: AuthRequest, res) => {
   const db = getDb();
   const id = uuidv4();
   db.prepare(
-    "INSERT INTO missions (id, name, user_id, config, waypoints, pois, obstacles) VALUES (?, ?, ?, ?, ?, ?, ?)"
-  ).run(id, name, req.userId || null, JSON.stringify(config), JSON.stringify(waypoints), JSON.stringify(pois || []), JSON.stringify(obstacles || []));
+    "INSERT INTO missions (id, name, user_id, config, waypoints, pois, obstacles) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  ).run(
+    id,
+    name,
+    req.userId || null,
+    JSON.stringify(config),
+    JSON.stringify(waypoints),
+    JSON.stringify(pois || []),
+    JSON.stringify(obstacles || []),
+  );
 
   res.status(201).json({ id, name });
 });
@@ -70,7 +84,9 @@ missionRoutes.put("/:id", authMiddleware, (req: AuthRequest, res) => {
   const { name, config, waypoints, pois, obstacles } = req.body;
   const db = getDb();
 
-  const existing = db.prepare("SELECT user_id FROM missions WHERE id = ?").get(req.params.id) as any;
+  const existing = db
+    .prepare("SELECT user_id FROM missions WHERE id = ?")
+    .get(req.params.id) as any;
   if (!existing) {
     res.status(404).json({ error: "Mission not found" });
     return;
@@ -108,7 +124,9 @@ missionRoutes.put("/:id", authMiddleware, (req: AuthRequest, res) => {
   updates.push("updated_at = datetime('now')");
   values.push(req.params.id);
 
-  db.prepare(`UPDATE missions SET ${updates.join(", ")} WHERE id = ?`).run(...values);
+  db.prepare(`UPDATE missions SET ${updates.join(", ")} WHERE id = ?`).run(
+    ...values,
+  );
 
   res.json({ id: req.params.id, name });
 });
@@ -116,7 +134,9 @@ missionRoutes.put("/:id", authMiddleware, (req: AuthRequest, res) => {
 // Delete mission
 missionRoutes.delete("/:id", authMiddleware, (req: AuthRequest, res) => {
   const db = getDb();
-  const existing = db.prepare("SELECT user_id FROM missions WHERE id = ?").get(req.params.id) as any;
+  const existing = db
+    .prepare("SELECT user_id FROM missions WHERE id = ?")
+    .get(req.params.id) as any;
   if (!existing) {
     res.status(404).json({ error: "Mission not found" });
     return;

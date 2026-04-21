@@ -16,7 +16,9 @@ const commitSha = (() => {
 
 const appVersion = (() => {
   try {
-    const pkg = JSON.parse(readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"));
+    const pkg = JSON.parse(
+      readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"),
+    );
     return pkg.version;
   } catch {
     return "dev";

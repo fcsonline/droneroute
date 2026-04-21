@@ -40,7 +40,7 @@ export function ObstaclePolygon({ obstacle }: ObstaclePolygonProps) {
   const isSelected = selectedObstacleId === obstacle.id;
   const positions: [number, number][] = useMemo(
     () => obstacle.vertices.map(([lat, lng]) => [lat, lng] as [number, number]),
-    [obstacle.vertices]
+    [obstacle.vertices],
   );
 
   const handleClick = useCallback(() => {
@@ -52,7 +52,10 @@ export function ObstaclePolygon({ obstacle }: ObstaclePolygonProps) {
     if (!isSelected || positions.length < 2) return [];
     return positions.map((curr, i) => {
       const next = positions[(i + 1) % positions.length];
-      return [(curr[0] + next[0]) / 2, (curr[1] + next[1]) / 2] as [number, number];
+      return [(curr[0] + next[0]) / 2, (curr[1] + next[1]) / 2] as [
+        number,
+        number,
+      ];
     });
   }, [isSelected, positions]);
 

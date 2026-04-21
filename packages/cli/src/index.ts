@@ -19,7 +19,9 @@ const pkg = JSON.parse(
 
 program
   .name("droneroute")
-  .description("Upload DJI waypoint mission KMZ files to RC controllers via USB")
+  .description(
+    "Upload DJI waypoint mission KMZ files to RC controllers via USB",
+  )
   .version(pkg.version)
   .argument("<file>", "path to a .kmz mission file")
   .action(async (file: string) => {
@@ -47,19 +49,29 @@ program
 
       console.error(chalk.red("\nNo DJI controllers found.\n"));
       console.error(chalk.dim("Troubleshooting:"));
-      console.error(chalk.dim("  • Connect the controller via USB and power it on"));
+      console.error(
+        chalk.dim("  • Connect the controller via USB and power it on"),
+      );
 
       if (!hasAdb) {
         console.error(chalk.dim("  • Install adb for USB detection:"));
-        console.error(chalk.dim("      macOS:   brew install android-platform-tools"));
+        console.error(
+          chalk.dim("      macOS:   brew install android-platform-tools"),
+        );
         console.error(chalk.dim("      Linux:   apt install adb"));
-        console.error(chalk.dim("      Windows: included with Android SDK platform-tools"));
+        console.error(
+          chalk.dim("      Windows: included with Android SDK platform-tools"),
+        );
       } else {
         console.error(chalk.dim("  • Enable USB debugging on the controller"));
-        console.error(chalk.dim("  • Check that the USB cable supports data transfer"));
+        console.error(
+          chalk.dim("  • Check that the USB cable supports data transfer"),
+        );
       }
 
-      console.error(chalk.dim("  • Or insert the controller's SD card directly"));
+      console.error(
+        chalk.dim("  • Or insert the controller's SD card directly"),
+      );
       process.exit(1);
     }
 

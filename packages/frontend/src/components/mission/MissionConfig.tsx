@@ -1,15 +1,30 @@
 import { useMissionStore } from "@/store/missionStore";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DRONE_MODELS } from "@droneroute/shared";
-import type { HeadingMode, TurnMode, FinishAction, RCLostAction, HeightMode, FlyToWaylineMode } from "@droneroute/shared";
+import type {
+  HeadingMode,
+  TurnMode,
+  FinishAction,
+  RCLostAction,
+  HeightMode,
+  FlyToWaylineMode,
+} from "@droneroute/shared";
 
 export function MissionConfig() {
   const { config, setConfig } = useMissionStore();
 
   const selectedDrone = DRONE_MODELS.find(
-    (d) => d.droneEnumValue === config.droneEnumValue && d.droneSubEnumValue === config.droneSubEnumValue
+    (d) =>
+      d.droneEnumValue === config.droneEnumValue &&
+      d.droneSubEnumValue === config.droneSubEnumValue,
   );
 
   return (
@@ -20,7 +35,9 @@ export function MissionConfig() {
           value={`${config.droneEnumValue}-${config.droneSubEnumValue}`}
           onValueChange={(v) => {
             const [drone, sub] = v.split("-").map(Number);
-            const model = DRONE_MODELS.find((d) => d.droneEnumValue === drone && d.droneSubEnumValue === sub);
+            const model = DRONE_MODELS.find(
+              (d) => d.droneEnumValue === drone && d.droneSubEnumValue === sub,
+            );
             if (model) {
               setConfig({
                 droneEnumValue: model.droneEnumValue,
@@ -35,7 +52,10 @@ export function MissionConfig() {
           </SelectTrigger>
           <SelectContent>
             {DRONE_MODELS.map((d) => (
-              <SelectItem key={`${d.droneEnumValue}-${d.droneSubEnumValue}`} value={`${d.droneEnumValue}-${d.droneSubEnumValue}`}>
+              <SelectItem
+                key={`${d.droneEnumValue}-${d.droneSubEnumValue}`}
+                value={`${d.droneEnumValue}-${d.droneSubEnumValue}`}
+              >
                 {d.label}
               </SelectItem>
             ))}
@@ -55,7 +75,10 @@ export function MissionConfig() {
             </SelectTrigger>
             <SelectContent>
               {selectedDrone.payloads.map((p) => (
-                <SelectItem key={p.payloadEnumValue} value={String(p.payloadEnumValue)}>
+                <SelectItem
+                  key={p.payloadEnumValue}
+                  value={String(p.payloadEnumValue)}
+                >
                   {p.label}
                 </SelectItem>
               ))}
@@ -70,7 +93,9 @@ export function MissionConfig() {
           <Input
             type="number"
             value={config.autoFlightSpeed}
-            onChange={(e) => setConfig({ autoFlightSpeed: parseFloat(e.target.value) || 1 })}
+            onChange={(e) =>
+              setConfig({ autoFlightSpeed: parseFloat(e.target.value) || 1 })
+            }
             min={1}
             max={15}
             step={0.5}
@@ -82,7 +107,11 @@ export function MissionConfig() {
           <Input
             type="number"
             value={config.takeOffSecurityHeight}
-            onChange={(e) => setConfig({ takeOffSecurityHeight: parseFloat(e.target.value) || 1.2 })}
+            onChange={(e) =>
+              setConfig({
+                takeOffSecurityHeight: parseFloat(e.target.value) || 1.2,
+              })
+            }
             min={1.2}
             max={1500}
             className="h-8 text-xs"
@@ -95,7 +124,11 @@ export function MissionConfig() {
         <Input
           type="number"
           value={config.maxBatteryMinutes}
-          onChange={(e) => setConfig({ maxBatteryMinutes: Math.max(1, parseInt(e.target.value) || 1) })}
+          onChange={(e) =>
+            setConfig({
+              maxBatteryMinutes: Math.max(1, parseInt(e.target.value) || 1),
+            })
+          }
           min={1}
           max={120}
           step={1}
@@ -116,7 +149,9 @@ export function MissionConfig() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="relativeToStartPoint">Relative to start</SelectItem>
+            <SelectItem value="relativeToStartPoint">
+              Relative to start
+            </SelectItem>
             <SelectItem value="EGM96">EGM96 (MSL)</SelectItem>
             <SelectItem value="aboveGroundLevel">Above ground level</SelectItem>
           </SelectContent>
@@ -127,7 +162,9 @@ export function MissionConfig() {
         <Label className="text-xs">Heading mode</Label>
         <Select
           value={config.globalHeadingMode}
-          onValueChange={(v) => setConfig({ globalHeadingMode: v as HeadingMode })}
+          onValueChange={(v) =>
+            setConfig({ globalHeadingMode: v as HeadingMode })
+          }
         >
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
@@ -146,14 +183,18 @@ export function MissionConfig() {
         <Label className="text-xs">Fly-to mode</Label>
         <Select
           value={config.flyToWaylineMode}
-          onValueChange={(v) => setConfig({ flyToWaylineMode: v as FlyToWaylineMode })}
+          onValueChange={(v) =>
+            setConfig({ flyToWaylineMode: v as FlyToWaylineMode })
+          }
         >
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="safely">Safely (climb then fly)</SelectItem>
-            <SelectItem value="pointToPoint">Point to point (direct)</SelectItem>
+            <SelectItem value="pointToPoint">
+              Point to point (direct)
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -180,7 +221,9 @@ export function MissionConfig() {
         <Label className="text-xs">RC lost action</Label>
         <Select
           value={config.executeRCLostAction}
-          onValueChange={(v) => setConfig({ executeRCLostAction: v as RCLostAction })}
+          onValueChange={(v) =>
+            setConfig({ executeRCLostAction: v as RCLostAction })
+          }
         >
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
@@ -198,7 +241,11 @@ export function MissionConfig() {
         <Input
           type="number"
           value={config.globalTransitionalSpeed}
-          onChange={(e) => setConfig({ globalTransitionalSpeed: parseFloat(e.target.value) || 1 })}
+          onChange={(e) =>
+            setConfig({
+              globalTransitionalSpeed: parseFloat(e.target.value) || 1,
+            })
+          }
           min={1}
           max={15}
           step={0.5}

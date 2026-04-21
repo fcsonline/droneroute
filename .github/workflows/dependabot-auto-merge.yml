@@ -1,0 +1,83 @@
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Auto-merge Dependabot PR
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Get PR number and verify author
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
+          PR_JSON=$(gh pr list --repo "${{ github.repository }}" \
+            --head "$HEAD_BRANCH" --state open \
+            --json number,author --jq '.[0] // empty')
+
+          if [ -z "$PR_JSON" ]; then
+            echo "No open PR found for branch $HEAD_BRANCH"
+            exit 0
+          fi
+
+          PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
+          PR_AUTHOR=$(echo "$PR_JSON" | jq -r '.author.login')
+
+          echo "PR #$PR_NUMBER by $PR_AUTHOR"
+
+          if [ "$PR_AUTHOR" != "app/dependabot" ]; then
+            echo "Not a Dependabot PR — skipping"
+            exit 0
+          fi
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Check update type
+        id: check
+        if: steps.pr.outputs.number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          LABELS=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" \
+            --json labels --jq '.labels[].name')
+
+          echo "Labels: $LABELS"
+
+          if echo "$LABELS" | grep -q "semver-major"; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+            echo "Major version bump detected — skipping auto-merge"
+          else
+            echo "type=minor-or-patch" >> "$GITHUB_OUTPUT"
+            echo "Patch/minor update — will auto-merge"
+          fi
+
+      - name: Approve and merge
+        if: steps.pr.outputs.number && steps.check.outputs.type == 'minor-or-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          gh pr review "$PR_NUMBER" --repo "${{ github.repository }}" --approve \
+            --body "Auto-approved: Dependabot patch/minor update. CI passed."
+          gh pr merge "$PR_NUMBER" --repo "${{ github.repository }}" --squash \
+            --body "Auto-merged by Dependabot auto-merge workflow after CI passed."
+
+      - name: Comment on major bump
+        if: steps.pr.outputs.number && steps.check.outputs.type == 'major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
+            --body "This is a **major version bump** — skipping auto-merge. Please review manually."

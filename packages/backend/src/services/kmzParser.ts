@@ -1,6 +1,12 @@
 import JSZip from "jszip";
 import { XMLParser } from "fast-xml-parser";
-import type { Mission, Waypoint, MissionConfig, WaypointAction, PointOfInterest } from "@droneroute/shared";
+import type {
+  Mission,
+  Waypoint,
+  MissionConfig,
+  WaypointAction,
+  PointOfInterest,
+} from "@droneroute/shared";
 import { DEFAULT_MISSION_CONFIG, DEFAULT_WAYPOINT } from "@droneroute/shared";
 import { v4 as uuidv4 } from "uuid";
 
@@ -8,11 +14,18 @@ const parser = new XMLParser({
   ignoreAttributes: false,
   removeNSPrefix: false,
   isArray: (name) => {
-    return name === "Placemark" || name === "wpml:actionGroup" || name === "wpml:action";
+    return (
+      name === "Placemark" ||
+      name === "wpml:actionGroup" ||
+      name === "wpml:action"
+    );
   },
 });
 
-function extractCoords(coordStr: string): { longitude: number; latitude: number } {
+function extractCoords(coordStr: string): {
+  longitude: number;
+  latitude: number;
+} {
   const parts = coordStr.split(",").map((s) => parseFloat(s.trim()));
   return { longitude: parts[0], latitude: parts[1] };
 }
@@ -35,13 +48,16 @@ function parseActions(placemark: any): WaypointAction[] {
   return actions;
 }
 
-export async function parseKmz(
-  buffer: Buffer
-): Promise<{ config: MissionConfig; waypoints: Waypoint[]; pois: PointOfInterest[] }> {
+export async function parseKmz(buffer: Buffer): Promise<{
+  config: MissionConfig;
+  waypoints: Waypoint[];
+  pois: PointOfInterest[];
+}> {
   const zip = await JSZip.loadAsync(buffer);
 
   // Try template.kml at root or inside wpmz/ directory (DJI convention)
-  const templateFile = zip.file("template.kml") || zip.file("wpmz/template.kml");
+  const templateFile =
+    zip.file("template.kml") || zip.file("wpmz/template.kml");
   if (!templateFile) {
     throw new Error("Invalid KMZ: missing template.kml");
   }
@@ -65,7 +81,9 @@ export async function parseKmz(
     exitOnRCLost: mc["wpml:exitOnRCLost"] || "executeLostAction",
     executeRCLostAction: mc["wpml:executeRCLostAction"] || "goBack",
     takeOffSecurityHeight: parseFloat(mc["wpml:takeOffSecurityHeight"] || "20"),
-    globalTransitionalSpeed: parseFloat(mc["wpml:globalTransitionalSpeed"] || "10"),
+    globalTransitionalSpeed: parseFloat(
+      mc["wpml:globalTransitionalSpeed"] || "10",
+    ),
   };
 
   // Determine which document contains the Folder with waypoints.
@@ -74,7 +92,8 @@ export async function parseKmz(
 
   if (!folder) {
     // Try waylines.wpml for the actual waypoint data
-    const waylinesFile = zip.file("waylines.wpml") || zip.file("wpmz/waylines.wpml");
+    const waylinesFile =
+      zip.file("waylines.wpml") || zip.file("wpmz/waylines.wpml");
     if (waylinesFile) {
       const waylinesXml = await waylinesFile.async("string");
       const waylinesParsed = parser.parse(waylinesXml);
@@ -84,7 +103,8 @@ export async function parseKmz(
 
   if (folder) {
     config.autoFlightSpeed = parseFloat(folder["wpml:autoFlightSpeed"] || "7");
-    config.gimbalPitchMode = folder["wpml:gimbalPitchMode"] || "usePointSetting";
+    config.gimbalPitchMode =
+      folder["wpml:gimbalPitchMode"] || "usePointSetting";
     config.globalTurnMode =
       folder["wpml:globalWaypointTurnMode"] ||
       "toPointAndStopWithDiscontinuityCurvature";
@@ -120,9 +140,10 @@ export async function parseKmz(
 
     if (headingParam) {
       headingMode = headingParam["wpml:waypointHeadingMode"];
-      headingAngle = headingParam["wpml:waypointHeadingAngle"] != null
-        ? parseFloat(headingParam["wpml:waypointHeadingAngle"])
-        : undefined;
+      headingAngle =
+        headingParam["wpml:waypointHeadingAngle"] != null
+          ? parseFloat(headingParam["wpml:waypointHeadingAngle"])
+          : undefined;
       const poiPoint = headingParam["wpml:waypointPoiPoint"];
       if (headingMode === "towardPOI" && poiPoint) {
         const poiKey = String(poiPoint);
@@ -144,25 +165,32 @@ export async function parseKmz(
     // Parse turn mode and damping distance
     const turnParam = pm["wpml:waypointTurnParam"];
     const turnMode = turnParam?.["wpml:waypointTurnMode"];
-    const turnDampingDist = turnParam?.["wpml:waypointTurnDampingDist"] != null
-      ? parseFloat(turnParam["wpml:waypointTurnDampingDist"])
-      : undefined;
+    const turnDampingDist =
+      turnParam?.["wpml:waypointTurnDampingDist"] != null
+        ? parseFloat(turnParam["wpml:waypointTurnDampingDist"])
+        : undefined;
 
     // Height: try wpml:executeHeight (waylines.wpml), wpml:height, wpml:ellipsoidHeight
     const height = parseFloat(
-      pm["wpml:executeHeight"] || pm["wpml:height"] || pm["wpml:ellipsoidHeight"] || "50"
+      pm["wpml:executeHeight"] ||
+        pm["wpml:height"] ||
+        pm["wpml:ellipsoidHeight"] ||
+        "50",
     );
 
     // Gimbal pitch: try direct field or extract from gimbalRotate action
-    let gimbalPitchAngle = pm["wpml:gimbalPitchAngle"] != null
-      ? parseFloat(pm["wpml:gimbalPitchAngle"])
-      : undefined;
+    let gimbalPitchAngle =
+      pm["wpml:gimbalPitchAngle"] != null
+        ? parseFloat(pm["wpml:gimbalPitchAngle"])
+        : undefined;
     if (gimbalPitchAngle == null) {
       // Look for a gimbalRotate action with pitch angle
       const gimbalAction = actions.find((a) => a.actionType === "gimbalRotate");
       const gimbalParams = gimbalAction?.params as any;
       if (gimbalParams?.["wpml:gimbalPitchRotateAngle"] != null) {
-        gimbalPitchAngle = parseFloat(gimbalParams["wpml:gimbalPitchRotateAngle"]);
+        gimbalPitchAngle = parseFloat(
+          gimbalParams["wpml:gimbalPitchRotateAngle"],
+        );
       }
     }
 
@@ -175,11 +203,19 @@ export async function parseKmz(
       latitude: coords.latitude,
       longitude: coords.longitude,
       height,
-      speed: parseFloat(pm["wpml:waypointSpeed"] || String(config.autoFlightSpeed)),
-      useGlobalSpeed: pm["wpml:useGlobalSpeed"] === "1" || pm["wpml:useGlobalSpeed"] === 1,
-      useGlobalHeight: pm["wpml:useGlobalHeight"] === "1" || pm["wpml:useGlobalHeight"] === 1,
-      useGlobalHeadingParam: pm["wpml:useGlobalHeadingParam"] === "1" || pm["wpml:useGlobalHeadingParam"] === 1,
-      useGlobalTurnParam: pm["wpml:useGlobalTurnParam"] === "1" || pm["wpml:useGlobalTurnParam"] === 1,
+      speed: parseFloat(
+        pm["wpml:waypointSpeed"] || String(config.autoFlightSpeed),
+      ),
+      useGlobalSpeed:
+        pm["wpml:useGlobalSpeed"] === "1" || pm["wpml:useGlobalSpeed"] === 1,
+      useGlobalHeight:
+        pm["wpml:useGlobalHeight"] === "1" || pm["wpml:useGlobalHeight"] === 1,
+      useGlobalHeadingParam:
+        pm["wpml:useGlobalHeadingParam"] === "1" ||
+        pm["wpml:useGlobalHeadingParam"] === 1,
+      useGlobalTurnParam:
+        pm["wpml:useGlobalTurnParam"] === "1" ||
+        pm["wpml:useGlobalTurnParam"] === 1,
       gimbalPitchAngle: gimbalPitchAngle ?? DEFAULT_WAYPOINT.gimbalPitchAngle,
       headingMode: headingMode as any,
       headingAngle,

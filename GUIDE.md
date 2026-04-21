@@ -35,19 +35,20 @@ That's it. The rest of this guide covers every feature in detail.
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `W` | Enter waypoint placement mode — click the map to add waypoints |
-| `P` | Enter POI placement mode — click the map to add a Point of Interest |
-| `O` | Start orbit template — click and drag on the map to define center + radius |
-| `G` | Start grid survey template — click and drag to define the survey area |
-| `F` | Start facade scan template — click and drag to define the wall line |
-| `Z` | Start pencil path template — click and draw freehand on the map |
-| `Esc` | Cancel current mode / deselect all |
-| `Delete` / `Backspace` | Remove selected waypoint(s) |
-| `Ctrl+A` / `Cmd+A` | Select all waypoints |
+| Key                    | Action                                                                     |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `W`                    | Enter waypoint placement mode — click the map to add waypoints             |
+| `P`                    | Enter POI placement mode — click the map to add a Point of Interest        |
+| `O`                    | Start orbit template — click and drag on the map to define center + radius |
+| `G`                    | Start grid survey template — click and drag to define the survey area      |
+| `F`                    | Start facade scan template — click and drag to define the wall line        |
+| `Z`                    | Start pencil path template — click and draw freehand on the map            |
+| `Esc`                  | Cancel current mode / deselect all                                         |
+| `Delete` / `Backspace` | Remove selected waypoint(s)                                                |
+| `Ctrl+A` / `Cmd+A`     | Select all waypoints                                                       |
 
 **Selection modifiers** (in the waypoint list):
+
 - **Click** — select a single waypoint
 - **Ctrl/Cmd + Click** — toggle selection (add/remove)
 - **Shift + Click** — range select (from last selected to clicked)
@@ -70,17 +71,17 @@ Click a waypoint in the sidebar list (or on the map) to select it and open its i
 
 - **Name** — double-click the waypoint name in the list to rename it
 - **Altitude (m)** — flight height at this waypoint
-- **Speed (m/s)** — flight speed *to* this waypoint. Toggle "Use global speed" to inherit from mission config
+- **Speed (m/s)** — flight speed _to_ this waypoint. Toggle "Use global speed" to inherit from mission config
 - **Heading mode** — how the drone orients itself:
-  - *Follow Wayline* — nose follows the flight direction
-  - *Manual* — pilot controls heading
-  - *Fixed* — maintain a specific heading angle
-  - *Smooth Transition* — smoothly interpolate heading between waypoints
-  - *Toward POI* — automatically face a selected Point of Interest
+  - _Follow Wayline_ — nose follows the flight direction
+  - _Manual_ — pilot controls heading
+  - _Fixed_ — maintain a specific heading angle
+  - _Smooth Transition_ — smoothly interpolate heading between waypoints
+  - _Toward POI_ — automatically face a selected Point of Interest
 - **Turn mode** — how the drone transitions at each waypoint:
-  - *Coordinated Turn* — smooth curved path (doesn't stop)
-  - *To Point and Stop* — fly to the exact point, pause, then continue
-  - *To Point and Pass* — fly through with continuity curvature (smooth, no stop)
+  - _Coordinated Turn_ — smooth curved path (doesn't stop)
+  - _To Point and Stop_ — fly to the exact point, pause, then continue
+  - _To Point and Pass_ — fly through with continuity curvature (smooth, no stop)
 - **Gimbal pitch** — camera tilt angle (-90 = straight down, 0 = horizon, up to 45)
 
 ### Reordering Waypoints
@@ -90,6 +91,7 @@ Drag waypoints in the sidebar list using the grip handle (the six-dot icon on th
 ### Bulk Operations
 
 Select multiple waypoints (Ctrl/Cmd+Click or Shift+Click), then use the bulk action toolbar that appears to:
+
 - Delete all selected waypoints
 - Apply the same altitude, speed, or other settings to multiple waypoints at once
 
@@ -152,17 +154,17 @@ Each waypoint can have one or more actions that execute when the drone reaches t
 
 ### Available Actions
 
-| Action | Description |
-|--------|-------------|
-| **Take Photo** | Captures a single photo |
-| **Start Recording** | Begins video recording |
-| **Stop Recording** | Stops video recording |
-| **Gimbal Rotate** | Rotates the gimbal to a specific pitch and yaw angle |
-| **Gimbal Smooth** | Smoothly interpolates the gimbal pitch from the current angle to the target angle between this waypoint and the next |
-| **Rotate Yaw** | Rotates the aircraft to a specific heading (clockwise or counterclockwise) |
-| **Hover** | Holds position for a specified number of seconds |
-| **Zoom** | Sets the camera focal length (zoom level) |
-| **Focus** | Sets the camera focus point (point or infinite focus) |
+| Action              | Description                                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Take Photo**      | Captures a single photo                                                                                              |
+| **Start Recording** | Begins video recording                                                                                               |
+| **Stop Recording**  | Stops video recording                                                                                                |
+| **Gimbal Rotate**   | Rotates the gimbal to a specific pitch and yaw angle                                                                 |
+| **Gimbal Smooth**   | Smoothly interpolates the gimbal pitch from the current angle to the target angle between this waypoint and the next |
+| **Rotate Yaw**      | Rotates the aircraft to a specific heading (clockwise or counterclockwise)                                           |
+| **Hover**           | Holds position for a specified number of seconds                                                                     |
+| **Zoom**            | Sets the camera focal length (zoom level)                                                                            |
+| **Focus**           | Sets the camera focus point (point or infinite focus)                                                                |
 
 Actions execute in order when the drone arrives at the waypoint. You can add multiple actions to a single waypoint — for example, hover for 3 seconds, then take a photo.
 
@@ -179,6 +181,7 @@ Templates generate a set of waypoints automatically based on a pattern. They sav
 Creates a circular flight path around a center point. Click and drag on the map to define the center and radius.
 
 **Configuration:**
+
 - **Radius** — distance from center (determined by drag distance)
 - **Altitude** — flight height (default 50m)
 - **Number of points** — how many waypoints around the circle (3–72, default 12)
@@ -198,6 +201,7 @@ The gimbal pitch is automatically set to look toward the center point. If "Creat
 Creates a lawn-mower (zigzag) pattern for systematic area coverage. Click and drag to define two corners of the survey area.
 
 **Configuration:**
+
 - **Altitude** — flight height (default 80m)
 - **Line spacing** — distance between parallel passes in meters (default 30m)
 - **Rotation** — rotate the grid pattern (-180 to 180 degrees)
@@ -216,6 +220,7 @@ The gimbal is set to -90 degrees (straight down) and heading follows the flight 
 Creates a vertical scanning pattern parallel to a wall or building face. Click and drag to define the wall line (two endpoints).
 
 **Configuration:**
+
 - **Standoff distance** — how far from the wall to fly (default 20m)
 - **Min/Max altitude** — vertical range of the scan (default 10–50m)
 - **Rows** — number of horizontal passes (1–20, default 4)
@@ -234,6 +239,7 @@ The drone flies back and forth in a zigzag pattern at increasing altitudes. Head
 Draw a freehand flight path directly on the map. Click and drag to sketch the path, then adjust how many waypoints approximate it.
 
 **Configuration:**
+
 - **Waypoints** — number of waypoints along the path (2–200, default 10). More waypoints = closer approximation of the drawn shape
 - **Altitude** — flight height (default 50m)
 - **Speed** — flight speed (default 7 m/s)
@@ -252,18 +258,18 @@ The waypoints are placed at equal arc-length intervals along the drawn path usin
 
 Open the **Mission config** section in the sidebar to configure global mission parameters.
 
-| Setting | Description |
-|---------|-------------|
-| **Drone Model** | Select your DJI drone. This determines the KMZ metadata and available payloads |
-| **Payload** | Camera/sensor selection (appears when the drone supports multiple payloads) |
-| **Flight Speed** | Default speed for all waypoints using global speed (m/s) |
-| **Takeoff Height** | Security height the drone climbs to before flying to the first waypoint |
-| **Height Reference** | How altitude values are interpreted — Relative to Start, EGM96 (MSL), or Above Ground Level |
-| **Heading Mode** | Default heading behavior for new waypoints |
-| **Fly-to Mode** | How the drone reaches the first waypoint — *Safely* (climb then fly) or *Point to Point* (direct) |
-| **Finish Action** | What happens after the last waypoint — Go Home, Auto Land, Return to WP1, or Hover |
-| **RC Lost Action** | Behavior if the remote controller signal is lost — Return Home, Land, or Hover |
-| **Transit Speed** | Speed used to fly from takeoff to the first waypoint |
+| Setting              | Description                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| **Drone Model**      | Select your DJI drone. This determines the KMZ metadata and available payloads                    |
+| **Payload**          | Camera/sensor selection (appears when the drone supports multiple payloads)                       |
+| **Flight Speed**     | Default speed for all waypoints using global speed (m/s)                                          |
+| **Takeoff Height**   | Security height the drone climbs to before flying to the first waypoint                           |
+| **Height Reference** | How altitude values are interpreted — Relative to Start, EGM96 (MSL), or Above Ground Level       |
+| **Heading Mode**     | Default heading behavior for new waypoints                                                        |
+| **Fly-to Mode**      | How the drone reaches the first waypoint — _Safely_ (climb then fly) or _Point to Point_ (direct) |
+| **Finish Action**    | What happens after the last waypoint — Go Home, Auto Land, Return to WP1, or Hover                |
+| **RC Lost Action**   | Behavior if the remote controller signal is lost — Return Home, Land, or Hover                    |
+| **Transit Speed**    | Speed used to fly from takeoff to the first waypoint                                              |
 
 ---
 
@@ -285,6 +291,7 @@ When waypoints are set to face a POI, thin lines are drawn between them:
 ### Map Toolbar
 
 The floating toolbar on the map provides:
+
 - **Waypoint mode** (W) — click to place waypoints
 - **POI mode** (P) — click to place points of interest
 - **Template dropdown** — Orbit (O), Grid (G), Facade (F), Pencil (Z)
@@ -380,18 +387,18 @@ To stop sharing a mission, open **My routes** and click the **unshare** button (
 
 ## Supported Drones
 
-| Drone | Payloads |
-|-------|----------|
-| **DJI M300 RTK** | H20, H20T, H20N, PSDK |
-| **DJI M350 RTK** | H20, H20T, H20N, H30, H30T, PSDK |
-| **DJI M30** | M30 Camera |
-| **DJI M30T** | M30T Camera |
-| **DJI Mavic 3E** | M3E Camera |
-| **DJI Mavic 3T** | M3T Camera |
-| **DJI Mavic 3M** | M3M Camera |
-| **DJI Mavic 3D** | M3D Camera |
-| **DJI Mavic 3TD** | M3TD Camera |
-| **DJI Mini 4 Pro** | Mini 4 Pro Camera |
+| Drone              | Payloads                         |
+| ------------------ | -------------------------------- |
+| **DJI M300 RTK**   | H20, H20T, H20N, PSDK            |
+| **DJI M350 RTK**   | H20, H20T, H20N, H30, H30T, PSDK |
+| **DJI M30**        | M30 Camera                       |
+| **DJI M30T**       | M30T Camera                      |
+| **DJI Mavic 3E**   | M3E Camera                       |
+| **DJI Mavic 3T**   | M3T Camera                       |
+| **DJI Mavic 3M**   | M3M Camera                       |
+| **DJI Mavic 3D**   | M3D Camera                       |
+| **DJI Mavic 3TD**  | M3TD Camera                      |
+| **DJI Mini 4 Pro** | Mini 4 Pro Camera                |
 
 The PSDK (Payload SDK) option on M300/M350 represents third-party payloads.
 
@@ -426,6 +433,7 @@ If you've already created a mission in DJI Pilot 2, import the KMZ into DroneRou
 ### Height reference matters
 
 Choose your height reference carefully:
+
 - **Relative to Start** — simplest, altitudes are relative to the takeoff point
 - **EGM96 (MSL)** — altitudes are above mean sea level, useful for consistent heights across long distances
 - **Above Ground Level** — the drone maintains a fixed height above terrain (requires terrain data on the controller)

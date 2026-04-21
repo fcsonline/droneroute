@@ -24,14 +24,22 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ isLoading: true });
     try {
-      const res = await api.post<{ token: string; userId: string; email: string; isAdmin: boolean }>(
-        "/auth/login",
-        { email, password }
-      );
+      const res = await api.post<{
+        token: string;
+        userId: string;
+        email: string;
+        isAdmin: boolean;
+      }>("/auth/login", { email, password });
       localStorage.setItem("droneroute_token", res.token);
       localStorage.setItem("droneroute_email", res.email);
       localStorage.setItem("droneroute_is_admin", String(res.isAdmin));
-      set({ token: res.token, email: res.email, userId: res.userId, isAdmin: res.isAdmin, isLoading: false });
+      set({
+        token: res.token,
+        email: res.email,
+        userId: res.userId,
+        isAdmin: res.isAdmin,
+        isLoading: false,
+      });
     } catch (err) {
       set({ isLoading: false });
       throw err;
@@ -41,14 +49,22 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (email, password) => {
     set({ isLoading: true });
     try {
-      const res = await api.post<{ token: string; userId: string; email: string; isAdmin: boolean }>(
-        "/auth/register",
-        { email, password }
-      );
+      const res = await api.post<{
+        token: string;
+        userId: string;
+        email: string;
+        isAdmin: boolean;
+      }>("/auth/register", { email, password });
       localStorage.setItem("droneroute_token", res.token);
       localStorage.setItem("droneroute_email", res.email);
       localStorage.setItem("droneroute_is_admin", String(res.isAdmin));
-      set({ token: res.token, email: res.email, userId: res.userId, isAdmin: res.isAdmin, isLoading: false });
+      set({
+        token: res.token,
+        email: res.email,
+        userId: res.userId,
+        isAdmin: res.isAdmin,
+        isLoading: false,
+      });
     } catch (err) {
       set({ isLoading: false });
       throw err;

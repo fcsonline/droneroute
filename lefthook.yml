@@ -1,0 +1,14 @@
+# Pre-commit hooks to catch formatting and lint issues before they reach CI.
+# Installed automatically via the `prepare` npm script.
+# See: https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,md,mdx,css,html,yaml,yml}"
+      run: npx prettier --check {staged_files}
+
+    - name: lint
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
+      run: npx oxlint {staged_files}
