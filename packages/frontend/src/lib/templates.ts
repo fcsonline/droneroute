@@ -1,10 +1,19 @@
-import type { Waypoint, PointOfInterest, WaypointAction } from "@droneroute/shared";
+import type {
+  Waypoint,
+  PointOfInterest,
+  WaypointAction,
+} from "@droneroute/shared";
 import { DEFAULT_WAYPOINT } from "@droneroute/shared";
 
 // ── Helpers ──────────────────────────────────────────────
 
 /** Move a lat/lng point by a distance (meters) and bearing (degrees, 0=N) */
-function destinationPoint(lat: number, lng: number, distanceM: number, bearingDeg: number): [number, number] {
+function destinationPoint(
+  lat: number,
+  lng: number,
+  distanceM: number,
+  bearingDeg: number,
+): [number, number] {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const toDeg = (r: number) => (r * 180) / Math.PI;
@@ -13,29 +22,51 @@ function destinationPoint(lat: number, lng: number, distanceM: number, bearingDe
   const brng = toRad(bearingDeg);
   const d = distanceM / R;
 
-  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng));
-  const lng2 = lng1 + Math.atan2(Math.sin(brng) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(d) +
+      Math.cos(lat1) * Math.sin(d) * Math.cos(brng),
+  );
+  const lng2 =
+    lng1 +
+    Math.atan2(
+      Math.sin(brng) * Math.sin(d) * Math.cos(lat1),
+      Math.cos(d) - Math.sin(lat1) * Math.sin(lat2),
+    );
 
   return [toDeg(lat2), toDeg(lng2)];
 }
 
 /** Bearing from point A to point B in degrees (0=N, 90=E) */
-function bearing(lat1: number, lng1: number, lat2: number, lng2: number): number {
+function bearing(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
   const toRad = (d: number) => (d * Math.PI) / 180;
   const toDeg = (r: number) => (r * 180) / Math.PI;
   const dLng = toRad(lng2 - lng1);
   const y = Math.sin(dLng) * Math.cos(toRad(lat2));
-  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+  const x =
+    Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+    Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 }
 
 /** Haversine distance in meters */
-function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+function haversine(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -58,14 +89,14 @@ export interface GridParams {
   altitude: number;
   spacingM: number;
   addPhotos: boolean;
-  rotationDeg: number;       // rotation of the grid in degrees (0-360)
-  reverse: boolean;          // fly the grid in reverse order
+  rotationDeg: number; // rotation of the grid in degrees (0-360)
+  reverse: boolean; // fly the grid in reverse order
 }
 
 export interface FacadeParams {
   point1: [number, number]; // [lat, lng] — one end of wall
   point2: [number, number]; // [lat, lng] — other end of wall
-  distanceM: number;        // distance from wall
+  distanceM: number; // distance from wall
   minAltitude: number;
   maxAltitude: number;
   numRows: number;
@@ -74,16 +105,20 @@ export interface FacadeParams {
 }
 
 export interface PencilParams {
-  path: [number, number][];   // raw drawn points [lat, lng]
-  numPoints: number;          // target waypoint count
+  path: [number, number][]; // raw drawn points [lat, lng]
+  numPoints: number; // target waypoint count
   altitude: number;
   speed: number;
   gimbalPitchAngle: number;
   reverse: boolean;
-  poiId?: string;             // optional POI to face during flight
+  poiId?: string; // optional POI to face during flight
 }
 
-export type TemplateParams = OrbitParams | GridParams | FacadeParams | PencilParams;
+export type TemplateParams =
+  | OrbitParams
+  | GridParams
+  | FacadeParams
+  | PencilParams;
 
 export interface TemplateResult {
   waypoints: Omit<Waypoint, "index" | "name">[];
@@ -149,7 +184,8 @@ export function generateOrbit(params: OrbitParams): TemplateResult {
     // Calculate heading angle toward center
     const headingAngle = bearing(lat, lng, cLat, cLng);
     // Normalize to -180..180 range expected by DJI
-    const normalizedHeading = headingAngle > 180 ? headingAngle - 360 : headingAngle;
+    const normalizedHeading =
+      headingAngle > 180 ? headingAngle - 360 : headingAngle;
 
     // Calculate ideal gimbal pitch
     const horizontalDist = radiusM;
@@ -178,7 +214,15 @@ export function generateOrbit(params: OrbitParams): TemplateResult {
 }
 
 export function generateGrid(params: GridParams): TemplateResult {
-  const { corner1, corner2, altitude, spacingM, addPhotos, rotationDeg, reverse } = params;
+  const {
+    corner1,
+    corner2,
+    altitude,
+    spacingM,
+    addPhotos,
+    rotationDeg,
+    reverse,
+  } = params;
   const [lat1, lng1] = corner1;
   const [lat2, lng2] = corner2;
 
@@ -241,15 +285,19 @@ export function generateGrid(params: GridParams): TemplateResult {
       const lat = minLat + fraction * (maxLat - minLat);
       const startLng = reverse ? maxLng : minLng;
       const endLng = reverse ? minLng : maxLng;
-      wpLat1 = lat; wpLng1 = startLng;
-      wpLat2 = lat; wpLng2 = endLng;
+      wpLat1 = lat;
+      wpLng1 = startLng;
+      wpLat2 = lat;
+      wpLng2 = endLng;
     } else {
       // Cross axis is E-W: each pass is a vertical N-S line
       const lng = minLng + fraction * (maxLng - minLng);
       const startLat = reverse ? maxLat : minLat;
       const endLat = reverse ? minLat : maxLat;
-      wpLat1 = startLat; wpLng1 = lng;
-      wpLat2 = endLat; wpLng2 = lng;
+      wpLat1 = startLat;
+      wpLng1 = lng;
+      wpLat2 = endLat;
+      wpLng2 = lng;
     }
 
     // Apply rotation
@@ -290,7 +338,16 @@ export function generateGrid(params: GridParams): TemplateResult {
 }
 
 export function generateFacade(params: FacadeParams): TemplateResult {
-  const { point1, point2, distanceM, minAltitude, maxAltitude, numRows, numColumns, addPhotos } = params;
+  const {
+    point1,
+    point2,
+    distanceM,
+    minAltitude,
+    maxAltitude,
+    numRows,
+    numColumns,
+    addPhotos,
+  } = params;
   const [lat1, lng1] = point1;
   const [lat2, lng2] = point2;
 
@@ -304,7 +361,9 @@ export function generateFacade(params: FacadeParams): TemplateResult {
   // Generate the scan grid along the wall
   for (let row = 0; row < numRows; row++) {
     const altFraction = numRows <= 1 ? 0 : row / (numRows - 1);
-    const alt = Math.round(minAltitude + altFraction * (maxAltitude - minAltitude));
+    const alt = Math.round(
+      minAltitude + altFraction * (maxAltitude - minAltitude),
+    );
     const reverse = row % 2 === 1; // zigzag
 
     for (let col = 0; col < numColumns; col++) {
@@ -316,11 +375,17 @@ export function generateFacade(params: FacadeParams): TemplateResult {
       const wallLng = lng1 + colFraction * (lng2 - lng1);
 
       // Offset perpendicular to wall
-      const [wpLat, wpLng] = destinationPoint(wallLat, wallLng, distanceM, offsetBearing);
+      const [wpLat, wpLng] = destinationPoint(
+        wallLat,
+        wallLng,
+        distanceM,
+        offsetBearing,
+      );
 
       // Heading: face the wall (opposite of offset direction)
       const headingToWall = (offsetBearing + 180) % 360;
-      const normalizedHeading = headingToWall > 180 ? headingToWall - 360 : headingToWall;
+      const normalizedHeading =
+        headingToWall > 180 ? headingToWall - 360 : headingToWall;
 
       // Gimbal: calculate pitch toward wall point at ground level
       const heightDiff = alt; // drone altitude above wall base
@@ -340,13 +405,15 @@ export function generateFacade(params: FacadeParams): TemplateResult {
         gimbalPitchAngle: gimbalPitch,
         turnMode: "toPointAndStopWithContinuityCurvature",
         useGlobalTurnParam: false,
-        actions: addPhotos ? [
-          {
-            actionId: 0,
-            actionType: "takePhoto",
-            params: { payloadPositionIndex: 0 },
-          },
-        ] : [],
+        actions: addPhotos
+          ? [
+              {
+                actionId: 0,
+                actionType: "takePhoto",
+                params: { payloadPositionIndex: 0 },
+              },
+            ]
+          : [],
       });
     }
   }
@@ -367,7 +434,10 @@ function resamplePath(raw: [number, number][], n: number): [number, number][] {
   // 1. Compute cumulative arc-length distances
   const cumDist: number[] = [0];
   for (let i = 1; i < raw.length; i++) {
-    cumDist.push(cumDist[i - 1] + haversine(raw[i - 1][0], raw[i - 1][1], raw[i][0], raw[i][1]));
+    cumDist.push(
+      cumDist[i - 1] +
+        haversine(raw[i - 1][0], raw[i - 1][1], raw[i][0], raw[i][1]),
+    );
   }
   const totalLength = cumDist[cumDist.length - 1];
 
@@ -406,7 +476,8 @@ export function pathLength(path: [number, number][]): number {
 }
 
 export function generatePencil(params: PencilParams): TemplateResult {
-  const { path, numPoints, altitude, speed, gimbalPitchAngle, reverse, poiId } = params;
+  const { path, numPoints, altitude, speed, gimbalPitchAngle, reverse, poiId } =
+    params;
 
   if (path.length < 2 || numPoints < 2) return { waypoints: [], pois: [] };
 
@@ -414,21 +485,25 @@ export function generatePencil(params: PencilParams): TemplateResult {
 
   const useTowardPoi = !!poiId;
 
-  const waypoints: TemplateResult["waypoints"] = resampled.map(([lat, lng]) => ({
-    ...DEFAULT_WAYPOINT,
-    latitude: lat,
-    longitude: lng,
-    height: altitude,
-    speed,
-    useGlobalSpeed: false,
-    useGlobalHeadingParam: false,
-    headingMode: useTowardPoi ? "towardPOI" as const : "followWayline" as const,
-    ...(useTowardPoi ? { poiId } : {}),
-    gimbalPitchAngle,
-    turnMode: "toPointAndPassWithContinuityCurvature" as const,
-    useGlobalTurnParam: false,
-    actions: [],
-  }));
+  const waypoints: TemplateResult["waypoints"] = resampled.map(
+    ([lat, lng]) => ({
+      ...DEFAULT_WAYPOINT,
+      latitude: lat,
+      longitude: lng,
+      height: altitude,
+      speed,
+      useGlobalSpeed: false,
+      useGlobalHeadingParam: false,
+      headingMode: useTowardPoi
+        ? ("towardPOI" as const)
+        : ("followWayline" as const),
+      ...(useTowardPoi ? { poiId } : {}),
+      gimbalPitchAngle,
+      turnMode: "toPointAndPassWithContinuityCurvature" as const,
+      useGlobalTurnParam: false,
+      actions: [],
+    }),
+  );
 
   if (reverse) {
     waypoints.reverse();

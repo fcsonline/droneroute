@@ -25,7 +25,11 @@
 
 body {
   @apply bg-background text-foreground;
-  font-family: 'Switzer', system-ui, -apple-system, sans-serif;
+  font-family:
+    "Switzer",
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 /* Fix leaflet z-index conflicts */

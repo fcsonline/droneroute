@@ -20,10 +20,14 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
   }, [onClose]);
 
   const sha = typeof __COMMIT_SHA__ !== "undefined" ? __COMMIT_SHA__ : "dev";
-  const version = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
+  const version =
+    typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
       <div
         className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
@@ -34,7 +38,10 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             <img src="/droneroute.png" alt="DroneRoute" className="h-7 w-7" />
             <h2 className="text-base font-bold">DroneRoute</h2>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -42,8 +49,9 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
         {/* Body */}
         <div className="px-5 pt-4 pb-2 space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            A free, open-source mission planner for DJI drones. Place waypoints on the map,
-            configure flight parameters, and export KMZ files ready to fly.
+            A free, open-source mission planner for DJI drones. Place waypoints
+            on the map, configure flight parameters, and export KMZ files ready
+            to fly.
           </p>
 
           {/* Version */}
@@ -107,7 +115,8 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             </a>
             <div className="mt-2 pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground mb-2">
-                DroneRoute is free and open-source. If you find it useful, consider supporting its development:
+                DroneRoute is free and open-source. If you find it useful,
+                consider supporting its development:
               </p>
               <a
                 href="https://www.buymeacoffee.com/fcsonline"

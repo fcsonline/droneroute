@@ -1,46 +1,144 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  changes:
+    name: Detect changes
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [22]
-
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      deps: ${{ steps.filter.outputs.deps }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v4
+        id: filter
         with:
-          node-version: ${{ matrix.node-version }}
+          filters: |
+            app:
+              - "packages/**"
+              - "package.json"
+              - "package-lock.json"
+              - "tsconfig.json"
+              - "Dockerfile"
+              - ".github/workflows/ci.yml"
+            deps:
+              - "package.json"
+              - "package-lock.json"
+              - "packages/*/package.json"
+
+  typecheck:
+    name: Typecheck
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build shared package
+      - run: npm ci
+      - name: Build shared (required by other packages)
         run: npm run build -w packages/shared
+      - name: Typecheck backend
+        run: npx tsc --noEmit -p packages/backend/tsconfig.json
+      - name: Typecheck frontend
+        run: npx tsc --noEmit -p packages/frontend/tsconfig.json
+      - name: Typecheck CLI
+        run: npx tsc --noEmit -p packages/cli/tsconfig.json
 
-      - name: Build backend
-        run: npm run build -w packages/backend
+  lint:
+    name: Lint
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
 
-      - name: Build frontend
-        run: npm run build -w packages/frontend
+  format:
+    name: Format
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run fmt:check
+
+  build:
+    name: Build
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build all packages
+        run: npm run build
 
   docker:
+    name: Docker build
+    needs: [changes, build]
+    if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
-    needs: build
-
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@v6
       - name: Build Docker image
         run: docker build -t droneroute .
+
+  changelog:
+    name: Changelog
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Check for changelog entry
+        run: |
+          CHANGED=$(git diff --name-only origin/main...HEAD -- 'changelog/')
+          if [ -z "$CHANGED" ]; then
+            echo "::error::No changelog entry found. Every PR must include a changelog file under changelog/. Add a 'skip-changelog' label to bypass this check."
+            exit 1
+          fi
+          echo "Changelog files changed:"
+          echo "$CHANGED"
+
+  audit:
+    name: Security audit
+    needs: changes
+    if: needs.changes.outputs.deps == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check for high/critical vulnerabilities (production)
+        run: npm audit --omit=dev --audit-level=high

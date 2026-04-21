@@ -9,7 +9,10 @@ export function TemplatePreview({ result }: TemplatePreviewProps) {
   const { waypoints, pois } = result;
 
   // Build polyline from waypoint positions
-  const positions: [number, number][] = waypoints.map((wp) => [wp.latitude, wp.longitude]);
+  const positions: [number, number][] = waypoints.map((wp) => [
+    wp.latitude,
+    wp.longitude,
+  ]);
 
   return (
     <>

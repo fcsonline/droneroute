@@ -8,7 +8,11 @@ interface PoiMarkerProps {
   poi: PointOfInterest;
 }
 
-function createPoiIcon(name: string, isSelected: boolean, ctrlReady: boolean): L.DivIcon {
+function createPoiIcon(
+  name: string,
+  isSelected: boolean,
+  ctrlReady: boolean,
+): L.DivIcon {
   const bg = isSelected ? "#ef4444" : "#dc2626";
   const border = isSelected ? "#fca5a5" : "#991b1b";
   const cursor = ctrlReady ? "crosshair" : "grab";
@@ -38,14 +42,21 @@ function createPoiIcon(name: string, isSelected: boolean, ctrlReady: boolean): L
 }
 
 export function PoiMarker({ poi }: PoiMarkerProps) {
-  const { selectedPoiId, selectPoi, movePoi, selectedWaypointIndices, updateWaypoint } = useMissionStore();
+  const {
+    selectedPoiId,
+    selectPoi,
+    movePoi,
+    selectedWaypointIndices,
+    updateWaypoint,
+  } = useMissionStore();
   const isSelected = selectedPoiId === poi.id;
   const [ctrlHeld, setCtrlHeld] = useState(false);
   const hasSelectedWaypoints = selectedWaypointIndices.size > 0;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Control" || e.key === "Meta") setCtrlHeld(e.type === "keydown");
+      if (e.key === "Control" || e.key === "Meta")
+        setCtrlHeld(e.type === "keydown");
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("keyup", onKey);
@@ -59,7 +70,7 @@ export function PoiMarker({ poi }: PoiMarkerProps) {
 
   const icon = useMemo(
     () => createPoiIcon(poi.name, isSelected, ctrlReady),
-    [poi.name, isSelected, ctrlReady]
+    [poi.name, isSelected, ctrlReady],
   );
 
   return (
@@ -70,7 +81,10 @@ export function PoiMarker({ poi }: PoiMarkerProps) {
       eventHandlers={{
         click: (e) => {
           const nativeEvent = e.originalEvent;
-          if ((nativeEvent.ctrlKey || nativeEvent.metaKey) && hasSelectedWaypoints) {
+          if (
+            (nativeEvent.ctrlKey || nativeEvent.metaKey) &&
+            hasSelectedWaypoints
+          ) {
             // Ctrl+click: assign ALL selected waypoints heading toward this POI
             for (const idx of selectedWaypointIndices) {
               updateWaypoint(idx, {
@@ -99,7 +113,11 @@ export function PoiMarker({ poi }: PoiMarkerProps) {
             <>
               <br />
               <span className="text-blue-500 font-semibold">
-                Ctrl+click to aim {selectedWaypointIndices.size === 1 ? "waypoint" : `${selectedWaypointIndices.size} waypoints`} here
+                Ctrl+click to aim{" "}
+                {selectedWaypointIndices.size === 1
+                  ? "waypoint"
+                  : `${selectedWaypointIndices.size} waypoints`}{" "}
+                here
               </span>
             </>
           )}

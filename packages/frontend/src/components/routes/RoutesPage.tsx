@@ -1,11 +1,30 @@
 import { useState, useEffect } from "react";
-import { MapPin, Crosshair, Trash2, ArrowLeft, Plus, Calendar, Route, ArrowUp, Plane, Download, Share2, Link, Link2Off, Check } from "lucide-react";
+import {
+  MapPin,
+  Crosshair,
+  Trash2,
+  ArrowLeft,
+  Plus,
+  Calendar,
+  Route,
+  ArrowUp,
+  Plane,
+  Download,
+  Share2,
+  Link,
+  Link2Off,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
-import type { Waypoint, MissionConfig, PointOfInterest } from "@droneroute/shared";
+import type {
+  Waypoint,
+  MissionConfig,
+  PointOfInterest,
+} from "@droneroute/shared";
 
 interface SavedMission {
   id: string;
@@ -19,7 +38,12 @@ interface SavedMission {
   share_token: string | null;
 }
 
-function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function haversine(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -37,7 +61,7 @@ function estimateDistance(waypoints: Waypoint[]): number {
       waypoints[i - 1].latitude,
       waypoints[i - 1].longitude,
       waypoints[i].latitude,
-      waypoints[i].longitude
+      waypoints[i].longitude,
     );
   }
   return total;
@@ -50,7 +74,7 @@ function estimateFlightTime(waypoints: Waypoint[]): number {
       waypoints[i - 1].latitude,
       waypoints[i - 1].longitude,
       waypoints[i].latitude,
-      waypoints[i].longitude
+      waypoints[i].longitude,
     );
     seconds += dist / (waypoints[i - 1].speed || 7);
   }
@@ -69,7 +93,9 @@ function formatFlightTime(seconds: number): string {
 
 function getDroneLabel(config: MissionConfig): string | null {
   const model = DRONE_MODELS.find(
-    (d) => d.droneEnumValue === config.droneEnumValue && d.droneSubEnumValue === config.droneSubEnumValue
+    (d) =>
+      d.droneEnumValue === config.droneEnumValue &&
+      d.droneSubEnumValue === config.droneSubEnumValue,
   );
   return model?.label ?? null;
 }
@@ -152,13 +178,13 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
       } else {
         // Enable sharing
         const result = await api.post<{ shareToken: string; shareUrl: string }>(
-          `/missions/${mission.id}/share`
+          `/missions/${mission.id}/share`,
         );
         // Update local state
         setMissions((prev) =>
           prev.map((m) =>
-            m.id === mission.id ? { ...m, share_token: result.shareToken } : m
-          )
+            m.id === mission.id ? { ...m, share_token: result.shareToken } : m,
+          ),
         );
         await navigator.clipboard.writeText(result.shareUrl);
         setCopiedId(mission.id);
@@ -172,13 +198,14 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
   };
 
   const handleUnshare = async (mission: SavedMission) => {
-    if (!confirm("Revoke sharing? Anyone with the link will lose access.")) return;
+    if (!confirm("Revoke sharing? Anyone with the link will lose access."))
+      return;
     try {
       await api.delete(`/missions/${mission.id}/share`);
       setMissions((prev) =>
         prev.map((m) =>
-          m.id === mission.id ? { ...m, share_token: null } : m
-        )
+          m.id === mission.id ? { ...m, share_token: null } : m,
+        ),
       );
     } catch (e: any) {
       alert("Failed to unshare: " + (e.message || "Unknown error"));
@@ -190,7 +217,9 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
     try {
       const waypoints: Waypoint[] = JSON.parse(mission.waypoints);
       const config: MissionConfig = JSON.parse(mission.config);
-      const pois: PointOfInterest[] = mission.pois ? JSON.parse(mission.pois) : [];
+      const pois: PointOfInterest[] = mission.pois
+        ? JSON.parse(mission.pois)
+        : [];
 
       if (waypoints.length < 2) {
         alert("Need at least 2 waypoints to export");
@@ -256,10 +285,11 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
               <div>
                 <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <Route className="h-5 w-5 text-primary" />
-                   My routes
+                  My routes
                 </h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {missions.length} saved route{missions.length !== 1 ? "s" : ""}
+                  {missions.length} saved route
+                  {missions.length !== 1 ? "s" : ""}
                 </p>
               </div>
             </div>
@@ -285,8 +315,12 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
             {!loading && !token && (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <Route className="h-12 w-12 mb-4 opacity-30" />
-                <p className="text-lg font-medium mb-1">Sign in to view your routes</p>
-                <p className="text-sm mb-4">Create an account to save and manage drone missions</p>
+                <p className="text-lg font-medium mb-1">
+                  Sign in to view your routes
+                </p>
+                <p className="text-sm mb-4">
+                  Create an account to save and manage drone missions
+                </p>
                 <Button size="sm" className="gap-1.5" onClick={onRequestAuth}>
                   Sign in
                 </Button>
@@ -306,10 +340,12 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <Route className="h-12 w-12 mb-4 opacity-30" />
                 <p className="text-lg font-medium mb-1">No saved routes yet</p>
-                <p className="text-sm mb-4">Create your first drone waypoint mission</p>
+                <p className="text-sm mb-4">
+                  Create your first drone waypoint mission
+                </p>
                 <Button onClick={handleNewRoute} size="sm" className="gap-1.5">
                   <Plus className="h-4 w-4" />
-                   Create route
+                  Create route
                 </Button>
               </div>
             )}
@@ -341,9 +377,10 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                   const dist = estimateDistance(waypoints);
                   const flightTime = estimateFlightTime(waypoints);
                   const droneLabel = config ? getDroneLabel(config) : null;
-                  const maxAlt = waypoints.length > 0
-                    ? Math.max(...waypoints.map((w) => w.height))
-                    : 0;
+                  const maxAlt =
+                    waypoints.length > 0
+                      ? Math.max(...waypoints.map((w) => w.height))
+                      : 0;
 
                   return (
                     <div
@@ -365,7 +402,13 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                               size="icon"
                               className={`h-7 w-7 ${mission.share_token ? "text-emerald-400 hover:text-emerald-300" : "text-muted-foreground hover:text-foreground"}`}
                               disabled={sharingId === mission.id}
-                              title={mission.share_token ? (copiedId === mission.id ? "Link copied!" : "Copy share link") : "Share route"}
+                              title={
+                                mission.share_token
+                                  ? copiedId === mission.id
+                                    ? "Link copied!"
+                                    : "Copy share link"
+                                  : "Share route"
+                              }
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleShare(mission);
@@ -469,7 +512,9 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                           )}
                           {flightTime > 0 && (
                             <span className="flex items-center gap-1">
-                              <span className="text-orange-400 text-[10px]">~</span>
+                              <span className="text-orange-400 text-[10px]">
+                                ~
+                              </span>
                               {formatFlightTime(flightTime)}
                             </span>
                           )}

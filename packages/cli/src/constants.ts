@@ -17,12 +17,12 @@ export const ADB_WAYPOINT_PATH = `/sdcard/${WAYPOINT_PATH}`;
  */
 export const DJI_MODEL_HINTS = [
   "DJI_RC",
-  "RM500",  // DJI RC
-  "RM510",  // DJI RC Motion
-  "RM520",  // DJI RC-N1
-  "RM530",  // DJI RC Pro
-  "RC231",  // DJI RC 2
-  "RC232",  // DJI RC Pro 2
+  "RM500", // DJI RC
+  "RM510", // DJI RC Motion
+  "RM520", // DJI RC-N1
+  "RM530", // DJI RC Pro
+  "RC231", // DJI RC 2
+  "RC232", // DJI RC Pro 2
   "RC-N1",
   "RC-N2",
 ];

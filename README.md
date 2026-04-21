@@ -79,12 +79,12 @@ The CLI detects connected controllers (via adb or mounted SD cards), creates a n
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, TypeScript, Vite 6, Tailwind CSS v4, shadcn/ui, Zustand, Leaflet |
-| Backend | Node.js, Express 5, better-sqlite3, JWT auth |
-| Shared | TypeScript types package shared between frontend and backend |
-| Infrastructure | Docker, Traefik, SQLite |
+| Layer          | Technology                                                                 |
+| -------------- | -------------------------------------------------------------------------- |
+| Frontend       | React 19, TypeScript, Vite 6, Tailwind CSS v4, shadcn/ui, Zustand, Leaflet |
+| Backend        | Node.js, Express 5, better-sqlite3, JWT auth                               |
+| Shared         | TypeScript types package shared between frontend and backend               |
+| Infrastructure | Docker, Traefik, SQLite                                                    |
 
 The project is organized as an npm monorepo with four packages: `shared`, `backend`, `frontend`, and `cli`.
 

@@ -6,7 +6,13 @@ import { useMissionStore } from "@/store/missionStore";
 import { polygonArea, formatArea } from "@/lib/geo";
 
 export function ObstacleList() {
-  const { obstacles, selectedObstacleId, selectObstacle, removeObstacle, updateObstacle } = useMissionStore();
+  const {
+    obstacles,
+    selectedObstacleId,
+    selectObstacle,
+    removeObstacle,
+    updateObstacle,
+  } = useMissionStore();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [expandedEditor, setExpandedEditor] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -16,7 +22,9 @@ export function ObstacleList() {
       <div className="flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
         <Triangle className="h-8 w-8 mb-2 opacity-50" />
         <p className="text-sm">No obstacles yet</p>
-        <p className="text-xs mt-1">Use the "Obstacle" button to draw polygon obstacles</p>
+        <p className="text-xs mt-1">
+          Use the "Obstacle" button to draw polygon obstacles
+        </p>
       </div>
     );
   }
@@ -67,7 +75,8 @@ export function ObstacleList() {
                     autoFocus
                     onBlur={(e) => commitRename(obstacle.id, e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") commitRename(obstacle.id, e.currentTarget.value);
+                      if (e.key === "Enter")
+                        commitRename(obstacle.id, e.currentTarget.value);
                       if (e.key === "Escape") setEditingName(null);
                     }}
                     onClick={(e) => e.stopPropagation()}
@@ -82,7 +91,8 @@ export function ObstacleList() {
                   </div>
                 )}
                 <div className="text-[10px] text-muted-foreground">
-                  {obstacle.vertices.length} vertices &middot; {formatArea(polygonArea(obstacle.vertices))}
+                  {obstacle.vertices.length} vertices &middot;{" "}
+                  {formatArea(polygonArea(obstacle.vertices))}
                 </div>
               </div>
               <Button
@@ -119,13 +129,18 @@ export function ObstacleList() {
                   <Label className="text-xs">Description</Label>
                   <textarea
                     value={obstacle.description}
-                    onChange={(e) => updateObstacle(obstacle.id, { description: e.target.value })}
+                    onChange={(e) =>
+                      updateObstacle(obstacle.id, {
+                        description: e.target.value,
+                      })
+                    }
                     className="w-full h-16 text-xs rounded-md border border-input bg-background px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="Notes about this obstacle..."
                   />
                 </div>
                 <div className="text-[10px] text-muted-foreground">
-                  {obstacle.vertices.length} vertices &middot; Right-click a vertex on the map to remove it
+                  {obstacle.vertices.length} vertices &middot; Right-click a
+                  vertex on the map to remove it
                 </div>
               </div>
             )}

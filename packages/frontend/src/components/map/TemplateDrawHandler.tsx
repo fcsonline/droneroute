@@ -1,9 +1,21 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useMapEvents, CircleMarker, Polyline, Circle, Rectangle } from "react-leaflet";
+import {
+  useMapEvents,
+  CircleMarker,
+  Polyline,
+  Circle,
+  Rectangle,
+} from "react-leaflet";
 import { useMissionStore } from "@/store/missionStore";
 import { TemplateConfigPanel } from "./TemplateConfigPanel";
 import { TemplatePreview } from "./TemplatePreview";
-import type { TemplateType, OrbitParams, GridParams, FacadeParams, TemplateResult } from "@/lib/templates";
+import type {
+  TemplateType,
+  OrbitParams,
+  GridParams,
+  FacadeParams,
+  TemplateResult,
+} from "@/lib/templates";
 import {
   generateOrbit,
   generateGrid,
@@ -14,12 +26,19 @@ import {
 } from "@/lib/templates";
 
 /** Haversine distance in meters (local copy to avoid circular imports) */
-function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+function haversine(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -68,7 +87,9 @@ export function TemplateDrawHandler() {
     },
     mousemove(e) {
       if (!dragging || !dragState) return;
-      setDragState((prev) => prev ? { ...prev, end: [e.latlng.lat, e.latlng.lng] } : null);
+      setDragState((prev) =>
+        prev ? { ...prev, end: [e.latlng.lat, e.latlng.lng] } : null,
+      );
     },
     mouseup(e) {
       if (!dragging || !dragState || !templateMode) return;
@@ -79,7 +100,12 @@ export function TemplateDrawHandler() {
       const finalDrag = { ...dragState, end: endPos };
       setDragState(finalDrag);
 
-      const dist = haversine(finalDrag.start[0], finalDrag.start[1], finalDrag.end[0], finalDrag.end[1]);
+      const dist = haversine(
+        finalDrag.start[0],
+        finalDrag.start[1],
+        finalDrag.end[0],
+        finalDrag.end[1],
+      );
 
       // Minimum drag distance of 5 meters
       if (dist < 5) {
@@ -123,17 +149,34 @@ export function TemplateDrawHandler() {
   // Live preview during drag (before config panel)
   const dragPreview = useMemo(() => {
     if (!dragging || !dragState || !templateMode) return null;
-    const dist = haversine(dragState.start[0], dragState.start[1], dragState.end[0], dragState.end[1]);
+    const dist = haversine(
+      dragState.start[0],
+      dragState.start[1],
+      dragState.end[0],
+      dragState.end[1],
+    );
     if (dist < 5) return null;
 
     if (templateMode === "orbit") {
-      return generateOrbit({ ...DEFAULT_ORBIT_PARAMS, center: dragState.start, radiusM: Math.round(dist) });
+      return generateOrbit({
+        ...DEFAULT_ORBIT_PARAMS,
+        center: dragState.start,
+        radiusM: Math.round(dist),
+      });
     }
     if (templateMode === "grid") {
-      return generateGrid({ ...DEFAULT_GRID_PARAMS, corner1: dragState.start, corner2: dragState.end });
+      return generateGrid({
+        ...DEFAULT_GRID_PARAMS,
+        corner1: dragState.start,
+        corner2: dragState.end,
+      });
     }
     if (templateMode === "facade") {
-      return generateFacade({ ...DEFAULT_FACADE_PARAMS, point1: dragState.start, point2: dragState.end });
+      return generateFacade({
+        ...DEFAULT_FACADE_PARAMS,
+        point1: dragState.start,
+        point2: dragState.end,
+      });
     }
     return null;
   }, [dragging, dragState, templateMode]);
@@ -161,16 +204,41 @@ export function TemplateDrawHandler() {
         <>
           <Circle
             center={dragState.start}
-            radius={haversine(dragState.start[0], dragState.start[1], dragState.end[0], dragState.end[1])}
-            pathOptions={{ color: "#a78bfa", weight: 2, opacity: 0.5, fillOpacity: 0.05, dashArray: "6, 4" }}
+            radius={haversine(
+              dragState.start[0],
+              dragState.start[1],
+              dragState.end[0],
+              dragState.end[1],
+            )}
+            pathOptions={{
+              color: "#a78bfa",
+              weight: 2,
+              opacity: 0.5,
+              fillOpacity: 0.05,
+              dashArray: "6, 4",
+            }}
           />
-          <CircleMarker center={dragState.start} radius={4} pathOptions={{ color: "#a78bfa", fillColor: "#a78bfa", fillOpacity: 1 }} />
+          <CircleMarker
+            center={dragState.start}
+            radius={4}
+            pathOptions={{
+              color: "#a78bfa",
+              fillColor: "#a78bfa",
+              fillOpacity: 1,
+            }}
+          />
         </>
       )}
       {dragging && dragState && templateMode === "grid" && (
         <Rectangle
           bounds={[dragState.start, dragState.end]}
-          pathOptions={{ color: "#a78bfa", weight: 2, opacity: 0.5, fillOpacity: 0.05, dashArray: "6, 4" }}
+          pathOptions={{
+            color: "#a78bfa",
+            weight: 2,
+            opacity: 0.5,
+            fillOpacity: 0.05,
+            dashArray: "6, 4",
+          }}
         />
       )}
       {dragging && dragState && templateMode === "facade" && (
@@ -179,8 +247,24 @@ export function TemplateDrawHandler() {
             positions={[dragState.start, dragState.end]}
             pathOptions={{ color: "#a78bfa", weight: 3, opacity: 0.7 }}
           />
-          <CircleMarker center={dragState.start} radius={4} pathOptions={{ color: "#a78bfa", fillColor: "#a78bfa", fillOpacity: 1 }} />
-          <CircleMarker center={dragState.end} radius={4} pathOptions={{ color: "#a78bfa", fillColor: "#a78bfa", fillOpacity: 1 }} />
+          <CircleMarker
+            center={dragState.start}
+            radius={4}
+            pathOptions={{
+              color: "#a78bfa",
+              fillColor: "#a78bfa",
+              fillOpacity: 1,
+            }}
+          />
+          <CircleMarker
+            center={dragState.end}
+            radius={4}
+            pathOptions={{
+              color: "#a78bfa",
+              fillColor: "#a78bfa",
+              fillOpacity: 1,
+            }}
+          />
         </>
       )}
 

@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { MapPin, X, GripVertical, Settings, ArrowUp, Gauge } from "lucide-react";
+import {
+  MapPin,
+  X,
+  GripVertical,
+  Settings,
+  ArrowUp,
+  Gauge,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
@@ -112,7 +119,8 @@ export function WaypointList() {
         const isSelected = selectedWaypointIndices.has(wp.index);
         const isDragging = dragIndex === i;
         const isDragOver = dragOverIndex === i;
-        const isEditorOpen = expandedEditor === wp.index && selectedWaypointIndices.size <= 1;
+        const isEditorOpen =
+          expandedEditor === wp.index && selectedWaypointIndices.size <= 1;
         const isRenaming = editingName === wp.index;
 
         return (
@@ -135,8 +143,13 @@ export function WaypointList() {
               onDrop={(e) => handleDrop(e, i)}
               onDragEnd={handleDragEnd}
             >
-              <span title="Drag to reorder"><GripVertical className="h-3 w-3 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" /></span>
-              <Badge variant={isSelected ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+              <span title="Drag to reorder">
+                <GripVertical className="h-3 w-3 text-muted-foreground shrink-0 cursor-grab active:cursor-grabbing" />
+              </span>
+              <Badge
+                variant={isSelected ? "default" : "secondary"}
+                className="text-[10px] px-1.5 py-0"
+              >
                 {wp.index + 1}
               </Badge>
               <div className="flex-1 min-w-0">
@@ -148,7 +161,8 @@ export function WaypointList() {
                     autoFocus
                     onBlur={(e) => commitRename(wp.index, e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") commitRename(wp.index, e.currentTarget.value);
+                      if (e.key === "Enter")
+                        commitRename(wp.index, e.currentTarget.value);
                       if (e.key === "Escape") setEditingName(null);
                     }}
                     onClick={(e) => e.stopPropagation()}
@@ -163,8 +177,14 @@ export function WaypointList() {
                   </div>
                 )}
                 <div className="text-[10px] text-muted-foreground flex items-center gap-2">
-                  <span className="flex items-center gap-0.5"><ArrowUp className="h-2.5 w-2.5" />{wp.height}m</span>
-                  <span className="flex items-center gap-0.5"><Gauge className="h-2.5 w-2.5" />{wp.speed}m/s</span>
+                  <span className="flex items-center gap-0.5">
+                    <ArrowUp className="h-2.5 w-2.5" />
+                    {wp.height}m
+                  </span>
+                  <span className="flex items-center gap-0.5">
+                    <Gauge className="h-2.5 w-2.5" />
+                    {wp.speed}m/s
+                  </span>
                 </div>
               </div>
               {wp.actions.length > 0 && (

@@ -1,18 +1,64 @@
-import { Plus, X, Camera, Video, VideoOff, RotateCcw, Compass, Clock, ZoomIn, Focus, MoveDown } from "lucide-react";
+import {
+  Plus,
+  X,
+  Camera,
+  Video,
+  VideoOff,
+  RotateCcw,
+  Compass,
+  Clock,
+  ZoomIn,
+  Focus,
+  MoveDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMissionStore } from "@/store/missionStore";
 import type { ActionType, WaypointAction } from "@droneroute/shared";
 
-const ACTION_OPTIONS: { value: ActionType; label: string; icon: React.ReactNode }[] = [
-  { value: "takePhoto", label: "Take photo", icon: <Camera className="h-3 w-3" /> },
-  { value: "startRecord", label: "Start recording", icon: <Video className="h-3 w-3" /> },
-  { value: "stopRecord", label: "Stop recording", icon: <VideoOff className="h-3 w-3" /> },
-  { value: "gimbalRotate", label: "Gimbal rotate", icon: <RotateCcw className="h-3 w-3" /> },
-  { value: "gimbalEvenlyRotate", label: "Gimbal smooth", icon: <MoveDown className="h-3 w-3" /> },
-  { value: "rotateYaw", label: "Rotate yaw", icon: <Compass className="h-3 w-3" /> },
+const ACTION_OPTIONS: {
+  value: ActionType;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    value: "takePhoto",
+    label: "Take photo",
+    icon: <Camera className="h-3 w-3" />,
+  },
+  {
+    value: "startRecord",
+    label: "Start recording",
+    icon: <Video className="h-3 w-3" />,
+  },
+  {
+    value: "stopRecord",
+    label: "Stop recording",
+    icon: <VideoOff className="h-3 w-3" />,
+  },
+  {
+    value: "gimbalRotate",
+    label: "Gimbal rotate",
+    icon: <RotateCcw className="h-3 w-3" />,
+  },
+  {
+    value: "gimbalEvenlyRotate",
+    label: "Gimbal smooth",
+    icon: <MoveDown className="h-3 w-3" />,
+  },
+  {
+    value: "rotateYaw",
+    label: "Rotate yaw",
+    icon: <Compass className="h-3 w-3" />,
+  },
   { value: "hover", label: "Hover", icon: <Clock className="h-3 w-3" /> },
   { value: "zoom", label: "Zoom", icon: <ZoomIn className="h-3 w-3" /> },
   { value: "focus", label: "Focus", icon: <Focus className="h-3 w-3" /> },
@@ -46,7 +92,12 @@ function getDefaultParams(actionType: ActionType): any {
     case "zoom":
       return { focalLength: 24 };
     case "focus":
-      return { isPointFocus: true, focusX: 0.5, focusY: 0.5, isInfiniteFocus: false };
+      return {
+        isPointFocus: true,
+        focusX: 0.5,
+        focusY: 0.5,
+        isInfiniteFocus: false,
+      };
     default:
       return {};
   }
@@ -57,14 +108,16 @@ interface ActionEditorProps {
 }
 
 export function ActionEditor({ waypointIndex }: ActionEditorProps) {
-  const { waypoints, addAction, updateAction, removeAction } = useMissionStore();
+  const { waypoints, addAction, updateAction, removeAction } =
+    useMissionStore();
   const wp = waypoints[waypointIndex];
   if (!wp) return null;
 
   const handleAddAction = (type: ActionType) => {
-    const nextId = wp.actions.length > 0
-      ? Math.max(...wp.actions.map((a) => a.actionId)) + 1
-      : 0;
+    const nextId =
+      wp.actions.length > 0
+        ? Math.max(...wp.actions.map((a) => a.actionId)) + 1
+        : 0;
 
     addAction(waypointIndex, {
       actionId: nextId,
@@ -76,7 +129,9 @@ export function ActionEditor({ waypointIndex }: ActionEditorProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-xs font-semibold">Actions ({wp.actions.length})</Label>
+        <Label className="text-xs font-semibold">
+          Actions ({wp.actions.length})
+        </Label>
       </div>
 
       {wp.actions.map((action) => (
@@ -84,7 +139,9 @@ export function ActionEditor({ waypointIndex }: ActionEditorProps) {
           key={action.actionId}
           action={action}
           waypointIndex={waypointIndex}
-          onUpdate={(updates) => updateAction(waypointIndex, action.actionId, updates)}
+          onUpdate={(updates) =>
+            updateAction(waypointIndex, action.actionId, updates)
+          }
           onRemove={() => removeAction(waypointIndex, action.actionId)}
         />
       ))}
@@ -93,7 +150,7 @@ export function ActionEditor({ waypointIndex }: ActionEditorProps) {
         <SelectTrigger className="h-8 text-xs">
           <div className="flex items-center gap-1">
             <Plus className="h-3 w-3" />
-             <span>Add action</span>
+            <span>Add action</span>
           </div>
         </SelectTrigger>
         <SelectContent>
@@ -152,7 +209,9 @@ function ActionItem({
           <Input
             type="number"
             value={params.hoverTime ?? 5}
-            onChange={(e) => updateParam("hoverTime", parseFloat(e.target.value) || 1)}
+            onChange={(e) =>
+              updateParam("hoverTime", parseFloat(e.target.value) || 1)
+            }
             min={1}
             max={300}
             className="h-7 text-xs"
@@ -167,7 +226,12 @@ function ActionItem({
             <Input
               type="number"
               value={params.gimbalPitchRotateAngle ?? 0}
-              onChange={(e) => updateParam("gimbalPitchRotateAngle", parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                updateParam(
+                  "gimbalPitchRotateAngle",
+                  parseFloat(e.target.value) || 0,
+                )
+              }
               min={-120}
               max={45}
               className="h-7 text-xs"
@@ -178,7 +242,12 @@ function ActionItem({
             <Input
               type="number"
               value={params.gimbalYawRotateAngle ?? 0}
-              onChange={(e) => updateParam("gimbalYawRotateAngle", parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                updateParam(
+                  "gimbalYawRotateAngle",
+                  parseFloat(e.target.value) || 0,
+                )
+              }
               min={-180}
               max={180}
               className="h-7 text-xs"
@@ -193,7 +262,12 @@ function ActionItem({
           <Input
             type="number"
             value={params.gimbalPitchRotateAngle ?? -45}
-            onChange={(e) => updateParam("gimbalPitchRotateAngle", parseFloat(e.target.value) || 0)}
+            onChange={(e) =>
+              updateParam(
+                "gimbalPitchRotateAngle",
+                parseFloat(e.target.value) || 0,
+              )
+            }
             min={-120}
             max={45}
             className="h-7 text-xs"
@@ -211,7 +285,9 @@ function ActionItem({
             <Input
               type="number"
               value={params.aircraftHeading ?? 0}
-              onChange={(e) => updateParam("aircraftHeading", parseFloat(e.target.value) || 0)}
+              onChange={(e) =>
+                updateParam("aircraftHeading", parseFloat(e.target.value) || 0)
+              }
               min={-180}
               max={180}
               className="h-7 text-xs"
@@ -237,11 +313,13 @@ function ActionItem({
 
       {action.actionType === "zoom" && (
         <div>
-           <Label className="text-[10px]">Focal length (mm)</Label>
+          <Label className="text-[10px]">Focal length (mm)</Label>
           <Input
             type="number"
             value={params.focalLength ?? 24}
-            onChange={(e) => updateParam("focalLength", parseFloat(e.target.value) || 24)}
+            onChange={(e) =>
+              updateParam("focalLength", parseFloat(e.target.value) || 24)
+            }
             min={15}
             max={200}
             className="h-7 text-xs"

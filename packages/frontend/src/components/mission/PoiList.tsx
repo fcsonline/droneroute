@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
 
 export function PoiList() {
-  const { pois, selectedPoiId, selectPoi, removePoi, updatePoi } = useMissionStore();
+  const { pois, selectedPoiId, selectPoi, removePoi, updatePoi } =
+    useMissionStore();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [expandedEditor, setExpandedEditor] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -17,7 +18,9 @@ export function PoiList() {
       <div className="flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
         <Crosshair className="h-8 w-8 mb-2 opacity-50" />
         <p className="text-sm">No POIs yet</p>
-        <p className="text-xs mt-1">Use the "Add POI" button to place points of interest</p>
+        <p className="text-xs mt-1">
+          Use the "Add POI" button to place points of interest
+        </p>
       </div>
     );
   }
@@ -68,7 +71,8 @@ export function PoiList() {
                     autoFocus
                     onBlur={(e) => commitRename(poi.id, e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") commitRename(poi.id, e.currentTarget.value);
+                      if (e.key === "Enter")
+                        commitRename(poi.id, e.currentTarget.value);
                       if (e.key === "Escape") setEditingName(null);
                     }}
                     onClick={(e) => e.stopPropagation()}
@@ -83,7 +87,8 @@ export function PoiList() {
                   </div>
                 )}
                 <div className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                  <ArrowUp className="h-2.5 w-2.5" />{poi.height}m
+                  <ArrowUp className="h-2.5 w-2.5" />
+                  {poi.height}m
                 </div>
               </div>
               <Button
@@ -121,7 +126,11 @@ export function PoiList() {
                   <Input
                     type="number"
                     value={poi.height}
-                    onChange={(e) => updatePoi(poi.id, { height: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      updatePoi(poi.id, {
+                        height: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="h-7 text-xs"
                   />
                 </div>

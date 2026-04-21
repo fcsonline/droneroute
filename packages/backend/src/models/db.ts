@@ -3,7 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, "../../data/genmap.db");
+const DB_PATH =
+  process.env.DB_PATH || path.join(__dirname, "../../data/genmap.db");
 
 let db: Database.Database;
 
@@ -44,7 +45,9 @@ export function initDb(): void {
 
   // Migration: add pois column if missing (for existing DBs)
   try {
-    database.exec(`ALTER TABLE missions ADD COLUMN pois TEXT NOT NULL DEFAULT '[]'`);
+    database.exec(
+      `ALTER TABLE missions ADD COLUMN pois TEXT NOT NULL DEFAULT '[]'`,
+    );
   } catch {
     // Column already exists — ignore
   }
@@ -58,13 +61,17 @@ export function initDb(): void {
 
   // Migration: add obstacles column if missing (for existing DBs)
   try {
-    database.exec(`ALTER TABLE missions ADD COLUMN obstacles TEXT NOT NULL DEFAULT '[]'`);
+    database.exec(
+      `ALTER TABLE missions ADD COLUMN obstacles TEXT NOT NULL DEFAULT '[]'`,
+    );
   } catch {
     // Column already exists — ignore
   }
 
   // Ensure unique index on share_token
-  database.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_missions_share_token ON missions(share_token) WHERE share_token IS NOT NULL`);
+  database.exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_missions_share_token ON missions(share_token) WHERE share_token IS NOT NULL`,
+  );
 
   console.log("Database initialized at", DB_PATH);
 }

@@ -1,4 +1,10 @@
-import { MapContainer, TileLayer, useMapEvents, useMap, Polyline } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  useMapEvents,
+  useMap,
+  Polyline,
+} from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
 import { calculateIdealGimbalPitch, getObstacleWarnings } from "@/lib/geo";
@@ -13,7 +19,14 @@ import { useEffect, useRef, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
 
 function MapClickHandler() {
-  const { isAddingWaypoint, isAddingPoi, templateMode, isDrawingObstacle, addWaypoint, addPoi } = useMissionStore();
+  const {
+    isAddingWaypoint,
+    isAddingPoi,
+    templateMode,
+    isDrawingObstacle,
+    addWaypoint,
+    addPoi,
+  } = useMissionStore();
 
   useMapEvents({
     click(e) {
@@ -61,7 +74,9 @@ function FitBoundsOnLoad() {
     const points: L.LatLngExpression[] = [
       ...waypoints.map((wp) => [wp.latitude, wp.longitude] as [number, number]),
       ...pois.map((p) => [p.latitude, p.longitude] as [number, number]),
-      ...obstacles.flatMap((o) => o.vertices.map((v) => [v[0], v[1]] as [number, number])),
+      ...obstacles.flatMap((o) =>
+        o.vertices.map((v) => [v[0], v[1]] as [number, number]),
+      ),
     ];
 
     if (points.length > 0) {
@@ -79,7 +94,7 @@ function FlightPath() {
 
   const warnings = useMemo(
     () => getObstacleWarnings(waypoints, obstacles),
-    [waypoints, obstacles]
+    [waypoints, obstacles],
   );
 
   // Set of segment start indices that have crossing warnings
@@ -139,7 +154,12 @@ function PoiPointingLines() {
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
 
-  const lines: { from: [number, number]; to: [number, number]; key: string; perfect: boolean }[] = [];
+  const lines: {
+    from: [number, number];
+    to: [number, number];
+    key: string;
+    perfect: boolean;
+  }[] = [];
 
   for (const wp of waypoints) {
     if (wp.headingMode === "towardPOI" && wp.poiId) {
@@ -183,17 +203,18 @@ export function MapView() {
   const isDrawingObstacle = useMissionStore((s) => s.isDrawingObstacle);
   const templateMode = useMissionStore((s) => s.templateMode);
 
-  const cursorClass = templateMode === "pencil"
-    ? "map-tool-pencil"
-    : templateMode
-      ? "map-tool-template"
-      : isDrawingObstacle
-        ? "map-tool-obstacle"
-        : isAddingWaypoint
-          ? "map-tool-waypoint"
-          : isAddingPoi
-            ? "map-tool-poi"
-            : "";
+  const cursorClass =
+    templateMode === "pencil"
+      ? "map-tool-pencil"
+      : templateMode
+        ? "map-tool-template"
+        : isDrawingObstacle
+          ? "map-tool-obstacle"
+          : isAddingWaypoint
+            ? "map-tool-waypoint"
+            : isAddingPoi
+              ? "map-tool-poi"
+              : "";
 
   return (
     <div className={`relative h-full w-full ${cursorClass}`}>

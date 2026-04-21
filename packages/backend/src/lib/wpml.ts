@@ -1,4 +1,10 @@
-import type { Mission, MissionConfig, Waypoint, WaypointAction, PointOfInterest } from "@droneroute/shared";
+import type {
+  Mission,
+  MissionConfig,
+  Waypoint,
+  WaypointAction,
+  PointOfInterest,
+} from "@droneroute/shared";
 
 // ── XML Helpers ──────────────────────────────────────────
 
@@ -12,8 +18,10 @@ function escapeXml(str: string): string {
 
 /** Compute bearing (degrees, 0=N, CW) from point A to point B */
 function computeBearing(
-  lat1: number, lon1: number,
-  lat2: number, lon2: number
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
 ): number {
   const toRad = (d: number) => (d * Math.PI) / 180;
   const toDeg = (r: number) => (r * 180) / Math.PI;
@@ -25,7 +33,10 @@ function computeBearing(
   return ((toDeg(Math.atan2(y, x)) % 360) + 360) % 360;
 }
 
-function findPoi(pois: PointOfInterest[], id?: string): PointOfInterest | undefined {
+function findPoi(
+  pois: PointOfInterest[],
+  id?: string,
+): PointOfInterest | undefined {
   if (!id) return undefined;
   return pois.find((p) => p.id === id);
 }
@@ -138,7 +149,11 @@ export function buildTemplateKml(mission: Mission): string {
 
       // Build per-waypoint heading param when using towardPOI
       let headingOverrideXml = "";
-      if (!wp.useGlobalHeadingParam && wp.headingMode === "towardPOI" && wp.poiId) {
+      if (
+        !wp.useGlobalHeadingParam &&
+        wp.headingMode === "towardPOI" &&
+        wp.poiId
+      ) {
         const poi = findPoi(pois, wp.poiId);
         if (poi) {
           headingOverrideXml = `
@@ -221,10 +236,10 @@ export function buildWaylinesWpml(mission: Mission): string {
       const actionGroupXml = buildActionGroupXml(wp, i);
       const headingMode = wp.useGlobalHeadingParam
         ? c.globalHeadingMode
-        : (wp.headingMode || c.globalHeadingMode);
+        : wp.headingMode || c.globalHeadingMode;
       const turnMode = wp.useGlobalTurnParam
         ? c.globalTurnMode
-        : (wp.turnMode || c.globalTurnMode);
+        : wp.turnMode || c.globalTurnMode;
       const speed = wp.useGlobalSpeed ? c.autoFlightSpeed : wp.speed;
 
       // POI pointing: compute bearing or emit POI coordinates
@@ -233,7 +248,12 @@ export function buildWaylinesWpml(mission: Mission): string {
       if (headingMode === "towardPOI" && wp.poiId) {
         const poi = findPoi(pois, wp.poiId);
         if (poi) {
-          headingAngle = computeBearing(wp.latitude, wp.longitude, poi.latitude, poi.longitude);
+          headingAngle = computeBearing(
+            wp.latitude,
+            wp.longitude,
+            poi.latitude,
+            poi.longitude,
+          );
           poiXml = `
           <wpml:waypointPoiPoint>${poi.longitude},${poi.latitude},${poi.height}</wpml:waypointPoiPoint>`;
         }

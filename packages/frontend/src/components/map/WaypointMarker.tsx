@@ -34,7 +34,10 @@ function getActionIcons(waypoint: Waypoint): string {
     .join("");
 
   const extraCount = uniqueTypes.length - 3;
-  const extra = extraCount > 0 ? `<span style="font-size:8px;color:white;margin-left:1px">+${extraCount}</span>` : "";
+  const extra =
+    extraCount > 0
+      ? `<span style="font-size:8px;color:white;margin-left:1px">+${extraCount}</span>`
+      : "";
 
   return `
     <div style="
@@ -54,7 +57,11 @@ function getActionIcons(waypoint: Waypoint): string {
   `;
 }
 
-function createWaypointIcon(index: number, isSelected: boolean, waypoint: Waypoint): L.DivIcon {
+function createWaypointIcon(
+  index: number,
+  isSelected: boolean,
+  waypoint: Waypoint,
+): L.DivIcon {
   const bg = isSelected ? "#3b82f6" : "#1e293b";
   const border = isSelected ? "#93c5fd" : "#64748b";
   const actionIcons = getActionIcons(waypoint);
@@ -62,9 +69,12 @@ function createWaypointIcon(index: number, isSelected: boolean, waypoint: Waypoi
 
   // Heading arrow: show for fixed/manual modes, and for smoothTransition only
   // when the waypoint has an explicitly enabled heading angle
-  const showHeading = !waypoint.useGlobalHeadingParam &&
-    (waypoint.headingMode === "fixed" || waypoint.headingMode === "manually" ||
-     (waypoint.headingMode === "smoothTransition" && waypoint.headingAngle != null));
+  const showHeading =
+    !waypoint.useGlobalHeadingParam &&
+    (waypoint.headingMode === "fixed" ||
+      waypoint.headingMode === "manually" ||
+      (waypoint.headingMode === "smoothTransition" &&
+        waypoint.headingAngle != null));
   const headingAngle = waypoint.headingAngle ?? 0;
 
   // Small chevron arrow sitting just outside the marker circle, pointing in the heading direction.
@@ -122,12 +132,21 @@ function createWaypointIcon(index: number, isSelected: boolean, waypoint: Waypoi
 }
 
 export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
-  const { selectedWaypointIndices, selectWaypoint, moveWaypoint } = useMissionStore();
+  const { selectedWaypointIndices, selectWaypoint, moveWaypoint } =
+    useMissionStore();
   const isSelected = selectedWaypointIndices.has(waypoint.index);
 
   const icon = useMemo(
     () => createWaypointIcon(waypoint.index, isSelected, waypoint),
-    [waypoint.index, isSelected, waypoint.actions.length, waypoint.actions.map((a) => a.actionType).join(","), waypoint.headingMode, waypoint.headingAngle, waypoint.useGlobalHeadingParam]
+    [
+      waypoint.index,
+      isSelected,
+      waypoint.actions.length,
+      waypoint.actions.map((a) => a.actionType).join(","),
+      waypoint.headingMode,
+      waypoint.headingAngle,
+      waypoint.useGlobalHeadingParam,
+    ],
   );
 
   return (

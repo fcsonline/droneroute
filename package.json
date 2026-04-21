@@ -12,10 +12,18 @@
   "scripts": {
     "dev": "concurrently \"npm run dev -w packages/backend\" \"npm run dev -w packages/frontend\"",
     "build": "npm run build -w packages/shared && npm run build -w packages/backend && npm run build -w packages/frontend && npm run build -w packages/cli",
-    "start": "npm run start -w packages/backend"
+    "start": "npm run start -w packages/backend",
+    "lint": "oxlint packages/",
+    "lint:fix": "oxlint --fix packages/",
+    "fmt": "prettier --write .",
+    "fmt:check": "prettier --check .",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "lefthook": "^1.11.0",
+    "oxlint": "^0.16.0",
+    "prettier": "^3.5.0",
     "typescript": "^5.7.3"
   }
 }

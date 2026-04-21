@@ -32,7 +32,10 @@ export function AuthModal({ onClose }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
       <div
         className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
@@ -42,7 +45,10 @@ export function AuthModal({ onClose }: AuthModalProps) {
           <h2 className="text-sm font-semibold">
             {mode === "login" ? "Sign in" : "Create account"}
           </h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -50,7 +56,9 @@ export function AuthModal({ onClose }: AuthModalProps) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs">Email</Label>
+            <Label htmlFor="email" className="text-xs">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -63,7 +71,9 @@ export function AuthModal({ onClose }: AuthModalProps) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-xs">Password</Label>
+            <Label htmlFor="password" className="text-xs">
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
@@ -76,12 +86,18 @@ export function AuthModal({ onClose }: AuthModalProps) {
             />
           </div>
 
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
-          )}
+          {error && <p className="text-xs text-destructive">{error}</p>}
 
-          <Button type="submit" className="w-full h-9 text-sm" disabled={isLoading}>
-            {isLoading ? "..." : mode === "login" ? "Sign in" : "Create account"}
+          <Button
+            type="submit"
+            className="w-full h-9 text-sm"
+            disabled={isLoading}
+          >
+            {isLoading
+              ? "..."
+              : mode === "login"
+                ? "Sign in"
+                : "Create account"}
           </Button>
         </form>
 
@@ -90,9 +106,14 @@ export function AuthModal({ onClose }: AuthModalProps) {
           <button
             type="button"
             className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(null); }}
+            onClick={() => {
+              setMode(mode === "login" ? "register" : "login");
+              setError(null);
+            }}
           >
-            {mode === "login" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            {mode === "login"
+              ? "Don't have an account? Sign up"
+              : "Already have an account? Sign in"}
           </button>
         </div>
       </div>

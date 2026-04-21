@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { getDb } from "../models/db.js";
-import { hashPassword, comparePassword, generateToken } from "../services/authService.js";
+import {
+  hashPassword,
+  comparePassword,
+  generateToken,
+} from "../services/authService.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
 
 export const authRoutes = Router();
@@ -18,7 +22,9 @@ authRoutes.post("/register", (req, res) => {
   }
 
   const db = getDb();
-  const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
+  const existing = db
+    .prepare("SELECT id FROM users WHERE email = ?")
+    .get(email);
   if (existing) {
     res.status(409).json({ error: "Email already registered" });
     return;
@@ -26,11 +32,9 @@ authRoutes.post("/register", (req, res) => {
 
   const id = uuidv4();
   const passwordHash = hashPassword(password);
-  db.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)").run(
-    id,
-    email,
-    passwordHash
-  );
+  db.prepare(
+    "INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)",
+  ).run(id, email, passwordHash);
 
   const token = generateToken(id);
   res.status(201).json({ token, userId: id, email });
@@ -60,11 +64,15 @@ authRoutes.post("/login", (req, res) => {
 authRoutes.post("/change-password", authMiddleware, (req: AuthRequest, res) => {
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword) {
-    res.status(400).json({ error: "Current password and new password are required" });
+    res
+      .status(400)
+      .json({ error: "Current password and new password are required" });
     return;
   }
   if (newPassword.length < 6) {
-    res.status(400).json({ error: "New password must be at least 6 characters" });
+    res
+      .status(400)
+      .json({ error: "New password must be at least 6 characters" });
     return;
   }
 
@@ -79,7 +87,10 @@ authRoutes.post("/change-password", authMiddleware, (req: AuthRequest, res) => {
   }
 
   const newHash = hashPassword(newPassword);
-  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(newHash, req.userId);
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(
+    newHash,
+    req.userId,
+  );
 
   res.json({ message: "Password updated" });
 });

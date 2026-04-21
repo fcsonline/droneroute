@@ -42,7 +42,12 @@ export function getAdbDevices(): AdbDevice[] {
       // Skip the header and blank lines
       if (!line.includes("device") || line.startsWith("List of")) continue;
       // Skip offline / unauthorized / recovery
-      if (line.includes("offline") || line.includes("unauthorized") || line.includes("recovery")) continue;
+      if (
+        line.includes("offline") ||
+        line.includes("unauthorized") ||
+        line.includes("recovery")
+      )
+        continue;
 
       const parts = line.trim().split(/\s+/);
       const serial = parts[0];
@@ -89,7 +94,11 @@ export function adbMkdir(serial: string, remotePath: string): void {
 /**
  * Push a local file to the device.
  */
-export function adbPush(serial: string, localPath: string, remotePath: string): void {
+export function adbPush(
+  serial: string,
+  localPath: string,
+  remotePath: string,
+): void {
   execFileSync("adb", ["-s", serial, "push", localPath, remotePath], {
     stdio: "pipe",
     timeout: 30_000,
@@ -101,7 +110,10 @@ export function adbPush(serial: string, localPath: string, remotePath: string): 
  */
 export function hasWaypointDir(serial: string): boolean {
   try {
-    const result = adbShell(serial, `[ -d "${ADB_WAYPOINT_PATH}" ] && echo yes || echo no`);
+    const result = adbShell(
+      serial,
+      `[ -d "${ADB_WAYPOINT_PATH}" ] && echo yes || echo no`,
+    );
     return result === "yes";
   } catch {
     return false;

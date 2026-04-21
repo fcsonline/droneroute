@@ -64,7 +64,9 @@ export function ObstacleDrawHandler() {
 
   if (!isDrawingObstacle || drawingVertices.length === 0) return null;
 
-  const positions = drawingVertices.map(([lat, lng]) => [lat, lng] as [number, number]);
+  const positions = drawingVertices.map(
+    ([lat, lng]) => [lat, lng] as [number, number],
+  );
 
   return (
     <>

@@ -1,9 +1,22 @@
-import { Trash2, X, Crosshair, ArrowUp, Gauge, SlidersHorizontal } from "lucide-react";
+import {
+  Trash2,
+  X,
+  Crosshair,
+  ArrowUp,
+  Gauge,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
 import type { HeadingMode, TurnMode, Waypoint } from "@droneroute/shared";
@@ -15,7 +28,7 @@ import type { HeadingMode, TurnMode, Waypoint } from "@droneroute/shared";
 function getCommonValue<K extends keyof Waypoint>(
   waypoints: Waypoint[],
   indices: Set<number>,
-  field: K
+  field: K,
 ): Waypoint[K] | undefined {
   const selected = waypoints.filter((wp) => indices.has(wp.index));
   if (selected.length === 0) return undefined;
@@ -54,14 +67,46 @@ export function BulkActionToolbar() {
   };
 
   // Common values for bulk editor
-  const commonHeight = getCommonValue(waypoints, selectedWaypointIndices, "height");
-  const commonSpeed = getCommonValue(waypoints, selectedWaypointIndices, "speed");
-  const commonGimbal = getCommonValue(waypoints, selectedWaypointIndices, "gimbalPitchAngle");
-  const commonUseGlobalHeading = getCommonValue(waypoints, selectedWaypointIndices, "useGlobalHeadingParam");
-  const commonHeadingMode = getCommonValue(waypoints, selectedWaypointIndices, "headingMode");
-  const commonUseGlobalTurn = getCommonValue(waypoints, selectedWaypointIndices, "useGlobalTurnParam");
-  const commonTurnMode = getCommonValue(waypoints, selectedWaypointIndices, "turnMode");
-  const commonPoiId = getCommonValue(waypoints, selectedWaypointIndices, "poiId");
+  const commonHeight = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "height",
+  );
+  const commonSpeed = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "speed",
+  );
+  const commonGimbal = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "gimbalPitchAngle",
+  );
+  const commonUseGlobalHeading = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "useGlobalHeadingParam",
+  );
+  const commonHeadingMode = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "headingMode",
+  );
+  const commonUseGlobalTurn = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "useGlobalTurnParam",
+  );
+  const commonTurnMode = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "turnMode",
+  );
+  const commonPoiId = getCommonValue(
+    waypoints,
+    selectedWaypointIndices,
+    "poiId",
+  );
 
   const headingSelectValue =
     commonUseGlobalHeading === true
@@ -156,7 +201,9 @@ export function BulkActionToolbar() {
                 </Label>
                 <Input
                   type="number"
-                  placeholder={commonHeight !== undefined ? String(commonHeight) : "Mixed"}
+                  placeholder={
+                    commonHeight !== undefined ? String(commonHeight) : "Mixed"
+                  }
                   defaultValue={commonHeight !== undefined ? commonHeight : ""}
                   key={`h-${commonHeight}`}
                   onBlur={(e) => {
@@ -170,7 +217,7 @@ export function BulkActionToolbar() {
                     }
                   }}
                   min={1}
-                   max={500}
+                  max={500}
                   className="h-7 text-xs mt-0.5"
                 />
               </div>
@@ -183,17 +230,27 @@ export function BulkActionToolbar() {
                 </Label>
                 <Input
                   type="number"
-                  placeholder={commonSpeed !== undefined ? String(commonSpeed) : "Mixed"}
+                  placeholder={
+                    commonSpeed !== undefined ? String(commonSpeed) : "Mixed"
+                  }
                   defaultValue={commonSpeed !== undefined ? commonSpeed : ""}
                   key={`s-${commonSpeed}`}
                   onBlur={(e) => {
                     const v = parseFloat(e.target.value);
-                    if (!isNaN(v)) updateSelectedWaypoints({ speed: v, useGlobalSpeed: false });
+                    if (!isNaN(v))
+                      updateSelectedWaypoints({
+                        speed: v,
+                        useGlobalSpeed: false,
+                      });
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const v = parseFloat(e.currentTarget.value);
-                      if (!isNaN(v)) updateSelectedWaypoints({ speed: v, useGlobalSpeed: false });
+                      if (!isNaN(v))
+                        updateSelectedWaypoints({
+                          speed: v,
+                          useGlobalSpeed: false,
+                        });
                     }
                   }}
                   min={1}
@@ -205,20 +262,26 @@ export function BulkActionToolbar() {
 
               {/* Gimbal */}
               <div>
-                <Label className="text-[10px] text-muted-foreground">Gimbal (&deg;)</Label>
+                <Label className="text-[10px] text-muted-foreground">
+                  Gimbal (&deg;)
+                </Label>
                 <Input
                   type="number"
-                  placeholder={commonGimbal !== undefined ? String(commonGimbal) : "Mixed"}
+                  placeholder={
+                    commonGimbal !== undefined ? String(commonGimbal) : "Mixed"
+                  }
                   defaultValue={commonGimbal !== undefined ? commonGimbal : ""}
                   key={`g-${commonGimbal}`}
                   onBlur={(e) => {
                     const v = parseFloat(e.target.value);
-                    if (!isNaN(v)) updateSelectedWaypoints({ gimbalPitchAngle: v });
+                    if (!isNaN(v))
+                      updateSelectedWaypoints({ gimbalPitchAngle: v });
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const v = parseFloat(e.currentTarget.value);
-                      if (!isNaN(v)) updateSelectedWaypoints({ gimbalPitchAngle: v });
+                      if (!isNaN(v))
+                        updateSelectedWaypoints({ gimbalPitchAngle: v });
                     }
                   }}
                   min={-120}
@@ -232,7 +295,9 @@ export function BulkActionToolbar() {
             <div className="grid grid-cols-2 gap-3">
               {/* Heading mode */}
               <div>
-                <Label className="text-[10px] text-muted-foreground">Heading mode</Label>
+                <Label className="text-[10px] text-muted-foreground">
+                  Heading mode
+                </Label>
                 <Select
                   value={headingSelectValue}
                   onValueChange={(v) => {
@@ -252,13 +317,21 @@ export function BulkActionToolbar() {
                   </SelectTrigger>
                   <SelectContent>
                     {headingSelectValue === "mixed" && (
-                      <SelectItem value="mixed" disabled>Mixed</SelectItem>
+                      <SelectItem value="mixed" disabled>
+                        Mixed
+                      </SelectItem>
                     )}
-                    <SelectItem value="global">Use global ({config.globalHeadingMode})</SelectItem>
-                    <SelectItem value="followWayline">Follow wayline</SelectItem>
+                    <SelectItem value="global">
+                      Use global ({config.globalHeadingMode})
+                    </SelectItem>
+                    <SelectItem value="followWayline">
+                      Follow wayline
+                    </SelectItem>
                     <SelectItem value="manually">Manual</SelectItem>
                     <SelectItem value="fixed">Fixed</SelectItem>
-                    <SelectItem value="smoothTransition">Smooth transition</SelectItem>
+                    <SelectItem value="smoothTransition">
+                      Smooth transition
+                    </SelectItem>
                     <SelectItem value="towardPOI">Toward POI</SelectItem>
                   </SelectContent>
                 </Select>
@@ -267,15 +340,23 @@ export function BulkActionToolbar() {
               {/* Target POI (visible when heading mode is towardPOI) */}
               {headingSelectValue === "towardPOI" && pois.length > 0 && (
                 <div>
-                  <Label className="text-[10px] text-muted-foreground">Target POI</Label>
+                  <Label className="text-[10px] text-muted-foreground">
+                    Target POI
+                  </Label>
                   <Select
                     value={commonPoiId || "none"}
                     onValueChange={(v) =>
-                      updateSelectedWaypoints({ poiId: v === "none" ? undefined : v })
+                      updateSelectedWaypoints({
+                        poiId: v === "none" ? undefined : v,
+                      })
                     }
                   >
                     <SelectTrigger className="h-7 text-xs mt-0.5">
-                      <SelectValue placeholder={commonPoiId === undefined ? "Mixed" : "Select POI..."} />
+                      <SelectValue
+                        placeholder={
+                          commonPoiId === undefined ? "Mixed" : "Select POI..."
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
@@ -292,7 +373,9 @@ export function BulkActionToolbar() {
               {/* Turn mode (when heading is not towardPOI or when there are no POIs) */}
               {(headingSelectValue !== "towardPOI" || pois.length === 0) && (
                 <div>
-                  <Label className="text-[10px] text-muted-foreground">Turn mode</Label>
+                  <Label className="text-[10px] text-muted-foreground">
+                    Turn mode
+                  </Label>
                   <Select
                     value={turnSelectValue}
                     onValueChange={(v) => {
@@ -312,13 +395,23 @@ export function BulkActionToolbar() {
                     </SelectTrigger>
                     <SelectContent>
                       {turnSelectValue === "mixed" && (
-                        <SelectItem value="mixed" disabled>Mixed</SelectItem>
+                        <SelectItem value="mixed" disabled>
+                          Mixed
+                        </SelectItem>
                       )}
                       <SelectItem value="global">Use global</SelectItem>
-                      <SelectItem value="coordinateTurn">Coordinated turn</SelectItem>
-                      <SelectItem value="toPointAndStopWithDiscontinuityCurvature">Stop at point (sharp)</SelectItem>
-                      <SelectItem value="toPointAndStopWithContinuityCurvature">Stop at point (curve)</SelectItem>
-                      <SelectItem value="toPointAndPassWithContinuityCurvature">Pass point (curve)</SelectItem>
+                      <SelectItem value="coordinateTurn">
+                        Coordinated turn
+                      </SelectItem>
+                      <SelectItem value="toPointAndStopWithDiscontinuityCurvature">
+                        Stop at point (sharp)
+                      </SelectItem>
+                      <SelectItem value="toPointAndStopWithContinuityCurvature">
+                        Stop at point (curve)
+                      </SelectItem>
+                      <SelectItem value="toPointAndPassWithContinuityCurvature">
+                        Pass point (curve)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

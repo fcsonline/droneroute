@@ -23,18 +23,18 @@ droneroute/
 
 ## Tech Stack
 
-| Layer       | Technology                                        |
-| ----------- | ------------------------------------------------- |
-| Frontend    | React 19, TypeScript, Vite 6                      |
-| Map         | Leaflet 1.9 + react-leaflet 5 + OpenStreetMap     |
-| UI          | shadcn/ui + Tailwind CSS v4                       |
-| State       | Zustand 5                                         |
-| Backend     | Node.js 22, Express 5, TypeScript                 |
-| KMZ Gen     | archiver (ZIP) + XML string templates             |
-| KMZ Parse   | jszip + fast-xml-parser                           |
-| Database    | SQLite via better-sqlite3                         |
-| Auth        | bcryptjs + jsonwebtoken (JWT, 7-day expiry)       |
-| Deployment  | Docker (multi-stage, Alpine, volume for data)     |
+| Layer      | Technology                                    |
+| ---------- | --------------------------------------------- |
+| Frontend   | React 19, TypeScript, Vite 6                  |
+| Map        | Leaflet 1.9 + react-leaflet 5 + OpenStreetMap |
+| UI         | shadcn/ui + Tailwind CSS v4                   |
+| State      | Zustand 5                                     |
+| Backend    | Node.js 22, Express 5, TypeScript             |
+| KMZ Gen    | archiver (ZIP) + XML string templates         |
+| KMZ Parse  | jszip + fast-xml-parser                       |
+| Database   | SQLite via better-sqlite3                     |
+| Auth       | bcryptjs + jsonwebtoken (JWT, 7-day expiry)   |
+| Deployment | Docker (multi-stage, Alpine, volume for data) |
 
 ## DJI WPML KMZ Format
 
@@ -48,23 +48,24 @@ mission.kmz
 ```
 
 Both files use KML extended with DJI WPML namespace:
+
 - KML: `http://www.opengis.net/kml/2.2`
 - WPML: `http://www.dji.com/wpmz/1.0.2`
 
 ### Supported Drones
 
-| Model            | droneEnumValue | Payloads                          |
-| ---------------- | -------------- | --------------------------------- |
-| DJI M300 RTK     | 60             | H20, H20T, H20N, PSDK            |
-| DJI M30          | 67 (sub 0)     | M30 Camera                        |
-| DJI M30T         | 67 (sub 1)     | M30T Camera                       |
-| DJI Mavic 3E     | 77 (sub 0)     | M3E Camera                        |
-| DJI Mavic 3T     | 77 (sub 1)     | M3T Camera                        |
-| DJI Mavic 3M     | 77 (sub 2)     | M3M Camera                        |
-| DJI M350 RTK     | 89             | H20, H20T, H20N, H30, H30T, PSDK |
-| DJI Mavic 3D     | 91 (sub 0)     | M3D Camera                        |
-| DJI Mavic 3TD    | 91 (sub 1)     | M3TD Camera                       |
-| DJI Mini 4 Pro * | 100            | Mini 4 Pro Camera                 |
+| Model             | droneEnumValue | Payloads                         |
+| ----------------- | -------------- | -------------------------------- |
+| DJI M300 RTK      | 60             | H20, H20T, H20N, PSDK            |
+| DJI M30           | 67 (sub 0)     | M30 Camera                       |
+| DJI M30T          | 67 (sub 1)     | M30T Camera                      |
+| DJI Mavic 3E      | 77 (sub 0)     | M3E Camera                       |
+| DJI Mavic 3T      | 77 (sub 1)     | M3T Camera                       |
+| DJI Mavic 3M      | 77 (sub 2)     | M3M Camera                       |
+| DJI M350 RTK      | 89             | H20, H20T, H20N, H30, H30T, PSDK |
+| DJI Mavic 3D      | 91 (sub 0)     | M3D Camera                       |
+| DJI Mavic 3TD     | 91 (sub 1)     | M3TD Camera                      |
+| DJI Mini 4 Pro \* | 100            | Mini 4 Pro Camera                |
 
 \* Consumer drone; WPML format may not import into DJI Fly.
 
@@ -74,11 +75,11 @@ Both files use KML extended with DJI WPML namespace:
 
 ```typescript
 interface PointOfInterest {
-  id: string;            // UUID
-  name: string;          // User-assigned label
+  id: string; // UUID
+  name: string; // User-assigned label
   latitude: number;
   longitude: number;
-  height: number;        // Altitude in meters
+  height: number; // Altitude in meters
 }
 ```
 
@@ -90,10 +91,10 @@ which POI the drone nose should face during flight toward/at that waypoint.
 
 ```typescript
 interface Obstacle {
-  id: string;            // UUID
-  name: string;          // User-assigned label
-  description: string;   // Free-text notes
-  vertices: [number, number][];  // Array of [latitude, longitude] pairs
+  id: string; // UUID
+  name: string; // User-assigned label
+  description: string; // Free-text notes
+  vertices: [number, number][]; // Array of [latitude, longitude] pairs
 }
 ```
 
@@ -107,21 +108,21 @@ DroneRoute-only planning concept and are **not** exported to the DJI KMZ file.
 
 ```typescript
 interface Waypoint {
-  index: number;             // 0-based, determines flight order
+  index: number; // 0-based, determines flight order
   latitude: number;
   longitude: number;
-  height: number;            // Meters (relative or absolute per heightMode)
-  speed: number;             // m/s
+  height: number; // Meters (relative or absolute per heightMode)
+  speed: number; // m/s
   useGlobalSpeed: boolean;
   useGlobalHeight: boolean;
   useGlobalHeadingParam: boolean;
   useGlobalTurnParam: boolean;
   headingMode?: HeadingMode;
-  headingAngle?: number;     // -180..180 degrees
-  poiId?: string;            // Reference to POI when headingMode = "towardPOI"
+  headingAngle?: number; // -180..180 degrees
+  poiId?: string; // Reference to POI when headingMode = "towardPOI"
   turnMode?: TurnMode;
   turnDampingDist?: number;
-  gimbalPitchAngle: number;  // -120..45 degrees (-90 = nadir)
+  gimbalPitchAngle: number; // -120..45 degrees (-90 = nadir)
   actions: WaypointAction[];
 }
 ```
@@ -140,9 +141,9 @@ interface MissionConfig {
   finishAction: "goHome" | "noAction" | "autoLand" | "gotoFirstWaypoint";
   exitOnRCLost: "goContinue" | "executeLostAction";
   executeRCLostAction: "goBack" | "landing" | "hover";
-  takeOffSecurityHeight: number;     // 1.2-1500m
-  globalTransitionalSpeed: number;   // m/s
-  autoFlightSpeed: number;           // m/s
+  takeOffSecurityHeight: number; // 1.2-1500m
+  globalTransitionalSpeed: number; // m/s
+  autoFlightSpeed: number; // m/s
   heightMode: "EGM96" | "relativeToStartPoint" | "aboveGroundLevel";
   globalHeadingMode: HeadingMode;
   globalTurnMode: TurnMode;
@@ -170,35 +171,35 @@ interface Mission {
 
 Actions are executed sequentially when the drone reaches the waypoint.
 
-| Action         | Description             | Key Parameters                          |
-| -------------- | ----------------------- | --------------------------------------- |
-| takePhoto      | Capture a photo         | payloadPositionIndex, fileSuffix        |
-| startRecord    | Start video recording   | payloadPositionIndex, fileSuffix        |
-| stopRecord     | Stop video recording    | payloadPositionIndex                    |
-| gimbalRotate   | Rotate gimbal           | pitch/yaw/roll angles, rotateMode       |
-| rotateYaw      | Rotate aircraft heading | aircraftHeading, pathMode (CW/CCW)     |
-| hover          | Hover in place          | hoverTime (seconds)                     |
-| zoom           | Zoom camera             | focalLength (mm)                        |
-| focus          | Focus camera            | isPointFocus, focusX/Y, isInfiniteFocus |
+| Action       | Description             | Key Parameters                          |
+| ------------ | ----------------------- | --------------------------------------- |
+| takePhoto    | Capture a photo         | payloadPositionIndex, fileSuffix        |
+| startRecord  | Start video recording   | payloadPositionIndex, fileSuffix        |
+| stopRecord   | Stop video recording    | payloadPositionIndex                    |
+| gimbalRotate | Rotate gimbal           | pitch/yaw/roll angles, rotateMode       |
+| rotateYaw    | Rotate aircraft heading | aircraftHeading, pathMode (CW/CCW)      |
+| hover        | Hover in place          | hoverTime (seconds)                     |
+| zoom         | Zoom camera             | focalLength (mm)                        |
+| focus        | Focus camera            | isPointFocus, focusX/Y, isInfiniteFocus |
 
 ### Heading Modes
 
-| Mode             | Behavior                                          |
-| ---------------- | ------------------------------------------------- |
-| followWayline    | Nose follows flight direction                     |
-| manually         | User controls heading live                        |
-| fixed            | Maintains yaw set at waypoint                     |
-| smoothTransition | Custom yaw angle, interpolated between waypoints  |
-| towardPOI        | Nose faces a specific Point of Interest            |
+| Mode             | Behavior                                         |
+| ---------------- | ------------------------------------------------ |
+| followWayline    | Nose follows flight direction                    |
+| manually         | User controls heading live                       |
+| fixed            | Maintains yaw set at waypoint                    |
+| smoothTransition | Custom yaw angle, interpolated between waypoints |
+| towardPOI        | Nose faces a specific Point of Interest          |
 
 ### Turn Modes
 
-| Mode                                         | Behavior                        |
-| -------------------------------------------- | ------------------------------- |
-| coordinateTurn                               | Banked turn, no stop            |
-| toPointAndStopWithDiscontinuityCurvature     | Straight line, stops at WP      |
-| toPointAndStopWithContinuityCurvature        | Curve flight, stops at WP       |
-| toPointAndPassWithContinuityCurvature        | Curve flight, passes through WP |
+| Mode                                     | Behavior                        |
+| ---------------------------------------- | ------------------------------- |
+| coordinateTurn                           | Banked turn, no stop            |
+| toPointAndStopWithDiscontinuityCurvature | Straight line, stops at WP      |
+| toPointAndStopWithContinuityCurvature    | Curve flight, stops at WP       |
+| toPointAndPassWithContinuityCurvature    | Curve flight, passes through WP |
 
 ## Features
 
@@ -253,19 +254,19 @@ Actions are executed sequentially when the drone reaches the waypoint.
 
 ### Backend API
 
-| Method   | Path                      | Description                     |
-| -------- | ------------------------- | ------------------------------- |
-| `GET`    | `/api/health`             | Health check                    |
-| `POST`   | `/api/auth/register`      | Register new user               |
-| `POST`   | `/api/auth/login`         | Login, returns JWT              |
-| `GET`    | `/api/missions`           | List user's missions (auth)     |
-| `GET`    | `/api/missions/:id`       | Get single mission              |
-| `POST`   | `/api/missions`           | Create mission                  |
-| `PUT`    | `/api/missions/:id`       | Update mission                  |
-| `DELETE` | `/api/missions/:id`       | Delete mission (auth, owner)    |
-| `POST`   | `/api/kmz/generate`       | Generate KMZ from POST body     |
-| `GET`    | `/api/kmz/download/:id`   | Download KMZ for saved mission  |
-| `POST`   | `/api/kmz/import`         | Upload KMZ, parse to JSON       |
+| Method   | Path                    | Description                    |
+| -------- | ----------------------- | ------------------------------ |
+| `GET`    | `/api/health`           | Health check                   |
+| `POST`   | `/api/auth/register`    | Register new user              |
+| `POST`   | `/api/auth/login`       | Login, returns JWT             |
+| `GET`    | `/api/missions`         | List user's missions (auth)    |
+| `GET`    | `/api/missions/:id`     | Get single mission             |
+| `POST`   | `/api/missions`         | Create mission                 |
+| `PUT`    | `/api/missions/:id`     | Update mission                 |
+| `DELETE` | `/api/missions/:id`     | Delete mission (auth, owner)   |
+| `POST`   | `/api/kmz/generate`     | Generate KMZ from POST body    |
+| `GET`    | `/api/kmz/download/:id` | Download KMZ for saved mission |
+| `POST`   | `/api/kmz/import`       | Upload KMZ, parse to JSON      |
 
 ### KMZ Generation
 
@@ -284,6 +285,7 @@ bearing from the waypoint to the referenced POI and emits it as a
 ### KMZ Import
 
 Upload a `.kmz` file to parse it back into editable mission data:
+
 - Extracts `template.kml` from the ZIP
 - Parses mission config, waypoints, and actions
 - Extracts POIs from `waypointPoiPoint` elements in per-waypoint heading params
@@ -331,11 +333,11 @@ The Traefik dashboard is at `http://localhost:8080`.
 
 ### Configuration
 
-| Environment Variable | Default                              | Description              |
-| -------------------- | ------------------------------------ | ------------------------ |
-| `PORT`               | `3001`                               | Server port              |
-| `JWT_SECRET`         | `change-this-secret-in-production`   | JWT signing secret       |
-| `DB_PATH`            | `/app/data/droneroute.db`            | SQLite database path     |
+| Environment Variable | Default                            | Description          |
+| -------------------- | ---------------------------------- | -------------------- |
+| `PORT`               | `3001`                             | Server port          |
+| `JWT_SECRET`         | `change-this-secret-in-production` | JWT signing secret   |
+| `DB_PATH`            | `/app/data/droneroute.db`          | SQLite database path |
 
 ### Data Persistence
 

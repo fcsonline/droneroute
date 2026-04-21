@@ -1,6 +1,11 @@
 import type { Waypoint, PointOfInterest, Obstacle } from "@droneroute/shared";
 
-export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+export function haversineDistance(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
   const R = 6371000; // Earth's radius in meters
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -16,8 +21,16 @@ export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2
  * Uses trigonometry: pitch = -atan2(heightDiff, horizontalDist)
  * Returns degrees where 0 = horizon, -90 = straight down, plus the 3D slant distance.
  */
-export function calculateIdealGimbalPitch(wp: Waypoint, poi: PointOfInterest): { pitch: number; distance: number } {
-  const horizontalDist = haversineDistance(wp.latitude, wp.longitude, poi.latitude, poi.longitude);
+export function calculateIdealGimbalPitch(
+  wp: Waypoint,
+  poi: PointOfInterest,
+): { pitch: number; distance: number } {
+  const horizontalDist = haversineDistance(
+    wp.latitude,
+    wp.longitude,
+    poi.latitude,
+    poi.longitude,
+  );
   const heightDiff = wp.height - poi.height; // positive = drone is above POI
   if (horizontalDist < 0.01) return { pitch: -90, distance: 0 }; // directly above → straight down
   const angleRad = Math.atan2(heightDiff, horizontalDist);
@@ -34,14 +47,14 @@ export function calculateIdealGimbalPitch(wp: Waypoint, poi: PointOfInterest): {
  */
 export function pointInPolygon(
   point: [number, number],
-  polygon: [number, number][]
+  polygon: [number, number][],
 ): boolean {
   const [py, px] = point;
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const [iy, ix] = polygon[i];
     const [jy, jx] = polygon[j];
-    if ((iy > py) !== (jy > py) && px < ((jx - ix) * (py - iy)) / (jy - iy) + ix) {
+    if (iy > py !== jy > py && px < ((jx - ix) * (py - iy)) / (jy - iy) + ix) {
       inside = !inside;
     }
   }
@@ -55,15 +68,17 @@ function segmentsIntersect(
   p1: [number, number],
   p2: [number, number],
   p3: [number, number],
-  p4: [number, number]
+  p4: [number, number],
 ): boolean {
   const d1 = direction(p3, p4, p1);
   const d2 = direction(p3, p4, p2);
   const d3 = direction(p1, p2, p3);
   const d4 = direction(p1, p2, p4);
 
-  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
-      ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+  if (
+    ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+    ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+  ) {
     return true;
   }
 
@@ -75,14 +90,24 @@ function segmentsIntersect(
   return false;
 }
 
-function direction(a: [number, number], b: [number, number], c: [number, number]): number {
+function direction(
+  a: [number, number],
+  b: [number, number],
+  c: [number, number],
+): number {
   return (c[0] - a[0]) * (b[1] - a[1]) - (c[1] - a[1]) * (b[0] - a[0]);
 }
 
-function onSegment(a: [number, number], b: [number, number], c: [number, number]): boolean {
+function onSegment(
+  a: [number, number],
+  b: [number, number],
+  c: [number, number],
+): boolean {
   return (
-    Math.min(a[0], b[0]) <= c[0] && c[0] <= Math.max(a[0], b[0]) &&
-    Math.min(a[1], b[1]) <= c[1] && c[1] <= Math.max(a[1], b[1])
+    Math.min(a[0], b[0]) <= c[0] &&
+    c[0] <= Math.max(a[0], b[0]) &&
+    Math.min(a[1], b[1]) <= c[1] &&
+    c[1] <= Math.max(a[1], b[1])
   );
 }
 
@@ -92,7 +117,7 @@ function onSegment(a: [number, number], b: [number, number], c: [number, number]
 export function segmentIntersectsPolygon(
   p1: [number, number],
   p2: [number, number],
-  polygon: [number, number][]
+  polygon: [number, number][],
 ): boolean {
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     if (segmentsIntersect(p1, p2, polygon[j], polygon[i])) {
@@ -118,7 +143,7 @@ export interface ObstacleWarning {
  */
 export function getObstacleWarnings(
   waypoints: { latitude: number; longitude: number; index: number }[],
-  obstacles: Obstacle[]
+  obstacles: Obstacle[],
 ): ObstacleWarning[] {
   if (obstacles.length === 0 || waypoints.length === 0) return [];
 
@@ -180,7 +205,7 @@ export function polygonArea(vertices: [number, number][]): number {
   const refLng = vertices[0][1];
   const projected = vertices.map((v) => [
     (v[1] - refLng) * toRad(1) * R * cosLat, // x (east)
-    (v[0] - refLat) * toRad(1) * R,           // y (north)
+    (v[0] - refLat) * toRad(1) * R, // y (north)
   ]);
 
   // Shoelace formula

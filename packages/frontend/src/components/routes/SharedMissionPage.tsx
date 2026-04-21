@@ -11,7 +11,14 @@ import {
   User,
   ArrowLeft,
 } from "lucide-react";
-import { MapContainer, TileLayer, Polyline, Polygon, CircleMarker, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Polyline,
+  Polygon,
+  CircleMarker,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
@@ -19,7 +26,12 @@ import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
 import { getObstacleWarnings } from "@/lib/geo";
-import type { Waypoint, MissionConfig, PointOfInterest, Obstacle } from "@droneroute/shared";
+import type {
+  Waypoint,
+  MissionConfig,
+  PointOfInterest,
+  Obstacle,
+} from "@droneroute/shared";
 import "leaflet/dist/leaflet.css";
 
 interface SharedMissionData {
@@ -35,7 +47,12 @@ interface SharedMissionData {
   obstacles: Obstacle[];
 }
 
-function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function haversine(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -53,7 +70,7 @@ function estimateDistance(waypoints: Waypoint[]): number {
       waypoints[i - 1].latitude,
       waypoints[i - 1].longitude,
       waypoints[i].latitude,
-      waypoints[i].longitude
+      waypoints[i].longitude,
     );
   }
   return total;
@@ -66,7 +83,7 @@ function estimateFlightTime(waypoints: Waypoint[]): number {
       waypoints[i - 1].latitude,
       waypoints[i - 1].longitude,
       waypoints[i].latitude,
-      waypoints[i].longitude
+      waypoints[i].longitude,
     );
     seconds += dist / (waypoints[i - 1].speed || 7);
   }
@@ -87,7 +104,7 @@ function getDroneLabel(config: MissionConfig): string | null {
   const model = DRONE_MODELS.find(
     (d) =>
       d.droneEnumValue === config.droneEnumValue &&
-      d.droneSubEnumValue === config.droneSubEnumValue
+      d.droneSubEnumValue === config.droneSubEnumValue,
   );
   return model?.label ?? null;
 }
@@ -98,13 +115,23 @@ interface SharedMissionPageProps {
 }
 
 /** Fit map to show all waypoints, POIs, and obstacle vertices. */
-function FitBounds({ waypoints, pois, obstacles }: { waypoints: Waypoint[]; pois: PointOfInterest[]; obstacles: Obstacle[] }) {
+function FitBounds({
+  waypoints,
+  pois,
+  obstacles,
+}: {
+  waypoints: Waypoint[];
+  pois: PointOfInterest[];
+  obstacles: Obstacle[];
+}) {
   const map = useMap();
   useEffect(() => {
     const points: L.LatLngExpression[] = [
       ...waypoints.map((wp) => [wp.latitude, wp.longitude] as [number, number]),
       ...pois.map((p) => [p.latitude, p.longitude] as [number, number]),
-      ...obstacles.flatMap((o) => o.vertices.map((v) => [v[0], v[1]] as [number, number])),
+      ...obstacles.flatMap((o) =>
+        o.vertices.map((v) => [v[0], v[1]] as [number, number]),
+      ),
     ];
     if (points.length > 0) {
       map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 16 });
@@ -114,8 +141,19 @@ function FitBounds({ waypoints, pois, obstacles }: { waypoints: Waypoint[]; pois
 }
 
 /** Read-only map preview showing the flight path, waypoints, POIs, and obstacle polygons. */
-function SharedMissionMap({ waypoints, pois, obstacles }: { waypoints: Waypoint[]; pois: PointOfInterest[]; obstacles: Obstacle[] }) {
-  const warnings = useMemo(() => getObstacleWarnings(waypoints, obstacles), [waypoints, obstacles]);
+function SharedMissionMap({
+  waypoints,
+  pois,
+  obstacles,
+}: {
+  waypoints: Waypoint[];
+  pois: PointOfInterest[];
+  obstacles: Obstacle[];
+}) {
+  const warnings = useMemo(
+    () => getObstacleWarnings(waypoints, obstacles),
+    [waypoints, obstacles],
+  );
   const warningSegments = useMemo(() => {
     const set = new Set<number>();
     for (const w of warnings) {
@@ -125,20 +163,21 @@ function SharedMissionMap({ waypoints, pois, obstacles }: { waypoints: Waypoint[
   }, [warnings]);
 
   // Build flight path segments
-  const segments = waypoints.length >= 2
-    ? waypoints.slice(0, -1).map((wp, i) => {
-        const next = waypoints[i + 1];
-        const hasWarning = warningSegments.has(wp.index);
-        return {
-          key: `seg-${wp.index}-${next.index}`,
-          positions: [
-            [wp.latitude, wp.longitude] as [number, number],
-            [next.latitude, next.longitude] as [number, number],
-          ],
-          hasWarning,
-        };
-      })
-    : [];
+  const segments =
+    waypoints.length >= 2
+      ? waypoints.slice(0, -1).map((wp, i) => {
+          const next = waypoints[i + 1];
+          const hasWarning = warningSegments.has(wp.index);
+          return {
+            key: `seg-${wp.index}-${next.index}`,
+            positions: [
+              [wp.latitude, wp.longitude] as [number, number],
+              [next.latitude, next.longitude] as [number, number],
+            ],
+            hasWarning,
+          };
+        })
+      : [];
 
   // Default center: first waypoint, or Barcelona
   const center: [number, number] =
@@ -179,7 +218,9 @@ function SharedMissionMap({ waypoints, pois, obstacles }: { waypoints: Waypoint[
         {obstacles.map((obs) => (
           <Polygon
             key={`obs-${obs.id}`}
-            positions={obs.vertices.map(([lat, lng]) => [lat, lng] as [number, number])}
+            positions={obs.vertices.map(
+              ([lat, lng]) => [lat, lng] as [number, number],
+            )}
             pathOptions={{
               color: "#ef4444",
               fillColor: "#ef4444",
@@ -198,7 +239,12 @@ function SharedMissionMap({ waypoints, pois, obstacles }: { waypoints: Waypoint[
             radius={6}
             pathOptions={{
               color: "#3b82f6",
-              fillColor: i === 0 ? "#22c55e" : i === waypoints.length - 1 ? "#ef4444" : "#3b82f6",
+              fillColor:
+                i === 0
+                  ? "#22c55e"
+                  : i === waypoints.length - 1
+                    ? "#ef4444"
+                    : "#3b82f6",
               fillOpacity: 1,
               weight: 2,
             }}
@@ -224,7 +270,10 @@ function SharedMissionMap({ waypoints, pois, obstacles }: { waypoints: Waypoint[
   );
 }
 
-export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPageProps) {
+export function SharedMissionPage({
+  shareToken,
+  onRequestAuth,
+}: SharedMissionPageProps) {
   const { loadMission, setCurrentPage } = useMissionStore();
   const { token } = useAuthStore();
   const [mission, setMission] = useState<SharedMissionData | null>(null);
@@ -270,7 +319,7 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
     setCloning(true);
     try {
       const result = await api.post<{ id: string; name: string }>(
-        `/shared/${shareToken}/clone`
+        `/shared/${shareToken}/clone`,
       );
       if (!mission) return;
       loadMission({
@@ -347,7 +396,7 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
               <div>
                 <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <Route className="h-5 w-5 text-primary" />
-                   Shared route
+                  Shared route
                 </h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Someone shared a drone mission with you
@@ -373,7 +422,9 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <Route className="h-12 w-12 mb-4 opacity-30" />
                 <p className="text-lg font-medium mb-1">Route not found</p>
-                <p className="text-sm mb-4">This shared link may have expired or been revoked</p>
+                <p className="text-sm mb-4">
+                  This shared link may have expired or been revoked
+                </p>
                 <Button
                   variant="outline"
                   size="sm"
@@ -382,137 +433,157 @@ export function SharedMissionPage({ shareToken, onRequestAuth }: SharedMissionPa
                     setCurrentPage("editor");
                   }}
                 >
-                   Go to editor
+                  Go to editor
                 </Button>
               </div>
             )}
 
-            {!loading && !error && mission && (() => {
-              const dist = estimateDistance(mission.waypoints);
-              const flightTime = estimateFlightTime(mission.waypoints);
-              const droneLabel = getDroneLabel(mission.config);
-              const maxAlt =
-                mission.waypoints.length > 0
-                  ? Math.max(...mission.waypoints.map((w) => w.height))
-                  : 0;
+            {!loading &&
+              !error &&
+              mission &&
+              (() => {
+                const dist = estimateDistance(mission.waypoints);
+                const flightTime = estimateFlightTime(mission.waypoints);
+                const droneLabel = getDroneLabel(mission.config);
+                const maxAlt =
+                  mission.waypoints.length > 0
+                    ? Math.max(...mission.waypoints.map((w) => w.height))
+                    : 0;
 
-              return (
-                <div className="bg-card border border-border rounded-lg overflow-hidden">
-                  {/* Gradient header */}
-                  <div className="h-2 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500" />
+                return (
+                  <div className="bg-card border border-border rounded-lg overflow-hidden">
+                    {/* Gradient header */}
+                    <div className="h-2 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500" />
 
-                  <div className="p-6">
-                    {/* Mission name */}
-                    <h2 className="text-2xl font-bold text-foreground mb-2">
-                      {mission.name || "Untitled route"}
-                    </h2>
+                    <div className="p-6">
+                      {/* Mission name */}
+                      <h2 className="text-2xl font-bold text-foreground mb-2">
+                        {mission.name || "Untitled route"}
+                      </h2>
 
-                    {/* Owner + date */}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                      {mission.ownerEmail && (
+                      {/* Owner + date */}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
+                        {mission.ownerEmail && (
+                          <span className="flex items-center gap-1.5">
+                            <User className="h-3.5 w-3.5" />
+                            {mission.ownerEmail}
+                          </span>
+                        )}
                         <span className="flex items-center gap-1.5">
-                          <User className="h-3.5 w-3.5" />
-                          {mission.ownerEmail}
+                          <Calendar className="h-3.5 w-3.5" />
+                          {formatDate(mission.updatedAt || mission.createdAt)}
                         </span>
-                      )}
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {formatDate(mission.updatedAt || mission.createdAt)}
-                      </span>
-                    </div>
-
-                    {/* Stats grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                      {droneLabel && (
-                        <div className="bg-background rounded-lg p-3 border border-border">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                            <Plane className="h-3 w-3 text-purple-400" />
-                            Drone
-                          </div>
-                          <div className="text-sm font-medium text-foreground">{droneLabel}</div>
-                        </div>
-                      )}
-                      <div className="bg-background rounded-lg p-3 border border-border">
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                          <MapPin className="h-3 w-3 text-blue-400" />
-                          Waypoints
-                        </div>
-                        <div className="text-sm font-medium text-foreground">
-                          {mission.waypoints.length}
-                          {mission.pois.length > 0 && (
-                            <span className="text-xs text-muted-foreground ml-1">
-                              + {mission.pois.length} POI
-                            </span>
-                          )}
-                        </div>
                       </div>
-                      {dist > 0 && (
+
+                      {/* Stats grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                        {droneLabel && (
+                          <div className="bg-background rounded-lg p-3 border border-border">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                              <Plane className="h-3 w-3 text-purple-400" />
+                              Drone
+                            </div>
+                            <div className="text-sm font-medium text-foreground">
+                              {droneLabel}
+                            </div>
+                          </div>
+                        )}
                         <div className="bg-background rounded-lg p-3 border border-border">
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                            <Route className="h-3 w-3 text-emerald-400" />
-                            Distance
+                            <MapPin className="h-3 w-3 text-blue-400" />
+                            Waypoints
                           </div>
                           <div className="text-sm font-medium text-foreground">
-                            {dist >= 1000
-                              ? `${(dist / 1000).toFixed(1)} km`
-                              : `${Math.round(dist)} m`}
+                            {mission.waypoints.length}
+                            {mission.pois.length > 0 && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                + {mission.pois.length} POI
+                              </span>
+                            )}
                           </div>
                         </div>
-                      )}
-                      {maxAlt > 0 && (
-                        <div className="bg-background rounded-lg p-3 border border-border">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                            <ArrowUp className="h-3 w-3 text-sky-400" />
-                            Max altitude
+                        {dist > 0 && (
+                          <div className="bg-background rounded-lg p-3 border border-border">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                              <Route className="h-3 w-3 text-emerald-400" />
+                              Distance
+                            </div>
+                            <div className="text-sm font-medium text-foreground">
+                              {dist >= 1000
+                                ? `${(dist / 1000).toFixed(1)} km`
+                                : `${Math.round(dist)} m`}
+                            </div>
                           </div>
-                          <div className="text-sm font-medium text-foreground">{maxAlt} m</div>
-                        </div>
-                      )}
-                      {flightTime > 0 && (
-                        <div className="bg-background rounded-lg p-3 border border-border">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                            <Crosshair className="h-3 w-3 text-orange-400" />
-                            Est. time
+                        )}
+                        {maxAlt > 0 && (
+                          <div className="bg-background rounded-lg p-3 border border-border">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                              <ArrowUp className="h-3 w-3 text-sky-400" />
+                              Max altitude
+                            </div>
+                            <div className="text-sm font-medium text-foreground">
+                              {maxAlt} m
+                            </div>
                           </div>
-                          <div className="text-sm font-medium text-foreground">
-                            {formatFlightTime(flightTime)}
+                        )}
+                        {flightTime > 0 && (
+                          <div className="bg-background rounded-lg p-3 border border-border">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                              <Crosshair className="h-3 w-3 text-orange-400" />
+                              Est. time
+                            </div>
+                            <div className="text-sm font-medium text-foreground">
+                              {formatFlightTime(flightTime)}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Map preview */}
-                    {mission.waypoints.length > 0 && (
-                      <div className="mb-6">
-                        <SharedMissionMap
-                          waypoints={mission.waypoints}
-                          pois={mission.pois}
-                          obstacles={mission.obstacles}
-                        />
+                        )}
                       </div>
-                    )}
 
-                    {/* Action buttons */}
-                    <div className="flex flex-wrap gap-3">
-                      <Button onClick={handleLoadReadOnly} className="gap-2">
-                        <Route className="h-4 w-4" />
-                         Open in editor
-                      </Button>
-                      <Button variant="outline" onClick={handleClone} disabled={cloning} className="gap-2">
-                        <Copy className="h-4 w-4" />
-                         {cloning ? "Cloning..." : token ? "Clone to my routes" : "Sign in to clone"}
-                      </Button>
-                      {mission.waypoints.length >= 2 && (
-                        <Button variant="outline" onClick={handleExportKmz} className="gap-2">
-                          <Download className="h-4 w-4" />
-                          Export KMZ
+                      {/* Map preview */}
+                      {mission.waypoints.length > 0 && (
+                        <div className="mb-6">
+                          <SharedMissionMap
+                            waypoints={mission.waypoints}
+                            pois={mission.pois}
+                            obstacles={mission.obstacles}
+                          />
+                        </div>
+                      )}
+
+                      {/* Action buttons */}
+                      <div className="flex flex-wrap gap-3">
+                        <Button onClick={handleLoadReadOnly} className="gap-2">
+                          <Route className="h-4 w-4" />
+                          Open in editor
                         </Button>
-                      )}
+                        <Button
+                          variant="outline"
+                          onClick={handleClone}
+                          disabled={cloning}
+                          className="gap-2"
+                        >
+                          <Copy className="h-4 w-4" />
+                          {cloning
+                            ? "Cloning..."
+                            : token
+                              ? "Clone to my routes"
+                              : "Sign in to clone"}
+                        </Button>
+                        {mission.waypoints.length >= 2 && (
+                          <Button
+                            variant="outline"
+                            onClick={handleExportKmz}
+                            className="gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            Export KMZ
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
           </div>
         </div>
       </div>

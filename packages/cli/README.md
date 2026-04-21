@@ -85,13 +85,13 @@ mission in the waypoint list.
 
 ## Troubleshooting
 
-| Problem | Solution |
-|---------|----------|
-| "No DJI controllers found" | Connect the controller via USB and power it on. Ensure the cable supports data transfer (not charge-only). |
-| adb not found | Install Android platform-tools: `brew install android-platform-tools` (macOS) or `apt install adb` (Linux). |
-| Permission denied on waypoint path | Enable USB debugging on the controller: Settings > Developer Options > USB Debugging. |
-| Controller not detected by adb | Try a different USB cable or port. Enable "File Transfer" mode when the USB dialog appears on the controller. |
-| Mission doesn't appear in DJI Fly | Open the waypoint mission list and scroll — new missions appear at the end. Tap on it to load it into the editor. |
+| Problem                             | Solution                                                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| "No DJI controllers found"          | Connect the controller via USB and power it on. Ensure the cable supports data transfer (not charge-only).         |
+| adb not found                       | Install Android platform-tools: `brew install android-platform-tools` (macOS) or `apt install adb` (Linux).        |
+| Permission denied on waypoint path  | Enable USB debugging on the controller: Settings > Developer Options > USB Debugging.                              |
+| Controller not detected by adb      | Try a different USB cable or port. Enable "File Transfer" mode when the USB dialog appears on the controller.      |
+| Mission doesn't appear in DJI Fly   | Open the waypoint mission list and scroll — new missions appear at the end. Tap on it to load it into the editor.  |
 | SD card method: directory not found | The waypoint directory is only created after you save at least one waypoint mission via DJI Fly on the controller. |
 
 ## License

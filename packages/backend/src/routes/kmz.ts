@@ -10,14 +10,19 @@ import { optionalAuth, type AuthRequest } from "../middleware/auth.js";
 
 export const kmzRoutes = Router();
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
+});
 
 // Generate and download KMZ from mission data (POST body)
 kmzRoutes.post("/generate", async (req, res) => {
   try {
     const { name, config, waypoints, pois } = req.body;
     if (!config || !waypoints || waypoints.length < 2) {
-      res.status(400).json({ error: "At least 2 waypoints and a config are required" });
+      res
+        .status(400)
+        .json({ error: "At least 2 waypoints and a config are required" });
       return;
     }
 
@@ -48,7 +53,9 @@ kmzRoutes.post("/generate", async (req, res) => {
 kmzRoutes.get("/download/:missionId", async (req, res) => {
   try {
     const db = getDb();
-    const row = db.prepare("SELECT * FROM missions WHERE id = ?").get(req.params.missionId) as any;
+    const row = db
+      .prepare("SELECT * FROM missions WHERE id = ?")
+      .get(req.params.missionId) as any;
     if (!row) {
       res.status(404).json({ error: "Mission not found" });
       return;
@@ -78,31 +85,45 @@ kmzRoutes.get("/download/:missionId", async (req, res) => {
 });
 
 // Import KMZ file
-kmzRoutes.post("/import", optionalAuth, upload.single("file"), async (req: AuthRequest, res) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ error: "No file uploaded" });
-      return;
+kmzRoutes.post(
+  "/import",
+  optionalAuth,
+  upload.single("file"),
+  async (req: AuthRequest, res) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: "No file uploaded" });
+        return;
+      }
+
+      const { config, waypoints, pois } = await parseKmz(req.file.buffer);
+
+      // Optionally save to DB
+      const save = req.query.save === "true";
+      let missionId: string | undefined;
+
+      if (save) {
+        const db = getDb();
+        missionId = uuidv4();
+        const name =
+          req.file.originalname.replace(/\.kmz$/i, "") || "Imported Mission";
+        db.prepare(
+          "INSERT INTO missions (id, name, user_id, config, waypoints, pois, obstacles) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        ).run(
+          missionId,
+          name,
+          req.userId || null,
+          JSON.stringify(config),
+          JSON.stringify(waypoints),
+          JSON.stringify(pois),
+          "[]",
+        );
+      }
+
+      res.json({ id: missionId, config, waypoints, pois });
+    } catch (err: any) {
+      console.error("KMZ import error:", err);
+      res.status(500).json({ error: err.message || "Failed to parse KMZ" });
     }
-
-    const { config, waypoints, pois } = await parseKmz(req.file.buffer);
-
-    // Optionally save to DB
-    const save = req.query.save === "true";
-    let missionId: string | undefined;
-
-    if (save) {
-      const db = getDb();
-      missionId = uuidv4();
-      const name = req.file.originalname.replace(/\.kmz$/i, "") || "Imported Mission";
-      db.prepare(
-        "INSERT INTO missions (id, name, user_id, config, waypoints, pois, obstacles) VALUES (?, ?, ?, ?, ?, ?, ?)"
-      ).run(missionId, name, req.userId || null, JSON.stringify(config), JSON.stringify(waypoints), JSON.stringify(pois), "[]");
-    }
-
-    res.json({ id: missionId, config, waypoints, pois });
-  } catch (err: any) {
-    console.error("KMZ import error:", err);
-    res.status(500).json({ error: err.message || "Failed to parse KMZ" });
-  }
-});
+  },
+);

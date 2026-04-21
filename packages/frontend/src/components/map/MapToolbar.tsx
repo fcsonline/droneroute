@@ -1,17 +1,64 @@
-import { MousePointerClick, Hand, Trash2, Crosshair, Orbit, Grid3X3, Building2, PenLine, ChevronDown, Triangle } from "lucide-react";
+import {
+  MousePointerClick,
+  Hand,
+  Trash2,
+  Crosshair,
+  Orbit,
+  Grid3X3,
+  Building2,
+  PenLine,
+  ChevronDown,
+  Triangle,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import type { TemplateType } from "@/lib/templates";
 
-const activeClass = "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg shadow-primary/20 hover:bg-primary/90";
+const activeClass =
+  "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg shadow-primary/20 hover:bg-primary/90";
 const inactiveClass = "bg-background/90 backdrop-blur-sm";
 
-const TEMPLATE_OPTIONS: { type: TemplateType; label: string; shortLabel: string; icon: typeof Orbit; description: string; key: string }[] = [
-  { type: "orbit", label: "Orbit", shortLabel: "Orbit", icon: Orbit, description: "Circle around a point", key: "O" },
-  { type: "grid", label: "Grid survey", shortLabel: "Grid", icon: Grid3X3, description: "Lawn-mower scan area", key: "G" },
-  { type: "facade", label: "Facade scan", shortLabel: "Facade", icon: Building2, description: "Vertical wall scan", key: "F" },
-  { type: "pencil", label: "Pencil path", shortLabel: "Pencil", icon: PenLine, description: "Draw a freehand path", key: "Z" },
+const TEMPLATE_OPTIONS: {
+  type: TemplateType;
+  label: string;
+  shortLabel: string;
+  icon: typeof Orbit;
+  description: string;
+  key: string;
+}[] = [
+  {
+    type: "orbit",
+    label: "Orbit",
+    shortLabel: "Orbit",
+    icon: Orbit,
+    description: "Circle around a point",
+    key: "O",
+  },
+  {
+    type: "grid",
+    label: "Grid survey",
+    shortLabel: "Grid",
+    icon: Grid3X3,
+    description: "Lawn-mower scan area",
+    key: "G",
+  },
+  {
+    type: "facade",
+    label: "Facade scan",
+    shortLabel: "Facade",
+    icon: Building2,
+    description: "Vertical wall scan",
+    key: "F",
+  },
+  {
+    type: "pencil",
+    label: "Pencil path",
+    shortLabel: "Pencil",
+    icon: PenLine,
+    description: "Draw a freehand path",
+    key: "Z",
+  },
 ];
 
 export function MapToolbar() {
@@ -45,7 +92,8 @@ export function MapToolbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showTemplateMenu]);
 
-  const isPanning = !isAddingWaypoint && !isAddingPoi && !isDrawingObstacle && !templateMode;
+  const isPanning =
+    !isAddingWaypoint && !isAddingPoi && !isDrawingObstacle && !templateMode;
 
   return (
     <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 min-w-[130px]">
@@ -60,7 +108,9 @@ export function MapToolbar() {
           <MousePointerClick className="h-4 w-4" />
           <span className="text-xs">Add WP</span>
         </span>
-        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">W</kbd>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">
+          W
+        </kbd>
       </Button>
       <Button
         variant={isAddingPoi ? "default" : "outline"}
@@ -73,7 +123,9 @@ export function MapToolbar() {
           <Crosshair className="h-4 w-4" />
           <span className="text-xs">Add POI</span>
         </span>
-        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">P</kbd>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">
+          P
+        </kbd>
       </Button>
       <Button
         variant={isDrawingObstacle ? "default" : "outline"}
@@ -86,7 +138,9 @@ export function MapToolbar() {
           <Triangle className="h-4 w-4" />
           <span className="text-xs">Obstacle</span>
         </span>
-        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">B</kbd>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">
+          B
+        </kbd>
       </Button>
 
       {/* Template dropdown */}
@@ -99,14 +153,21 @@ export function MapToolbar() {
           className={`justify-between w-full ${templateMode ? activeClass : inactiveClass}`}
         >
           <span className="flex items-center gap-1.5">
-            {templateMode === "orbit" ? <Orbit className="h-4 w-4" /> :
-             templateMode === "grid" ? <Grid3X3 className="h-4 w-4" /> :
-             templateMode === "facade" ? <Building2 className="h-4 w-4" /> :
-             templateMode === "pencil" ? <PenLine className="h-4 w-4" /> :
-             <Grid3X3 className="h-4 w-4" />}
+            {templateMode === "orbit" ? (
+              <Orbit className="h-4 w-4" />
+            ) : templateMode === "grid" ? (
+              <Grid3X3 className="h-4 w-4" />
+            ) : templateMode === "facade" ? (
+              <Building2 className="h-4 w-4" />
+            ) : templateMode === "pencil" ? (
+              <PenLine className="h-4 w-4" />
+            ) : (
+              <Grid3X3 className="h-4 w-4" />
+            )}
             <span className="text-xs">
               {templateMode
-                ? TEMPLATE_OPTIONS.find((t) => t.type === templateMode)?.shortLabel
+                ? TEMPLATE_OPTIONS.find((t) => t.type === templateMode)
+                    ?.shortLabel
                 : "Template"}
             </span>
           </span>
@@ -130,9 +191,13 @@ export function MapToolbar() {
                   <Icon className="h-4 w-4 shrink-0" />
                   <div className="text-left flex-1">
                     <div className="font-medium">{opt.label}</div>
-                    <div className="text-[10px] text-muted-foreground">{opt.description}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {opt.description}
+                    </div>
                   </div>
-                  <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80 shrink-0">{opt.key}</kbd>
+                  <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80 shrink-0">
+                    {opt.key}
+                  </kbd>
                 </button>
               );
             })}
@@ -156,14 +221,17 @@ export function MapToolbar() {
           <Hand className="h-4 w-4" />
           <span className="text-xs">Pan</span>
         </span>
-        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">Esc</kbd>
+        <kbd className="text-[10px] font-mono font-bold border border-white/20 bg-white/10 px-1.5 py-0.5 rounded text-foreground/80">
+          Esc
+        </kbd>
       </Button>
       {(waypoints.length > 0 || pois.length > 0 || obstacles.length > 0) && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => {
-            if (confirm("Clear all waypoints, POIs, and obstacles?")) clearMission();
+            if (confirm("Clear all waypoints, POIs, and obstacles?"))
+              clearMission();
           }}
           title="Clear all waypoints, POIs, and obstacles"
           className="bg-background/90 backdrop-blur-sm text-destructive hover:text-destructive"

@@ -56,7 +56,10 @@ export function AccountModal({ onClose }: AccountModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
       <div
         className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
@@ -64,7 +67,10 @@ export function AccountModal({ onClose }: AccountModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="text-sm font-semibold">Account settings</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -84,7 +90,9 @@ export function AccountModal({ onClose }: AccountModalProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="currentPassword" className="text-xs">Current password</Label>
+              <Label htmlFor="currentPassword" className="text-xs">
+                Current password
+              </Label>
               <Input
                 id="currentPassword"
                 type="password"
@@ -96,7 +104,9 @@ export function AccountModal({ onClose }: AccountModalProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="newPassword" className="text-xs">New password</Label>
+              <Label htmlFor="newPassword" className="text-xs">
+                New password
+              </Label>
               <Input
                 id="newPassword"
                 type="password"
@@ -110,7 +120,9 @@ export function AccountModal({ onClose }: AccountModalProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="confirmPassword" className="text-xs">Confirm new password</Label>
+              <Label htmlFor="confirmPassword" className="text-xs">
+                Confirm new password
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -123,9 +135,17 @@ export function AccountModal({ onClose }: AccountModalProps) {
             </div>
 
             {error && <p className="text-xs text-destructive">{error}</p>}
-            {success && <p className="text-xs text-emerald-400">Password updated successfully</p>}
+            {success && (
+              <p className="text-xs text-emerald-400">
+                Password updated successfully
+              </p>
+            )}
 
-            <Button type="submit" className="w-full h-9 text-sm" disabled={saving}>
+            <Button
+              type="submit"
+              className="w-full h-9 text-sm"
+              disabled={saving}
+            >
               {saving ? "Updating..." : "Update password"}
             </Button>
           </form>
