@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+.playwright-mcp/
+packages/
+dist/
+*.db
+*.db-shm
+*.db-wal
+*.kmz
