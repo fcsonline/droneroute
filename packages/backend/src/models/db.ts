@@ -25,7 +25,9 @@ export function initDb(): void {
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
+      password_hash TEXT,
+      google_id TEXT,
+      email_verified INTEGER NOT NULL DEFAULT 0,
       is_admin INTEGER NOT NULL DEFAULT 0,
       is_banned INTEGER NOT NULL DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now'))
@@ -88,6 +90,22 @@ export function initDb(): void {
   try {
     database.exec(
       `ALTER TABLE users ADD COLUMN is_banned INTEGER NOT NULL DEFAULT 0`,
+    );
+  } catch {
+    // Column already exists — ignore
+  }
+
+  // Migration: add google_id column if missing (for existing DBs)
+  try {
+    database.exec(`ALTER TABLE users ADD COLUMN google_id TEXT`);
+  } catch {
+    // Column already exists — ignore
+  }
+
+  // Migration: add email_verified column if missing (for existing DBs)
+  try {
+    database.exec(
+      `ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0`,
     );
   } catch {
     // Column already exists — ignore

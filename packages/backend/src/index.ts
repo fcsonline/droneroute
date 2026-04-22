@@ -44,6 +44,15 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// Public config (exposes non-secret settings to the frontend)
+app.get("/api/config", (_req, res) => {
+  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
+  res.json({
+    selfHosted,
+    googleClientId: selfHosted ? undefined : process.env.GOOGLE_CLIENT_ID,
+  });
+});
+
 // SPA fallback (Express 5 syntax)
 app.get("/{*splat}", (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));

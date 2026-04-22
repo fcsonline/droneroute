@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -45,6 +46,33 @@ export function verifyToken(
       userId: string;
       isAdmin: boolean;
     };
+  } catch {
+    return null;
+  }
+}
+
+export function getGoogleClientId(): string | undefined {
+  return process.env.GOOGLE_CLIENT_ID;
+}
+
+export async function verifyGoogleToken(
+  idToken: string,
+): Promise<{ email: string; googleId: string } | null> {
+  const clientId = getGoogleClientId();
+  if (!clientId) {
+    throw new Error("GOOGLE_CLIENT_ID is not configured");
+  }
+  const client = new OAuth2Client(clientId);
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: clientId,
+    });
+    const payload = ticket.getPayload();
+    if (!payload?.email || !payload?.sub) {
+      return null;
+    }
+    return { email: payload.email, googleId: payload.sub };
   } catch {
     return null;
   }

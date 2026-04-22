@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store/authStore";
+import { useConfigStore } from "@/store/configStore";
 import { api } from "@/lib/api";
 import { X, KeyRound } from "lucide-react";
 
@@ -24,6 +25,7 @@ export function AccountModal({ onClose }: AccountModalProps) {
     return () => window.removeEventListener("keydown", handler, true);
   }, [onClose]);
   const { email } = useAuthStore();
+  const { selfHosted } = useConfigStore();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -82,73 +84,75 @@ export function AccountModal({ onClose }: AccountModalProps) {
             <p className="text-sm">{email}</p>
           </div>
 
-          {/* Change password */}
-          <form onSubmit={handleChangePassword} className="space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <KeyRound className="h-3 w-3" />
-              Change password
-            </div>
+          {/* Change password (self-hosted only) */}
+          {selfHosted && (
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <KeyRound className="h-3 w-3" />
+                Change password
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="currentPassword" className="text-xs">
-                Current password
-              </Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="h-9 text-sm"
-                required
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="currentPassword" className="text-xs">
+                  Current password
+                </Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="h-9 text-sm"
+                  required
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="newPassword" className="text-xs">
-                New password
-              </Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Min 6 characters"
-                className="h-9 text-sm"
-                required
-                minLength={6}
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="newPassword" className="text-xs">
+                  New password
+                </Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min 6 characters"
+                  className="h-9 text-sm"
+                  required
+                  minLength={6}
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="confirmPassword" className="text-xs">
-                Confirm new password
-              </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-9 text-sm"
-                required
-                minLength={6}
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-xs">
+                  Confirm new password
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="h-9 text-sm"
+                  required
+                  minLength={6}
+                />
+              </div>
 
-            {error && <p className="text-xs text-destructive">{error}</p>}
-            {success && (
-              <p className="text-xs text-emerald-400">
-                Password updated successfully
-              </p>
-            )}
+              {error && <p className="text-xs text-destructive">{error}</p>}
+              {success && (
+                <p className="text-xs text-emerald-400">
+                  Password updated successfully
+                </p>
+              )}
 
-            <Button
-              type="submit"
-              className="w-full h-9 text-sm"
-              disabled={saving}
-            >
-              {saving ? "Updating..." : "Update password"}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                className="w-full h-9 text-sm"
+                disabled={saving}
+              >
+                {saving ? "Updating..." : "Update password"}
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </div>

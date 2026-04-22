@@ -28,7 +28,9 @@ export function authMiddleware(
   // Check if user is banned
   const db = getDb();
   const user = db
-    .prepare("SELECT is_banned, is_admin FROM users WHERE id = ?")
+    .prepare(
+      "SELECT is_banned, is_admin, email_verified FROM users WHERE id = ?",
+    )
     .get(payload.userId) as any;
   if (!user) {
     res.status(401).json({ error: "User not found" });
@@ -38,6 +40,17 @@ export function authMiddleware(
     res
       .status(403)
       .json({ error: "Your account has been suspended", banned: true });
+    return;
+  }
+
+  // In cloud mode, require email verification
+  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
+  if (!selfHosted && !user.email_verified) {
+    res.status(403).json({
+      error:
+        "Email not verified. Please sign in with Google to verify your account.",
+      code: "EMAIL_NOT_VERIFIED",
+    });
     return;
   }
 

@@ -1,5 +1,6 @@
 import type { AdminUser, PaginatedResponse } from "@droneroute/shared";
 import { useMissionStore } from "@/store/missionStore";
+import { useAuthStore } from "@/store/authStore";
 
 const API_BASE = "/api";
 
@@ -33,6 +34,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       useMissionStore.getState().clearMission();
       window.location.reload();
       throw new Error(err.error || "Your account has been suspended");
+    }
+
+    // Handle unverified email — trigger verification gate
+    if (res.status === 403 && err.code === "EMAIL_NOT_VERIFIED") {
+      useAuthStore.getState().setNeedsVerification(true);
+      throw new Error(err.error || "Email not verified");
     }
 
     throw new Error(err.error || "Request failed");

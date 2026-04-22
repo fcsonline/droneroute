@@ -5,12 +5,130 @@ import {
   hashPassword,
   comparePassword,
   generateToken,
+  verifyGoogleToken,
 } from "../services/authService.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
 
 export const authRoutes = Router();
 
+const isSelfHosted = () => (process.env.SELF_HOSTED ?? "true") === "true";
+
+// ---------------------------------------------------------------------------
+// Google OAuth sign-in (cloud mode only)
+// ---------------------------------------------------------------------------
+authRoutes.post("/google", async (req, res) => {
+  if (isSelfHosted()) {
+    res.status(404).json({
+      error: "Google authentication is not available in self-hosted mode",
+    });
+    return;
+  }
+
+  const { credential } = req.body;
+  if (!credential) {
+    res.status(400).json({ error: "Missing Google credential" });
+    return;
+  }
+
+  let verified;
+  try {
+    verified = await verifyGoogleToken(credential);
+  } catch {
+    res.status(500).json({ error: "Google authentication is not configured" });
+    return;
+  }
+
+  if (!verified) {
+    res.status(401).json({ error: "Invalid Google credential" });
+    return;
+  }
+
+  const { email, googleId } = verified;
+  const db = getDb();
+
+  // Check if a user with this google_id already exists
+  const existingByGoogle = db
+    .prepare(
+      "SELECT id, email, is_admin, is_banned FROM users WHERE google_id = ?",
+    )
+    .get(googleId) as any;
+
+  if (existingByGoogle) {
+    if (existingByGoogle.is_banned) {
+      res
+        .status(403)
+        .json({ error: "Your account has been suspended", banned: true });
+      return;
+    }
+    const token = generateToken(
+      existingByGoogle.id,
+      !!existingByGoogle.is_admin,
+    );
+    res.json({
+      token,
+      userId: existingByGoogle.id,
+      email: existingByGoogle.email,
+      isAdmin: !!existingByGoogle.is_admin,
+    });
+    return;
+  }
+
+  // Check if a user with this email exists (existing user linking Google account)
+  const existingByEmail = db
+    .prepare(
+      "SELECT id, email, is_admin, is_banned FROM users WHERE LOWER(email) = LOWER(?)",
+    )
+    .get(email) as any;
+
+  if (existingByEmail) {
+    if (existingByEmail.is_banned) {
+      res
+        .status(403)
+        .json({ error: "Your account has been suspended", banned: true });
+      return;
+    }
+    // Link Google account and verify email
+    db.prepare(
+      "UPDATE users SET google_id = ?, email_verified = 1 WHERE id = ?",
+    ).run(googleId, existingByEmail.id);
+
+    const token = generateToken(existingByEmail.id, !!existingByEmail.is_admin);
+    res.json({
+      token,
+      userId: existingByEmail.id,
+      email: existingByEmail.email,
+      isAdmin: !!existingByEmail.is_admin,
+    });
+    return;
+  }
+
+  // New user — create account with Google info (no password)
+  const id = uuidv4();
+  let isAdmin = false;
+  const adminEmail = process.env.ADMIN_EMAIL || "";
+  if (adminEmail && email.toLowerCase() === adminEmail.toLowerCase()) {
+    isAdmin = true;
+  }
+
+  db.prepare(
+    "INSERT INTO users (id, email, google_id, email_verified, is_admin) VALUES (?, ?, ?, 1, ?)",
+  ).run(id, email, googleId, isAdmin ? 1 : 0);
+
+  const token = generateToken(id, isAdmin);
+  res.status(201).json({ token, userId: id, email, isAdmin });
+});
+
+// ---------------------------------------------------------------------------
+// Password-based routes (self-hosted mode only)
+// ---------------------------------------------------------------------------
 authRoutes.post("/register", (req, res) => {
+  if (!isSelfHosted()) {
+    res.status(410).json({
+      error: "Password registration is disabled. Use Google sign-in.",
+    });
+    return;
+  }
+
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(400).json({ error: "Email and password are required" });
@@ -33,27 +151,21 @@ authRoutes.post("/register", (req, res) => {
   const id = uuidv4();
   const passwordHash = hashPassword(password);
   db.prepare(
-    "INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)",
+    "INSERT INTO users (id, email, password_hash, email_verified) VALUES (?, ?, ?, 1)",
   ).run(id, email, passwordHash);
 
-  // Promote to admin if cloud mode and email matches ADMIN_EMAIL
-  const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
-  const adminEmail = process.env.ADMIN_EMAIL || "";
-  let isAdmin = false;
-  if (
-    !selfHosted &&
-    adminEmail &&
-    email.toLowerCase() === adminEmail.toLowerCase()
-  ) {
-    db.prepare("UPDATE users SET is_admin = 1 WHERE id = ?").run(id);
-    isAdmin = true;
-  }
-
-  const token = generateToken(id, isAdmin);
-  res.status(201).json({ token, userId: id, email, isAdmin });
+  const token = generateToken(id, false);
+  res.status(201).json({ token, userId: id, email, isAdmin: false });
 });
 
 authRoutes.post("/login", (req, res) => {
+  if (!isSelfHosted()) {
+    res
+      .status(410)
+      .json({ error: "Password login is disabled. Use Google sign-in." });
+    return;
+  }
+
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(400).json({ error: "Email and password are required" });
@@ -67,7 +179,11 @@ authRoutes.post("/login", (req, res) => {
     )
     .get(email) as any;
 
-  if (!user || !comparePassword(password, user.password_hash)) {
+  if (
+    !user ||
+    !user.password_hash ||
+    !comparePassword(password, user.password_hash)
+  ) {
     res.status(401).json({ error: "Invalid email or password" });
     return;
   }
@@ -89,6 +205,13 @@ authRoutes.post("/login", (req, res) => {
 });
 
 authRoutes.post("/change-password", authMiddleware, (req: AuthRequest, res) => {
+  if (!isSelfHosted()) {
+    res
+      .status(410)
+      .json({ error: "Password management is disabled in cloud mode." });
+    return;
+  }
+
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword) {
     res
@@ -108,7 +231,11 @@ authRoutes.post("/change-password", authMiddleware, (req: AuthRequest, res) => {
     .prepare("SELECT password_hash FROM users WHERE id = ?")
     .get(req.userId) as any;
 
-  if (!user || !comparePassword(currentPassword, user.password_hash)) {
+  if (
+    !user ||
+    !user.password_hash ||
+    !comparePassword(currentPassword, user.password_hash)
+  ) {
     res.status(401).json({ error: "Current password is incorrect" });
     return;
   }
