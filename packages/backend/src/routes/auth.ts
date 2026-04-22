@@ -111,7 +111,7 @@ authRoutes.post("/google", async (req, res) => {
   }
 
   db.prepare(
-    "INSERT INTO users (id, email, google_id, email_verified, is_admin) VALUES (?, ?, ?, 1, ?)",
+    "INSERT INTO users (id, email, password_hash, google_id, email_verified, is_admin) VALUES (?, ?, '', ?, 1, ?)",
   ).run(id, email, googleId, isAdmin ? 1 : 0);
 
   const token = generateToken(id, isAdmin);
