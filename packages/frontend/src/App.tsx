@@ -504,7 +504,7 @@ export default function App() {
               Waypoints ({waypoints.length})
             </button>
             {expandedSections.waypoints && (
-              <div className="max-h-[40vh] overflow-y-auto animate-in slide-in-from-top-1 fade-in duration-150">
+              <div className="max-h-[40vh] overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300">
                 <WaypointList />
               </div>
             )}
@@ -526,7 +526,7 @@ export default function App() {
               Points of interest ({pois.length})
             </button>
             {expandedSections.pois && (
-              <div className="max-h-[30vh] overflow-y-auto animate-in slide-in-from-top-1 fade-in duration-150">
+              <div className="max-h-[30vh] overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300">
                 <PoiList />
               </div>
             )}
@@ -548,7 +548,7 @@ export default function App() {
               Obstacles ({obstacles.length})
             </button>
             {expandedSections.obstacles && (
-              <div className="max-h-[30vh] overflow-y-auto animate-in slide-in-from-top-1 fade-in duration-150">
+              <div className="max-h-[30vh] overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300">
                 <ObstacleList />
               </div>
             )}
@@ -570,7 +570,7 @@ export default function App() {
               Mission settings
             </button>
             {expandedSections.config && (
-              <div className="max-h-[40vh] overflow-y-auto animate-in slide-in-from-top-1 fade-in duration-150">
+              <div className="max-h-[40vh] overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-300">
                 <MissionConfig />
               </div>
             )}
