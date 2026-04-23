@@ -133,8 +133,8 @@ export function BulkActionToolbar() {
 
           <div className="h-4 w-px bg-border" />
 
-          {/* Point to POI */}
-          {pois.length > 0 && (
+          {/* Point to POI (hidden when editor is open — use heading mode there instead) */}
+          {pois.length > 0 && !showEditor && (
             <Select onValueChange={handleAssignPoi}>
               <SelectTrigger className="h-7 w-auto gap-1.5 text-xs border-0 bg-transparent hover:bg-secondary px-2">
                 <Crosshair className="h-3 w-3" />
