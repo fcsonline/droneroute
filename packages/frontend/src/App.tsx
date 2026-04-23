@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import {
   Download,
   Upload,
@@ -175,7 +176,7 @@ export default function App() {
 
   const handleExport = async () => {
     if (waypoints.length < 2) {
-      alert("Need at least 2 waypoints to export");
+      toast.warning("Need at least 2 waypoints to export");
       return;
     }
 
@@ -195,7 +196,7 @@ export default function App() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`Export failed: ${err.message}`);
+      toast.error(`Export failed: ${err.message}`);
     } finally {
       setExporting(false);
     }
@@ -204,6 +205,10 @@ export default function App() {
   const handleSave = async () => {
     if (!token) {
       setShowAuthModal(true);
+      return;
+    }
+    if (!missionName.trim()) {
+      toast.warning("Please enter a mission name before saving");
       return;
     }
     setSaving(true);
@@ -228,7 +233,7 @@ export default function App() {
       }
       setDirty(false);
     } catch (err: any) {
-      alert(`Save failed: ${err.message}`);
+      toast.error(`Save failed: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -254,7 +259,7 @@ export default function App() {
         pois: result.pois,
       });
     } catch (err: any) {
-      alert(`Import failed: ${err.message}`);
+      toast.error(`Import failed: ${err.message}`);
     }
 
     // Reset file input
