@@ -485,7 +485,7 @@ export default function App() {
           {/* Waypoints section — BLUE accent */}
           <div className="border-l-2 border-blue-500/70 bg-blue-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-blue-500/10 text-blue-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-blue-500/10 hover:bg-blue-500/15 text-blue-400"
               onClick={() => toggleSection("waypoints")}
             >
               {expandedSections.waypoints ? (
@@ -506,7 +506,7 @@ export default function App() {
           {/* POIs section — AMBER/ORANGE accent */}
           <div className="border-l-2 border-amber-500/70 bg-amber-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-amber-500/10 text-amber-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-amber-500/10 hover:bg-amber-500/15 text-amber-400"
               onClick={() => toggleSection("pois")}
             >
               {expandedSections.pois ? (
@@ -527,7 +527,7 @@ export default function App() {
           {/* Obstacles section — RED accent */}
           <div className="border-l-2 border-red-500/70 bg-red-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-red-500/10 text-red-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-red-500/10 hover:bg-red-500/15 text-red-400"
               onClick={() => toggleSection("obstacles")}
             >
               {expandedSections.obstacles ? (
@@ -548,7 +548,7 @@ export default function App() {
           {/* Mission Settings section — PURPLE accent */}
           <div className="border-l-2 border-purple-500/70 bg-purple-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-purple-500/10 text-purple-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-purple-500/10 hover:bg-purple-500/15 text-purple-400"
               onClick={() => toggleSection("config")}
             >
               {expandedSections.config ? (
