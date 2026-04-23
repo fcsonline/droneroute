@@ -128,7 +128,7 @@ export interface TemplateResult {
 // ── Default Params ───────────────────────────────────────
 
 export const DEFAULT_ORBIT_PARAMS: Omit<OrbitParams, "center" | "radiusM"> = {
-  altitude: 50,
+  altitude: 30,
   numPoints: 12,
   clockwise: true,
   createPoi: true,
@@ -145,7 +145,7 @@ export const DEFAULT_GRID_PARAMS: Omit<GridParams, "corner1" | "corner2"> = {
 export const DEFAULT_FACADE_PARAMS: Omit<FacadeParams, "point1" | "point2"> = {
   distanceM: 20,
   minAltitude: 10,
-  maxAltitude: 50,
+  maxAltitude: 30,
   numRows: 4,
   numColumns: 8,
   addPhotos: true,
@@ -153,7 +153,7 @@ export const DEFAULT_FACADE_PARAMS: Omit<FacadeParams, "point1" | "point2"> = {
 
 export const DEFAULT_PENCIL_PARAMS: Omit<PencilParams, "path"> = {
   numPoints: 10,
-  altitude: 50,
+  altitude: 30,
   speed: 7,
   gimbalPitchAngle: -45,
   reverse: false,

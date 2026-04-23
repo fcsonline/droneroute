@@ -144,7 +144,7 @@ export function TemplateConfigPanel({
               onChange={(e) =>
                 onOrbitChange({
                   ...orbitParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 50),
+                  altitude: Math.max(5, parseFloat(e.target.value) || 30),
                 })
               }
               min={5}
@@ -327,7 +327,7 @@ export function TemplateConfigPanel({
                   ...facadeParams,
                   maxAltitude: Math.max(
                     facadeParams.minAltitude + 5,
-                    parseFloat(e.target.value) || 50,
+                    parseFloat(e.target.value) || 30,
                   ),
                 })
               }
@@ -423,7 +423,7 @@ export function TemplateConfigPanel({
               onChange={(e) =>
                 onPencilChange({
                   ...pencilParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 50),
+                  altitude: Math.max(5, parseFloat(e.target.value) || 30),
                 })
               }
               min={5}

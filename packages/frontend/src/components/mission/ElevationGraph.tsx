@@ -216,6 +216,13 @@ export function ElevationGraph() {
         Elevation chart
       </button>
 
+      {/* Hint */}
+      {expanded && waypoints.length >= 2 && draggingIndex === null && (
+        <p className="px-3 pb-1 text-[10px] text-muted-foreground">
+          Drag waypoints up or down to adjust altitude
+        </p>
+      )}
+
       {/* Collapsible body */}
       {expanded && (
         <div

@@ -383,7 +383,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background">
+    <div className="flex h-dvh w-screen overflow-hidden bg-background">
       {/* Sidebar */}
       <div className="w-88 flex flex-col border-r border-border bg-card shrink-0 tabular-nums">
         {/* Header */}
@@ -452,7 +452,11 @@ export default function App() {
             onClick={handleExport}
             disabled={exporting || waypoints.length < 2}
             className="flex-1 text-xs h-7"
-            title="Export mission as DJI KMZ file"
+            title={
+              waypoints.length < 2
+                ? "Add at least 2 waypoints to export"
+                : "Export mission as DJI KMZ file"
+            }
           >
             <Download className="h-3 w-3" />
             {exporting ? "..." : "Export KMZ"}
@@ -612,64 +616,60 @@ export default function App() {
             })()}
           </div>
           <div className="flex items-center gap-3">
-            {waypoints.length >= 2 && flightStats ? (
-              (() => {
-                const { distance, time } = flightStats;
-                const elevGain = waypoints.reduce((sum, wp, i) => {
-                  if (i === 0) return 0;
-                  const diff = wp.height - waypoints[i - 1].height;
-                  return sum + (diff > 0 ? diff : 0);
-                }, 0);
-                const exceedsBattery = time > config.maxBatteryMinutes * 60;
-                return (
-                  <>
-                    {elevGain > 0 && (
+            {waypoints.length >= 2 && flightStats
+              ? (() => {
+                  const { distance, time } = flightStats;
+                  const elevGain = waypoints.reduce((sum, wp, i) => {
+                    if (i === 0) return 0;
+                    const diff = wp.height - waypoints[i - 1].height;
+                    return sum + (diff > 0 ? diff : 0);
+                  }, 0);
+                  const exceedsBattery = time > config.maxBatteryMinutes * 60;
+                  return (
+                    <>
+                      {elevGain > 0 && (
+                        <span
+                          className="flex items-center gap-1 text-[11px]"
+                          title="Elevation gain"
+                        >
+                          <TrendingUp className="h-3 w-3 text-orange-400" />
+                          <span className="text-orange-300 font-medium">
+                            {elevGain}m
+                          </span>
+                        </span>
+                      )}
                       <span
                         className="flex items-center gap-1 text-[11px]"
-                        title="Elevation gain"
+                        title="Total distance"
                       >
-                        <TrendingUp className="h-3 w-3 text-orange-400" />
-                        <span className="text-orange-300 font-medium">
-                          {elevGain}m
+                        <Route className="h-3 w-3 text-emerald-400" />
+                        <span className="text-emerald-300 font-medium">
+                          {distance >= 1000
+                            ? `${(distance / 1000).toFixed(1)}km`
+                            : `~${distance.toFixed(0)}m`}
                         </span>
                       </span>
-                    )}
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      title="Total distance"
-                    >
-                      <Route className="h-3 w-3 text-emerald-400" />
-                      <span className="text-emerald-300 font-medium">
-                        {distance >= 1000
-                          ? `${(distance / 1000).toFixed(1)}km`
-                          : `~${distance.toFixed(0)}m`}
-                      </span>
-                    </span>
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      title={
-                        exceedsBattery
-                          ? `Exceeds max battery (${config.maxBatteryMinutes}min)`
-                          : "Estimated flight time"
-                      }
-                    >
-                      <Clock
-                        className={`h-3 w-3 ${exceedsBattery ? "text-orange-400" : "text-yellow-400"}`}
-                      />
                       <span
-                        className={`font-medium ${exceedsBattery ? "text-orange-300" : "text-yellow-300"}`}
+                        className="flex items-center gap-1 text-[11px]"
+                        title={
+                          exceedsBattery
+                            ? `Exceeds max battery (${config.maxBatteryMinutes}min)`
+                            : "Estimated flight time"
+                        }
                       >
-                        {formatDuration(time)}
+                        <Clock
+                          className={`h-3 w-3 ${exceedsBattery ? "text-orange-400" : "text-yellow-400"}`}
+                        />
+                        <span
+                          className={`font-medium ${exceedsBattery ? "text-orange-300" : "text-yellow-300"}`}
+                        >
+                          {formatDuration(time)}
+                        </span>
                       </span>
-                    </span>
-                  </>
-                );
-              })()
-            ) : (
-              <span className="text-[10px] text-muted-foreground">
-                Add 2+ waypoints
-              </span>
-            )}
+                    </>
+                  );
+                })()
+              : null}
           </div>
         </div>
 
@@ -727,13 +727,11 @@ export default function App() {
               <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
                 <User className="h-3 w-3 text-muted-foreground" />
               </div>
-              Sign in to save missions
+              Guest mode. Sign in to save missions
             </Button>
           )}
         </div>
       </div>
-
-      {/* Map */}
       <div className="flex-1 relative">
         <MapView />
         <BulkActionToolbar />
