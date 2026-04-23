@@ -8,3 +8,4 @@ data/
 tsconfig.tsbuildinfo
 *.tsbuildinfo
 *.kmz
+audit-*.png

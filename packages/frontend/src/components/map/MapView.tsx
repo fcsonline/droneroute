@@ -225,7 +225,7 @@ export function MapView() {
         className="h-full w-full z-0"
         zoomControl={false}
       >
-        <LayersControl position="topright">
+        <LayersControl position="bottomleft">
           <LayersControl.BaseLayer checked name="Street">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
