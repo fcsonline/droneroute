@@ -430,6 +430,7 @@ export default function App() {
             onChange={(e) => setMissionName(e.target.value)}
             className="h-8 text-xs font-medium border-blue-500/30 bg-blue-500/5 focus-visible:ring-blue-500/40"
             placeholder="Mission name"
+            title="Name your mission for easy identification"
           />
         </div>
 
@@ -487,6 +488,7 @@ export default function App() {
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-blue-500/10 hover:bg-blue-500/15 text-blue-400"
               onClick={() => toggleSection("waypoints")}
+              title="Flight path coordinates — click on the map to add"
             >
               {expandedSections.waypoints ? (
                 <ChevronDown className="h-3 w-3" />
@@ -508,6 +510,7 @@ export default function App() {
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-amber-500/10 hover:bg-amber-500/15 text-amber-400"
               onClick={() => toggleSection("pois")}
+              title="Targets the drone can point its camera at"
             >
               {expandedSections.pois ? (
                 <ChevronDown className="h-3 w-3" />
@@ -529,6 +532,7 @@ export default function App() {
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-red-500/10 hover:bg-red-500/15 text-red-400"
               onClick={() => toggleSection("obstacles")}
+              title="No-fly zones to avoid during the mission"
             >
               {expandedSections.obstacles ? (
                 <ChevronDown className="h-3 w-3" />
@@ -550,6 +554,7 @@ export default function App() {
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-purple-500/10 hover:bg-purple-500/15 text-purple-400"
               onClick={() => toggleSection("config")}
+              title="Drone model, speed, altitude and flight behavior"
             >
               {expandedSections.config ? (
                 <ChevronDown className="h-3 w-3" />
