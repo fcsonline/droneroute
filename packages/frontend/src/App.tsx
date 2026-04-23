@@ -428,7 +428,7 @@ export default function App() {
           <Input
             value={missionName}
             onChange={(e) => setMissionName(e.target.value)}
-            className="h-8 text-xs font-medium"
+            className="h-8 text-xs font-medium border-blue-500/30 bg-blue-500/5 focus-visible:ring-blue-500/40"
             placeholder="Mission name"
           />
         </div>
@@ -440,7 +440,7 @@ export default function App() {
             size="sm"
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 text-xs h-7"
+            className="flex-1 text-xs h-7 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/15 hover:text-blue-300"
             title="Save mission to your account"
           >
             <Save className="h-3 w-3" />
@@ -451,7 +451,7 @@ export default function App() {
             size="sm"
             onClick={handleExport}
             disabled={exporting || waypoints.length < 2}
-            className="flex-1 text-xs h-7"
+            className="flex-1 text-xs h-7 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/15 hover:text-blue-300"
             title={
               waypoints.length < 2
                 ? "Add at least 2 waypoints to export"
@@ -465,7 +465,7 @@ export default function App() {
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="flex-1 text-xs h-7"
+            className="flex-1 text-xs h-7 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/15 hover:text-blue-300"
             title="Import a DJI KMZ file"
           >
             <Upload className="h-3 w-3" />
