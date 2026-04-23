@@ -68,3 +68,18 @@ body {
 .map-tool-obstacle .leaflet-container {
   cursor: crosshair !important;
 }
+
+/* Sidebar section expand animation */
+@keyframes section-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.section-expand {
+  animation: section-expand 0.25s ease-out;
+}
