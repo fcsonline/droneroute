@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import {
   MapPin,
   Crosshair,
@@ -333,7 +334,7 @@ export function SharedMissionPage({
       window.history.pushState({}, "", "/");
       setCurrentPage("editor");
     } catch (e: any) {
-      alert("Clone failed: " + (e.message || "Unknown error"));
+      toast.error("Clone failed: " + (e.message || "Unknown error"));
     } finally {
       setCloning(false);
     }
@@ -355,7 +356,7 @@ export function SharedMissionPage({
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`Export failed: ${err.message}`);
+      toast.error(`Export failed: ${err.message}`);
     }
   };
 

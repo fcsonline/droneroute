@@ -152,7 +152,6 @@ export function MissionConfig() {
             <SelectItem value="relativeToStartPoint">
               Relative to start
             </SelectItem>
-            <SelectItem value="EGM96">EGM96 (MSL)</SelectItem>
             <SelectItem value="aboveGroundLevel">Above ground level</SelectItem>
           </SelectContent>
         </Select>

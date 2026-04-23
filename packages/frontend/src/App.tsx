@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import {
   Download,
   Upload,
@@ -175,7 +176,7 @@ export default function App() {
 
   const handleExport = async () => {
     if (waypoints.length < 2) {
-      alert("Need at least 2 waypoints to export");
+      toast.warning("Need at least 2 waypoints to export");
       return;
     }
 
@@ -195,7 +196,7 @@ export default function App() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`Export failed: ${err.message}`);
+      toast.error(`Export failed: ${err.message}`);
     } finally {
       setExporting(false);
     }
@@ -204,6 +205,10 @@ export default function App() {
   const handleSave = async () => {
     if (!token) {
       setShowAuthModal(true);
+      return;
+    }
+    if (!missionName.trim()) {
+      toast.warning("Please enter a mission name before saving");
       return;
     }
     setSaving(true);
@@ -228,7 +233,7 @@ export default function App() {
       }
       setDirty(false);
     } catch (err: any) {
-      alert(`Save failed: ${err.message}`);
+      toast.error(`Save failed: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -254,7 +259,7 @@ export default function App() {
         pois: result.pois,
       });
     } catch (err: any) {
-      alert(`Import failed: ${err.message}`);
+      toast.error(`Import failed: ${err.message}`);
     }
 
     // Reset file input
@@ -383,7 +388,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background">
+    <div className="flex h-dvh w-screen overflow-hidden bg-background">
       {/* Sidebar */}
       <div className="w-88 flex flex-col border-r border-border bg-card shrink-0 tabular-nums">
         {/* Header */}
@@ -428,8 +433,9 @@ export default function App() {
           <Input
             value={missionName}
             onChange={(e) => setMissionName(e.target.value)}
-            className="h-8 text-xs font-medium"
+            className="h-8 text-xs font-medium border-blue-500/30 bg-blue-500/5 focus-visible:ring-blue-500/40"
             placeholder="Mission name"
+            title="Name your mission for easy identification"
           />
         </div>
 
@@ -440,7 +446,7 @@ export default function App() {
             size="sm"
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 text-xs h-7"
+            className="flex-1 text-xs h-7 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/15 hover:text-blue-300"
             title="Save mission to your account"
           >
             <Save className="h-3 w-3" />
@@ -451,8 +457,12 @@ export default function App() {
             size="sm"
             onClick={handleExport}
             disabled={exporting || waypoints.length < 2}
-            className="flex-1 text-xs h-7"
-            title="Export mission as DJI KMZ file"
+            className="flex-1 text-xs h-7 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/15 hover:text-blue-300"
+            title={
+              waypoints.length < 2
+                ? "Add at least 2 waypoints to export"
+                : "Export mission as DJI KMZ file"
+            }
           >
             <Download className="h-3 w-3" />
             {exporting ? "..." : "Export KMZ"}
@@ -461,7 +471,7 @@ export default function App() {
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="flex-1 text-xs h-7"
+            className="flex-1 text-xs h-7 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/15 hover:text-blue-300"
             title="Import a DJI KMZ file"
           >
             <Upload className="h-3 w-3" />
@@ -481,8 +491,9 @@ export default function App() {
           {/* Waypoints section — BLUE accent */}
           <div className="border-l-2 border-blue-500/70 bg-blue-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-blue-500/10 text-blue-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-blue-500/10 hover:bg-blue-500/15 text-blue-400"
               onClick={() => toggleSection("waypoints")}
+              title="Flight path coordinates — click on the map to add"
             >
               {expandedSections.waypoints ? (
                 <ChevronDown className="h-3 w-3" />
@@ -493,7 +504,7 @@ export default function App() {
               Waypoints ({waypoints.length})
             </button>
             {expandedSections.waypoints && (
-              <div className="max-h-[40vh] overflow-y-auto">
+              <div className="max-h-[40vh] overflow-y-auto section-expand">
                 <WaypointList />
               </div>
             )}
@@ -502,8 +513,9 @@ export default function App() {
           {/* POIs section — AMBER/ORANGE accent */}
           <div className="border-l-2 border-amber-500/70 bg-amber-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-amber-500/10 text-amber-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-amber-500/10 hover:bg-amber-500/15 text-amber-400"
               onClick={() => toggleSection("pois")}
+              title="Targets the drone can point its camera at"
             >
               {expandedSections.pois ? (
                 <ChevronDown className="h-3 w-3" />
@@ -514,7 +526,7 @@ export default function App() {
               Points of interest ({pois.length})
             </button>
             {expandedSections.pois && (
-              <div className="max-h-[30vh] overflow-y-auto">
+              <div className="max-h-[30vh] overflow-y-auto section-expand">
                 <PoiList />
               </div>
             )}
@@ -523,8 +535,9 @@ export default function App() {
           {/* Obstacles section — RED accent */}
           <div className="border-l-2 border-red-500/70 bg-red-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-red-500/10 text-red-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-red-500/10 hover:bg-red-500/15 text-red-400"
               onClick={() => toggleSection("obstacles")}
+              title="No-fly zones to avoid during the mission"
             >
               {expandedSections.obstacles ? (
                 <ChevronDown className="h-3 w-3" />
@@ -535,7 +548,7 @@ export default function App() {
               Obstacles ({obstacles.length})
             </button>
             {expandedSections.obstacles && (
-              <div className="max-h-[30vh] overflow-y-auto">
+              <div className="max-h-[30vh] overflow-y-auto section-expand">
                 <ObstacleList />
               </div>
             )}
@@ -544,8 +557,9 @@ export default function App() {
           {/* Mission Settings section — PURPLE accent */}
           <div className="border-l-2 border-purple-500/70 bg-purple-500/[0.03]">
             <button
-              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-purple-500/10 text-purple-400"
+              className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider bg-purple-500/10 hover:bg-purple-500/15 text-purple-400"
               onClick={() => toggleSection("config")}
+              title="Drone model, speed, altitude and flight behavior"
             >
               {expandedSections.config ? (
                 <ChevronDown className="h-3 w-3" />
@@ -556,7 +570,7 @@ export default function App() {
               Mission settings
             </button>
             {expandedSections.config && (
-              <div className="max-h-[40vh] overflow-y-auto">
+              <div className="max-h-[40vh] overflow-y-auto section-expand">
                 <MissionConfig />
               </div>
             )}
@@ -612,64 +626,60 @@ export default function App() {
             })()}
           </div>
           <div className="flex items-center gap-3">
-            {waypoints.length >= 2 && flightStats ? (
-              (() => {
-                const { distance, time } = flightStats;
-                const elevGain = waypoints.reduce((sum, wp, i) => {
-                  if (i === 0) return 0;
-                  const diff = wp.height - waypoints[i - 1].height;
-                  return sum + (diff > 0 ? diff : 0);
-                }, 0);
-                const exceedsBattery = time > config.maxBatteryMinutes * 60;
-                return (
-                  <>
-                    {elevGain > 0 && (
+            {waypoints.length >= 2 && flightStats
+              ? (() => {
+                  const { distance, time } = flightStats;
+                  const elevGain = waypoints.reduce((sum, wp, i) => {
+                    if (i === 0) return 0;
+                    const diff = wp.height - waypoints[i - 1].height;
+                    return sum + (diff > 0 ? diff : 0);
+                  }, 0);
+                  const exceedsBattery = time > config.maxBatteryMinutes * 60;
+                  return (
+                    <>
+                      {elevGain > 0 && (
+                        <span
+                          className="flex items-center gap-1 text-[11px]"
+                          title="Elevation gain"
+                        >
+                          <TrendingUp className="h-3 w-3 text-orange-400" />
+                          <span className="text-orange-300 font-medium">
+                            {elevGain}m
+                          </span>
+                        </span>
+                      )}
                       <span
                         className="flex items-center gap-1 text-[11px]"
-                        title="Elevation gain"
+                        title="Total distance"
                       >
-                        <TrendingUp className="h-3 w-3 text-orange-400" />
-                        <span className="text-orange-300 font-medium">
-                          {elevGain}m
+                        <Route className="h-3 w-3 text-emerald-400" />
+                        <span className="text-emerald-300 font-medium">
+                          {distance >= 1000
+                            ? `${(distance / 1000).toFixed(1)}km`
+                            : `~${distance.toFixed(0)}m`}
                         </span>
                       </span>
-                    )}
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      title="Total distance"
-                    >
-                      <Route className="h-3 w-3 text-emerald-400" />
-                      <span className="text-emerald-300 font-medium">
-                        {distance >= 1000
-                          ? `${(distance / 1000).toFixed(1)}km`
-                          : `~${distance.toFixed(0)}m`}
-                      </span>
-                    </span>
-                    <span
-                      className="flex items-center gap-1 text-[11px]"
-                      title={
-                        exceedsBattery
-                          ? `Exceeds max battery (${config.maxBatteryMinutes}min)`
-                          : "Estimated flight time"
-                      }
-                    >
-                      <Clock
-                        className={`h-3 w-3 ${exceedsBattery ? "text-orange-400" : "text-yellow-400"}`}
-                      />
                       <span
-                        className={`font-medium ${exceedsBattery ? "text-orange-300" : "text-yellow-300"}`}
+                        className="flex items-center gap-1 text-[11px]"
+                        title={
+                          exceedsBattery
+                            ? `Exceeds max battery (${config.maxBatteryMinutes}min)`
+                            : "Estimated flight time"
+                        }
                       >
-                        {formatDuration(time)}
+                        <Clock
+                          className={`h-3 w-3 ${exceedsBattery ? "text-orange-400" : "text-yellow-400"}`}
+                        />
+                        <span
+                          className={`font-medium ${exceedsBattery ? "text-orange-300" : "text-yellow-300"}`}
+                        >
+                          {formatDuration(time)}
+                        </span>
                       </span>
-                    </span>
-                  </>
-                );
-              })()
-            ) : (
-              <span className="text-[10px] text-muted-foreground">
-                Add 2+ waypoints
-              </span>
-            )}
+                    </>
+                  );
+                })()
+              : null}
           </div>
         </div>
 
@@ -727,13 +737,11 @@ export default function App() {
               <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center shrink-0">
                 <User className="h-3 w-3 text-muted-foreground" />
               </div>
-              Sign in to save missions
+              Guest mode. Sign in to save missions
             </Button>
           )}
         </div>
       </div>
-
-      {/* Map */}
       <div className="flex-1 relative">
         <MapView />
         <BulkActionToolbar />

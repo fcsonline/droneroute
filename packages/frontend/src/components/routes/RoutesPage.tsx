@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   MapPin,
   Crosshair,
@@ -158,7 +159,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
       await api.delete(`/missions/${id}`);
       setMissions((prev) => prev.filter((m) => m.id !== id));
     } catch (e: any) {
-      alert("Failed to delete: " + (e.message || "Unknown error"));
+      toast.error("Failed to delete: " + (e.message || "Unknown error"));
     }
   };
 
@@ -191,7 +192,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
         setTimeout(() => setCopiedId(null), 2000);
       }
     } catch (e: any) {
-      alert("Failed to share: " + (e.message || "Unknown error"));
+      toast.error("Failed to share: " + (e.message || "Unknown error"));
     } finally {
       setSharingId(null);
     }
@@ -208,7 +209,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
         ),
       );
     } catch (e: any) {
-      alert("Failed to unshare: " + (e.message || "Unknown error"));
+      toast.error("Failed to unshare: " + (e.message || "Unknown error"));
     }
   };
 
@@ -222,7 +223,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
         : [];
 
       if (waypoints.length < 2) {
-        alert("Need at least 2 waypoints to export");
+        toast.warning("Need at least 2 waypoints to export");
         return;
       }
 
@@ -240,7 +241,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`Export failed: ${err.message}`);
+      toast.error(`Export failed: ${err.message}`);
     } finally {
       setExportingId(null);
     }

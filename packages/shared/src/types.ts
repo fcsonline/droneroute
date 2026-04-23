@@ -314,9 +314,9 @@ export interface PaginatedResponse<T> {
 // ── Default Config ───────────────────────────────────────
 
 export const DEFAULT_MISSION_CONFIG: MissionConfig = {
-  droneEnumValue: 67,
+  droneEnumValue: 77,
   droneSubEnumValue: 0,
-  payloadEnumValue: 52,
+  payloadEnumValue: 66,
   flyToWaylineMode: "safely",
   finishAction: "goHome",
   exitOnRCLost: "executeLostAction",
@@ -335,7 +335,7 @@ export const DEFAULT_WAYPOINT: Omit<
   Waypoint,
   "index" | "name" | "latitude" | "longitude"
 > = {
-  height: 50,
+  height: 30,
   speed: 7,
   useGlobalSpeed: true,
   useGlobalHeight: false,
