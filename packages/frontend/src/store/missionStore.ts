@@ -76,7 +76,7 @@ interface MissionState {
   setIsAddingPoi: (adding: boolean) => void;
   setTemplateMode: (mode: TemplateType | null) => void;
   appendWaypoints: (
-    waypoints: Omit<Waypoint, "index" | "name">[],
+    waypoints: (Omit<Waypoint, "index" | "name"> & { name?: string })[],
     pois?: Omit<PointOfInterest, "id">[],
   ) => void;
 
@@ -509,7 +509,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       const fullWaypoints: Waypoint[] = newWps.map((wp, i) => ({
         ...wp,
         index: startIndex + i,
-        name: `Waypoint ${startIndex + i + 1}`,
+        name: (wp as { name?: string }).name || `Waypoint ${startIndex + i + 1}`,
       }));
 
       const fullPois: PointOfInterest[] = (newPois || []).map((p) => ({

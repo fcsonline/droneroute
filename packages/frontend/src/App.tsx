@@ -328,6 +328,9 @@ export default function App() {
           if (e.metaKey || e.ctrlKey) {
             e.preventDefault();
             selectAllWaypoints();
+          } else {
+            e.preventDefault();
+            setTemplateMode(templateMode === "area" ? null : "area");
           }
           break;
         case "escape":

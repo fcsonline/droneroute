@@ -9,6 +9,7 @@ import {
   PenLine,
   ChevronDown,
   Triangle,
+  Pentagon,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,14 @@ const TEMPLATE_OPTIONS: {
     icon: PenLine,
     description: "Draw a freehand path",
     key: "Z",
+  },
+  {
+    type: "area",
+    label: "Area survey",
+    shortLabel: "Area",
+    icon: Pentagon,
+    description: "Polygon-bounded grid survey",
+    key: "A",
   },
 ];
 
@@ -161,6 +170,8 @@ export function MapToolbar() {
               <Building2 className="h-4 w-4" />
             ) : templateMode === "pencil" ? (
               <PenLine className="h-4 w-4" />
+            ) : templateMode === "area" ? (
+              <Pentagon className="h-4 w-4" />
             ) : (
               <Grid3X3 className="h-4 w-4" />
             )}

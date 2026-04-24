@@ -6,6 +6,7 @@ import {
   Settings,
   ArrowUp,
   Gauge,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -115,6 +116,12 @@ export function WaypointList() {
 
   return (
     <div className="flex flex-col gap-1 p-2">
+      {waypoints.length > 1000 && (
+        <div className="flex items-start gap-1.5 mb-1 px-2 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded text-[11px] text-amber-600 dark:text-amber-400">
+          <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+          <span>Waypoint markers hidden on map ({waypoints.length.toLocaleString()} waypoints). Flight path still shown.</span>
+        </div>
+      )}
       {waypoints.map((wp, i) => {
         const isSelected = selectedWaypointIndices.has(wp.index);
         const isDragging = dragIndex === i;
