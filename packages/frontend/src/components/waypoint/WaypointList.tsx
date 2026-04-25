@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
 import type { SelectionMode } from "@/store/missionStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import { fmtAlt, fmtSpeed } from "@/lib/units";
 import { WaypointEditorInline } from "./WaypointEditor";
 
 export function WaypointList() {
@@ -23,6 +25,8 @@ export function WaypointList() {
     reorderWaypoints,
     updateWaypoint,
   } = useMissionStore();
+
+  const sys = useUnitSystem();
 
   const [expandedEditor, setExpandedEditor] = useState<number | null>(null);
   const [editingName, setEditingName] = useState<number | null>(null);
@@ -186,11 +190,11 @@ export function WaypointList() {
                 <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                   <span className="flex items-center gap-0.5">
                     <ArrowUp className="h-2.5 w-2.5" />
-                    {wp.height}m
+                    {fmtAlt(wp.height, sys)}
                   </span>
                   <span className="flex items-center gap-0.5">
                     <Gauge className="h-2.5 w-2.5" />
-                    {wp.speed}m/s
+                    {fmtSpeed(wp.speed, sys)}
                   </span>
                 </div>
               </div>

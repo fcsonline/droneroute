@@ -128,7 +128,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   selectedObstacleId: null,
   isDrawingObstacle: false,
   drawingVertices: [],
-  isAddingWaypoint: true,
+  isAddingWaypoint: false,
   isAddingPoi: false,
   templateMode: null,
   currentPage: "editor",

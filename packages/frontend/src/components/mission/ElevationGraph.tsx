@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMissionStore } from "@/store/missionStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import { fmtAlt } from "@/lib/units";
 import type { SelectionMode } from "@/store/missionStore";
 
 const GRAPH_HEIGHT = 100;
@@ -18,6 +20,7 @@ const LS_KEY = "elevationChartOpen";
 
 export function ElevationGraph() {
   const waypoints = useMissionStore((s) => s.waypoints);
+  const sys = useUnitSystem();
   const selectedIndices = useMissionStore((s) => s.selectedWaypointIndices);
   const updateWaypoint = useMissionStore((s) => s.updateWaypoint);
   const selectWaypoint = useMissionStore((s) => s.selectWaypoint);
@@ -393,7 +396,7 @@ export function ElevationGraph() {
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    {wp.height}m
+                    {fmtAlt(wp.height, sys)}
                   </text>
                 </g>
               );

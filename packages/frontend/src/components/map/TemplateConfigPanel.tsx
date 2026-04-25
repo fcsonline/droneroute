@@ -11,6 +11,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Check, X, MapPin, AlertTriangle } from "lucide-react";
+import { useUnitSystem } from "@/store/unitsStore";
+import {
+  altUnit,
+  speedUnit,
+  displayAlt,
+  displaySpeed,
+  displayToM,
+  displayToMs,
+  fmtDist,
+  SPEED_MIN,
+  SPEED_MAX,
+  SPEED_STEP,
+} from "@/lib/units";
 import {
   CAMERA_PRESETS,
   computeAreaSurveyMetrics,
@@ -102,6 +115,10 @@ export function TemplateConfigPanel({
         ) ?? null)
       : null;
 
+  const sys = useUnitSystem();
+  const altU = altUnit(sys);
+  const spdU = speedUnit(sys);
+
   // Stop all pointer/keyboard/wheel events from reaching Leaflet (native DOM level)
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -161,34 +178,40 @@ export function TemplateConfigPanel({
       {type === "orbit" && orbitParams && onOrbitChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
-            <Label className="text-[10px]">Radius (m)</Label>
+            <Label className="text-[10px]">Radius ({altU})</Label>
             <Input
               type="number"
-              value={orbitParams.radiusM}
+              value={displayAlt(orbitParams.radiusM, sys)}
               onChange={(e) =>
                 onOrbitChange({
                   ...orbitParams,
-                  radiusM: Math.max(5, parseFloat(e.target.value) || 5),
+                  radiusM: Math.max(
+                    5,
+                    displayToM(parseFloat(e.target.value) || 5, sys),
+                  ),
                 })
               }
-              min={5}
-              step={5}
+              min={sys === "imperial" ? 16 : 5}
+              step={sys === "imperial" ? 10 : 5}
               className="h-7 text-xs"
             />
           </div>
           <div>
-            <Label className="text-[10px]">Altitude (m)</Label>
+            <Label className="text-[10px]">Altitude ({altU})</Label>
             <Input
               type="number"
-              value={orbitParams.altitude}
+              value={displayAlt(orbitParams.altitude, sys)}
               onChange={(e) =>
                 onOrbitChange({
                   ...orbitParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 30),
+                  altitude: Math.max(
+                    5,
+                    displayToM(parseFloat(e.target.value) || 30, sys),
+                  ),
                 })
               }
-              min={5}
-              step={5}
+              min={sys === "imperial" ? 16 : 5}
+              step={sys === "imperial" ? 10 : 5}
               className="h-7 text-xs"
             />
           </div>
@@ -242,34 +265,40 @@ export function TemplateConfigPanel({
       {type === "grid" && gridParams && onGridChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
-            <Label className="text-[10px]">Altitude (m)</Label>
+            <Label className="text-[10px]">Altitude ({altU})</Label>
             <Input
               type="number"
-              value={gridParams.altitude}
+              value={displayAlt(gridParams.altitude, sys)}
               onChange={(e) =>
                 onGridChange({
                   ...gridParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 80),
+                  altitude: Math.max(
+                    5,
+                    displayToM(parseFloat(e.target.value) || 80, sys),
+                  ),
                 })
               }
-              min={5}
-              step={5}
+              min={sys === "imperial" ? 16 : 5}
+              step={sys === "imperial" ? 10 : 5}
               className="h-7 text-xs"
             />
           </div>
           <div>
-            <Label className="text-[10px]">Line spacing (m)</Label>
+            <Label className="text-[10px]">Line spacing ({altU})</Label>
             <Input
               type="number"
-              value={gridParams.spacingM}
+              value={displayAlt(gridParams.spacingM, sys)}
               onChange={(e) =>
                 onGridChange({
                   ...gridParams,
-                  spacingM: Math.max(3, parseFloat(e.target.value) || 30),
+                  spacingM: Math.max(
+                    3,
+                    displayToM(parseFloat(e.target.value) || 30, sys),
+                  ),
                 })
               }
-              min={3}
-              step={5}
+              min={sys === "imperial" ? 10 : 3}
+              step={sys === "imperial" ? 5 : 5}
               className="h-7 text-xs"
             />
           </div>
@@ -324,55 +353,65 @@ export function TemplateConfigPanel({
       {type === "facade" && facadeParams && onFacadeChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
-            <Label className="text-[10px]">Distance from wall (m)</Label>
+            <Label className="text-[10px]">Distance from wall ({altU})</Label>
             <Input
               type="number"
-              value={facadeParams.distanceM}
+              value={displayAlt(facadeParams.distanceM, sys)}
               onChange={(e) =>
                 onFacadeChange({
                   ...facadeParams,
-                  distanceM: Math.max(3, parseFloat(e.target.value) || 20),
+                  distanceM: Math.max(
+                    3,
+                    displayToM(parseFloat(e.target.value) || 20, sys),
+                  ),
                 })
               }
-              min={3}
-              step={5}
+              min={sys === "imperial" ? 10 : 3}
+              step={sys === "imperial" ? 5 : 5}
               className="h-7 text-xs"
             />
           </div>
           <div>
-            <Label className="text-[10px]">Min altitude (m)</Label>
+            <Label className="text-[10px]">Min altitude ({altU})</Label>
             <Input
               type="number"
-              value={facadeParams.minAltitude}
+              value={displayAlt(facadeParams.minAltitude, sys)}
               onChange={(e) => {
-                const val = Math.max(2, parseFloat(e.target.value) || 10);
+                const val = Math.max(
+                  2,
+                  displayToM(parseFloat(e.target.value) || 10, sys),
+                );
                 onFacadeChange({
                   ...facadeParams,
                   minAltitude: val,
                   maxAltitude: Math.max(val + 5, facadeParams.maxAltitude),
                 });
               }}
-              min={2}
-              step={5}
+              min={sys === "imperial" ? 7 : 2}
+              step={sys === "imperial" ? 5 : 5}
               className="h-7 text-xs"
             />
           </div>
           <div>
-            <Label className="text-[10px]">Max altitude (m)</Label>
+            <Label className="text-[10px]">Max altitude ({altU})</Label>
             <Input
               type="number"
-              value={facadeParams.maxAltitude}
+              value={displayAlt(facadeParams.maxAltitude, sys)}
               onChange={(e) =>
                 onFacadeChange({
                   ...facadeParams,
                   maxAltitude: Math.max(
                     facadeParams.minAltitude + 5,
-                    parseFloat(e.target.value) || 30,
+                    displayToM(parseFloat(e.target.value) || 30, sys),
                   ),
                 })
               }
-              min={facadeParams.minAltitude + 5}
-              step={5}
+              min={
+                sys === "imperial"
+                  ? displayAlt(facadeParams.minAltitude + 5, sys)
+                  : facadeParams.minAltitude + 5
+              }
+              step={sys === "imperial" ? 5 : 5}
               className="h-7 text-xs"
             />
           </div>
@@ -456,38 +495,44 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Altitude (m)</Label>
+            <Label className="text-[10px]">Altitude ({altU})</Label>
             <Input
               type="number"
-              value={pencilParams.altitude}
+              value={displayAlt(pencilParams.altitude, sys)}
               onChange={(e) =>
                 onPencilChange({
                   ...pencilParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 30),
+                  altitude: Math.max(
+                    5,
+                    displayToM(parseFloat(e.target.value) || 30, sys),
+                  ),
                 })
               }
-              min={5}
-              step={5}
+              min={sys === "imperial" ? 16 : 5}
+              step={sys === "imperial" ? 10 : 5}
               className="h-7 text-xs"
             />
           </div>
           <div>
-            <Label className="text-[10px]">Speed (m/s)</Label>
+            <Label className="text-[10px]">Speed ({spdU})</Label>
             <Input
               type="number"
-              value={pencilParams.speed}
+              value={displaySpeed(pencilParams.speed, sys)}
               onChange={(e) =>
                 onPencilChange({
                   ...pencilParams,
                   speed: Math.max(
                     1,
-                    Math.min(15, parseFloat(e.target.value) || 7),
+                    Math.min(
+                      15,
+                      displayToMs(parseFloat(e.target.value) || 7, sys),
+                    ),
                   ),
                 })
               }
-              min={1}
-              max={15}
-              step={0.5}
+              min={SPEED_MIN(sys)}
+              max={SPEED_MAX(sys)}
+              step={SPEED_STEP(sys)}
               className="h-7 text-xs"
             />
           </div>
@@ -590,40 +635,46 @@ export function TemplateConfigPanel({
             <div className="grid grid-cols-2 gap-2">
               {/* Altitude */}
               <div>
-                <Label className="text-[10px]">Altitude (m)</Label>
+                <Label className="text-[10px]">Altitude ({altU})</Label>
                 <Input
                   type="number"
-                  value={areaSurveyParams.altitude}
+                  value={displayAlt(areaSurveyParams.altitude, sys)}
                   onChange={(e) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      altitude: Math.max(5, parseFloat(e.target.value) || 80),
+                      altitude: Math.max(
+                        5,
+                        displayToM(parseFloat(e.target.value) || 80, sys),
+                      ),
                     })
                   }
-                  min={5}
-                  step={5}
+                  min={sys === "imperial" ? 16 : 5}
+                  step={sys === "imperial" ? 10 : 5}
                   className="h-7 text-xs"
                 />
               </div>
 
               {/* Speed */}
               <div>
-                <Label className="text-[10px]">Speed (m/s)</Label>
+                <Label className="text-[10px]">Speed ({spdU})</Label>
                 <Input
                   type="number"
-                  value={areaSurveyParams.speedMs}
+                  value={displaySpeed(areaSurveyParams.speedMs, sys)}
                   onChange={(e) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
                       speedMs: Math.max(
                         1,
-                        Math.min(15, parseFloat(e.target.value) || 7),
+                        Math.min(
+                          15,
+                          displayToMs(parseFloat(e.target.value) || 7, sys),
+                        ),
                       ),
                     })
                   }
-                  min={1}
-                  max={15}
-                  step={0.5}
+                  min={SPEED_MIN(sys)}
+                  max={SPEED_MAX(sys)}
+                  step={SPEED_STEP(sys)}
                   className="h-7 text-xs"
                 />
               </div>
@@ -668,18 +719,21 @@ export function TemplateConfigPanel({
 
               {/* Boundary margin */}
               <div>
-                <Label className="text-[10px]">Boundary margin (m)</Label>
+                <Label className="text-[10px]">Boundary margin ({altU})</Label>
                 <Input
                   type="number"
-                  value={areaSurveyParams.marginM}
+                  value={displayAlt(areaSurveyParams.marginM, sys)}
                   onChange={(e) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      marginM: Math.max(0, parseFloat(e.target.value) || 0),
+                      marginM: Math.max(
+                        0,
+                        displayToM(parseFloat(e.target.value) || 0, sys),
+                      ),
                     })
                   }
                   min={0}
-                  step={5}
+                  step={sys === "imperial" ? 5 : 5}
                   className="h-7 text-xs"
                 />
               </div>
@@ -847,7 +901,7 @@ export function TemplateConfigPanel({
                     Line spacing
                   </div>
                   <div className="text-xs font-mono">
-                    {areaSurveyMetrics.lineSpacingM.toFixed(1)} m
+                    {fmtDist(areaSurveyMetrics.lineSpacingM, sys)}
                   </div>
                 </div>
                 <div className="text-center">
@@ -855,7 +909,7 @@ export function TemplateConfigPanel({
                     Photo interval
                   </div>
                   <div className="text-xs font-mono">
-                    {areaSurveyMetrics.photoIntervalM.toFixed(1)} m
+                    {fmtDist(areaSurveyMetrics.photoIntervalM, sys)}
                   </div>
                 </div>
                 <div className="text-center">
