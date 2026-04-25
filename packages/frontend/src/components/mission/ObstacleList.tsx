@@ -3,7 +3,9 @@ import { Triangle, X, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useMissionStore } from "@/store/missionStore";
-import { polygonArea, formatArea } from "@/lib/geo";
+import { useUnitSystem } from "@/store/unitsStore";
+import { polygonArea } from "@/lib/geo";
+import { fmtArea } from "@/lib/units";
 
 export function ObstacleList() {
   const {
@@ -13,6 +15,7 @@ export function ObstacleList() {
     removeObstacle,
     updateObstacle,
   } = useMissionStore();
+  const sys = useUnitSystem();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [expandedEditor, setExpandedEditor] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -92,7 +95,7 @@ export function ObstacleList() {
                 )}
                 <div className="text-[10px] text-muted-foreground">
                   {obstacle.vertices.length} vertices &middot;{" "}
-                  {formatArea(polygonArea(obstacle.vertices))}
+                  {fmtArea(polygonArea(obstacle.vertices), sys)}
                 </div>
               </div>
               <Button

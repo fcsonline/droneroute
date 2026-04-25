@@ -19,6 +19,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import { fmtAlt } from "@/lib/units";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
 import type {
@@ -108,6 +110,7 @@ interface RoutesPageProps {
 export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
   const { loadMission, setCurrentPage } = useMissionStore();
   const { token } = useAuthStore();
+  const unitSys = useUnitSystem();
   const [missions, setMissions] = useState<SavedMission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -496,7 +499,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                           {maxAlt > 0 && (
                             <span className="flex items-center gap-1">
                               <ArrowUp className="h-3 w-3 text-sky-400" />
-                              {maxAlt}m
+                              {fmtAlt(maxAlt, unitSys)}
                             </span>
                           )}
                         </div>

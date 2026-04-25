@@ -1,6 +1,8 @@
 import { Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import { fmtAlt } from "@/lib/units";
 import type { PointOfInterest } from "@droneroute/shared";
 import { useMemo, useEffect, useState } from "react";
 
@@ -42,6 +44,7 @@ function createPoiIcon(
 }
 
 export function PoiMarker({ poi }: PoiMarkerProps) {
+  const sys = useUnitSystem();
   const {
     selectedPoiId,
     selectPoi,
@@ -108,7 +111,7 @@ export function PoiMarker({ poi }: PoiMarkerProps) {
         <div className="text-xs">
           <strong>{poi.name}</strong>
           <br />
-          Height: {poi.height}m
+          Height: {fmtAlt(poi.height, sys)}
           {ctrlReady && (
             <>
               <br />
