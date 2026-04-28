@@ -780,13 +780,18 @@ function haversine(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Estimate total distance (m) and flight time (s) using per-segment speeds
+// Minimum camera interval assumed for takePhoto actions (seconds)
+const PHOTO_INTERVAL_S = 1.0;
+
+// Estimate total distance (m) and flight time (s) using per-segment speeds.
+// Adds a per-photo dwell for takePhoto actions to match real-world timing.
 function estimateFlightStats(
   waypoints: {
     latitude: number;
     longitude: number;
     speed: number;
     useGlobalSpeed: boolean;
+    actions: { actionType: string }[];
   }[],
   globalSpeed: number,
 ): { distance: number; time: number } {
@@ -805,6 +810,12 @@ function estimateFlightStats(
     distance += segDist;
     time += speed > 0 ? segDist / speed : 0;
   }
+  // Add minimum camera interval for each takePhoto action
+  const photoCount = waypoints.reduce(
+    (n, wp) => n + wp.actions.filter((a) => a.actionType === "takePhoto").length,
+    0,
+  );
+  time += photoCount * PHOTO_INTERVAL_S;
   return { distance, time };
 }
 

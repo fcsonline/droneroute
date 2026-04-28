@@ -165,6 +165,10 @@ export function buildTemplateKml(mission: Mission): string {
         }
       }
 
+      const turnMode = wp.useGlobalTurnParam
+        ? c.globalTurnMode
+        : wp.turnMode || c.globalTurnMode;
+
       return `
       <Placemark>
         <Point>
@@ -178,6 +182,10 @@ export function buildTemplateKml(mission: Mission): string {
         ${!wp.useGlobalSpeed ? `<wpml:waypointSpeed>${wp.speed}</wpml:waypointSpeed>` : ""}
         <wpml:useGlobalHeadingParam>${wp.useGlobalHeadingParam ? 1 : 0}</wpml:useGlobalHeadingParam>
         <wpml:useGlobalTurnParam>${wp.useGlobalTurnParam ? 1 : 0}</wpml:useGlobalTurnParam>
+        <wpml:waypointTurnParam>
+          <wpml:waypointTurnMode>${turnMode}</wpml:waypointTurnMode>
+          <wpml:waypointTurnDampingDist>${wp.turnDampingDist ?? 0}</wpml:waypointTurnDampingDist>
+        </wpml:waypointTurnParam>
         <wpml:gimbalPitchAngle>${wp.gimbalPitchAngle}</wpml:gimbalPitchAngle>${headingOverrideXml}${actionGroupXml}
       </Placemark>`;
     })
