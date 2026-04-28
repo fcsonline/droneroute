@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Shield,
@@ -53,7 +54,7 @@ export function AdminPage() {
       await action();
       await loadUsers();
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setActionLoading(null);
     }

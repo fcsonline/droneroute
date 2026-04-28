@@ -19,6 +19,21 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import {
+  altUnit,
+  speedUnit,
+  displayAlt,
+  displaySpeed,
+  displayToM,
+  displayToMs,
+  ALT_MIN,
+  WP_ALT_MAX,
+  ALT_STEP,
+  SPEED_MIN,
+  SPEED_MAX,
+  SPEED_STEP,
+} from "@/lib/units";
 import type { HeadingMode, TurnMode, Waypoint } from "@droneroute/shared";
 
 /**
@@ -47,6 +62,7 @@ export function BulkActionToolbar() {
     updateSelectedWaypoints,
   } = useMissionStore();
 
+  const sys = useUnitSystem();
   const [showEditor, setShowEditor] = useState(false);
 
   const count = selectedWaypointIndices.size;
@@ -66,7 +82,7 @@ export function BulkActionToolbar() {
     });
   };
 
-  // Common values for bulk editor
+  // Common values for bulk editor (in metric)
   const commonHeight = getCommonValue(
     waypoints,
     selectedWaypointIndices,
@@ -77,6 +93,11 @@ export function BulkActionToolbar() {
     selectedWaypointIndices,
     "speed",
   );
+  // Displayed common values (converted to user units)
+  const commonHeightDisplay =
+    commonHeight !== undefined ? displayAlt(commonHeight, sys) : undefined;
+  const commonSpeedDisplay =
+    commonSpeed !== undefined ? displaySpeed(commonSpeed, sys) : undefined;
   const commonGimbal = getCommonValue(
     waypoints,
     selectedWaypointIndices,
@@ -133,8 +154,8 @@ export function BulkActionToolbar() {
 
           <div className="h-4 w-px bg-border" />
 
-          {/* Point to POI */}
-          {pois.length > 0 && (
+          {/* Point to POI (hidden when editor is open — use heading mode there instead) */}
+          {pois.length > 0 && !showEditor && (
             <Select onValueChange={handleAssignPoi}>
               <SelectTrigger className="h-7 w-auto gap-1.5 text-xs border-0 bg-transparent hover:bg-secondary px-2">
                 <Crosshair className="h-3 w-3" />
@@ -197,27 +218,34 @@ export function BulkActionToolbar() {
               <div>
                 <Label className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <ArrowUp className="h-2.5 w-2.5" />
-                  Altitude (m)
+                  Altitude ({altUnit(sys)})
                 </Label>
                 <Input
                   type="number"
                   placeholder={
-                    commonHeight !== undefined ? String(commonHeight) : "Mixed"
+                    commonHeightDisplay !== undefined
+                      ? String(commonHeightDisplay)
+                      : "Mixed"
                   }
-                  defaultValue={commonHeight !== undefined ? commonHeight : ""}
-                  key={`h-${commonHeight}`}
+                  defaultValue={
+                    commonHeightDisplay !== undefined ? commonHeightDisplay : ""
+                  }
+                  key={`h-${commonHeightDisplay}-${sys}`}
                   onBlur={(e) => {
                     const v = parseFloat(e.target.value);
-                    if (!isNaN(v)) updateSelectedWaypoints({ height: v });
+                    if (!isNaN(v))
+                      updateSelectedWaypoints({ height: displayToM(v, sys) });
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const v = parseFloat(e.currentTarget.value);
-                      if (!isNaN(v)) updateSelectedWaypoints({ height: v });
+                      if (!isNaN(v))
+                        updateSelectedWaypoints({ height: displayToM(v, sys) });
                     }
                   }}
-                  min={1}
-                  max={500}
+                  min={ALT_MIN(sys)}
+                  max={WP_ALT_MAX(sys)}
+                  step={ALT_STEP(sys)}
                   className="h-7 text-xs mt-0.5"
                 />
               </div>
@@ -226,20 +254,24 @@ export function BulkActionToolbar() {
               <div>
                 <Label className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <Gauge className="h-2.5 w-2.5" />
-                  Speed (m/s)
+                  Speed ({speedUnit(sys)})
                 </Label>
                 <Input
                   type="number"
                   placeholder={
-                    commonSpeed !== undefined ? String(commonSpeed) : "Mixed"
+                    commonSpeedDisplay !== undefined
+                      ? String(commonSpeedDisplay)
+                      : "Mixed"
                   }
-                  defaultValue={commonSpeed !== undefined ? commonSpeed : ""}
-                  key={`s-${commonSpeed}`}
+                  defaultValue={
+                    commonSpeedDisplay !== undefined ? commonSpeedDisplay : ""
+                  }
+                  key={`s-${commonSpeedDisplay}-${sys}`}
                   onBlur={(e) => {
                     const v = parseFloat(e.target.value);
                     if (!isNaN(v))
                       updateSelectedWaypoints({
-                        speed: v,
+                        speed: displayToMs(v, sys),
                         useGlobalSpeed: false,
                       });
                   }}
@@ -248,14 +280,14 @@ export function BulkActionToolbar() {
                       const v = parseFloat(e.currentTarget.value);
                       if (!isNaN(v))
                         updateSelectedWaypoints({
-                          speed: v,
+                          speed: displayToMs(v, sys),
                           useGlobalSpeed: false,
                         });
                     }
                   }}
-                  min={1}
-                  max={15}
-                  step={0.5}
+                  min={SPEED_MIN(sys)}
+                  max={SPEED_MAX(sys)}
+                  step={SPEED_STEP(sys)}
                   className="h-7 text-xs mt-0.5"
                 />
               </div>

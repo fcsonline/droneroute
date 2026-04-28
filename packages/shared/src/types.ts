@@ -171,6 +171,12 @@ export const DRONE_MODELS: DroneModel[] = [
     payloads: [{ label: "M3M Camera", payloadEnumValue: 68 }],
   },
   {
+    label: "DJI Mavic 3TA",
+    droneEnumValue: 77,
+    droneSubEnumValue: 3,
+    payloads: [{ label: "M3TA Camera", payloadEnumValue: 129 }],
+  },
+  {
     label: "DJI M350 RTK",
     droneEnumValue: 89,
     droneSubEnumValue: 0,
@@ -194,6 +200,27 @@ export const DRONE_MODELS: DroneModel[] = [
     droneEnumValue: 91,
     droneSubEnumValue: 1,
     payloads: [{ label: "M3TD Camera", payloadEnumValue: 81 }],
+  },
+  {
+    label: "DJI Matrice 4E",
+    droneEnumValue: 99,
+    droneSubEnumValue: 0,
+    payloads: [{ label: "M4E Camera", payloadEnumValue: 88 }],
+  },
+  {
+    label: "DJI Matrice 4T",
+    droneEnumValue: 99,
+    droneSubEnumValue: 1,
+    payloads: [{ label: "M4T Camera", payloadEnumValue: 89 }],
+  },
+  {
+    label: "DJI Matrice 400",
+    droneEnumValue: 103,
+    droneSubEnumValue: 0,
+    payloads: [
+      { label: "H30", payloadEnumValue: 82 },
+      { label: "H30T", payloadEnumValue: 83 },
+    ],
   },
   {
     label: "DJI Mini 4 Pro",
@@ -314,9 +341,9 @@ export interface PaginatedResponse<T> {
 // ── Default Config ───────────────────────────────────────
 
 export const DEFAULT_MISSION_CONFIG: MissionConfig = {
-  droneEnumValue: 67,
+  droneEnumValue: 77,
   droneSubEnumValue: 0,
-  payloadEnumValue: 52,
+  payloadEnumValue: 66,
   flyToWaylineMode: "safely",
   finishAction: "goHome",
   exitOnRCLost: "executeLostAction",
@@ -335,7 +362,7 @@ export const DEFAULT_WAYPOINT: Omit<
   Waypoint,
   "index" | "name" | "latitude" | "longitude"
 > = {
-  height: 50,
+  height: 30,
   speed: 7,
   useGlobalSpeed: true,
   useGlobalHeight: false,

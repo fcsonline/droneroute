@@ -1,6 +1,7 @@
 import {
   MapContainer,
   TileLayer,
+  LayersControl,
   useMapEvents,
   useMap,
   Polyline,
@@ -14,6 +15,7 @@ import { MapToolbar } from "./MapToolbar";
 import { TemplateDrawHandler } from "./TemplateDrawHandler";
 import { PencilDrawHandler } from "./PencilDrawHandler";
 import { ObstacleDrawHandler } from "./ObstacleDrawHandler";
+import { AreaDrawHandler } from "./AreaDrawHandler";
 import { ObstaclePolygon } from "./ObstaclePolygon";
 import { useEffect, useRef, useMemo } from "react";
 import "leaflet/dist/leaflet.css";
@@ -206,15 +208,17 @@ export function MapView() {
   const cursorClass =
     templateMode === "pencil"
       ? "map-tool-pencil"
-      : templateMode
-        ? "map-tool-template"
-        : isDrawingObstacle
-          ? "map-tool-obstacle"
-          : isAddingWaypoint
-            ? "map-tool-waypoint"
-            : isAddingPoi
-              ? "map-tool-poi"
-              : "";
+      : templateMode === "area"
+        ? "map-tool-obstacle"
+        : templateMode
+          ? "map-tool-template"
+          : isDrawingObstacle
+            ? "map-tool-obstacle"
+            : isAddingWaypoint
+              ? "map-tool-waypoint"
+              : isAddingPoi
+                ? "map-tool-poi"
+                : "";
 
   return (
     <div className={`relative h-full w-full ${cursorClass}`}>
@@ -224,10 +228,20 @@ export function MapView() {
         className="h-full w-full z-0"
         zoomControl={false}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <LayersControl position="bottomleft">
+          <LayersControl.BaseLayer checked name="Street">
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Satellite">
+            <TileLayer
+              attribution='&copy; <a href="https://www.esri.com">Esri</a>'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
         <MapClickHandler />
         <ExposeMapInstance />
         <FitBoundsOnLoad />
@@ -236,10 +250,11 @@ export function MapView() {
         <TemplateDrawHandler />
         <PencilDrawHandler />
         <ObstacleDrawHandler />
+        <AreaDrawHandler />
         {obstacles.map((obstacle) => (
           <ObstaclePolygon key={obstacle.id} obstacle={obstacle} />
         ))}
-        {waypoints.map((wp) => (
+        {waypoints.length <= 1000 && waypoints.map((wp) => (
           <WaypointMarker key={wp.index} waypoint={wp} />
         ))}
         {pois.map((poi) => (

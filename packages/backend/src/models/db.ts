@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import { mkdirSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -10,8 +11,7 @@ let db: Database.Database;
 
 export function getDb(): Database.Database {
   if (!db) {
-    const dir = path.dirname(DB_PATH);
-    import("fs").then((fs) => fs.mkdirSync(dir, { recursive: true }));
+    mkdirSync(path.dirname(DB_PATH), { recursive: true });
     db = new Database(DB_PATH);
     db.pragma("journal_mode = WAL");
   }

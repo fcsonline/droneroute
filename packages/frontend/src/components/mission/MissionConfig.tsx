@@ -1,4 +1,6 @@
 import { useMissionStore } from "@/store/missionStore";
+import { useUnitsStore, useUnitSystem } from "@/store/unitsStore";
+import type { UnitSystem } from "@/lib/units";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,15 +13,30 @@ import {
 import { DRONE_MODELS } from "@droneroute/shared";
 import type {
   HeadingMode,
-  TurnMode,
   FinishAction,
   RCLostAction,
   HeightMode,
   FlyToWaylineMode,
 } from "@droneroute/shared";
+import {
+  altUnit,
+  speedUnit,
+  displayAlt,
+  displaySpeed,
+  displayToM,
+  displayToMs,
+  ALT_MIN,
+  ALT_MAX,
+  ALT_STEP,
+  SPEED_MIN,
+  SPEED_MAX,
+  SPEED_STEP,
+} from "@/lib/units";
 
 export function MissionConfig() {
   const { config, setConfig } = useMissionStore();
+  const { globalSystem, setGlobalSystem } = useUnitsStore();
+  const sys = useUnitSystem();
 
   const selectedDrone = DRONE_MODELS.find(
     (d) =>
@@ -89,31 +106,40 @@ export function MissionConfig() {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label className="text-xs">Flight speed (m/s)</Label>
+          <Label className="text-xs">Flight speed ({speedUnit(sys)})</Label>
           <Input
             type="number"
-            value={config.autoFlightSpeed}
+            value={displaySpeed(config.autoFlightSpeed, sys)}
             onChange={(e) =>
-              setConfig({ autoFlightSpeed: parseFloat(e.target.value) || 1 })
+              setConfig({
+                autoFlightSpeed: displayToMs(
+                  parseFloat(e.target.value) || SPEED_MIN(sys),
+                  sys,
+                ),
+              })
             }
-            min={1}
-            max={15}
-            step={0.5}
+            min={SPEED_MIN(sys)}
+            max={SPEED_MAX(sys)}
+            step={SPEED_STEP(sys)}
             className="h-8 text-xs"
           />
         </div>
         <div>
-          <Label className="text-xs">Takeoff height (m)</Label>
+          <Label className="text-xs">Takeoff height ({altUnit(sys)})</Label>
           <Input
             type="number"
-            value={config.takeOffSecurityHeight}
+            value={displayAlt(config.takeOffSecurityHeight, sys)}
             onChange={(e) =>
               setConfig({
-                takeOffSecurityHeight: parseFloat(e.target.value) || 1.2,
+                takeOffSecurityHeight: displayToM(
+                  parseFloat(e.target.value) || ALT_MIN(sys),
+                  sys,
+                ),
               })
             }
-            min={1.2}
-            max={1500}
+            min={ALT_MIN(sys)}
+            max={ALT_MAX(sys)}
+            step={ALT_STEP(sys)}
             className="h-8 text-xs"
           />
         </div>
@@ -152,7 +178,6 @@ export function MissionConfig() {
             <SelectItem value="relativeToStartPoint">
               Relative to start
             </SelectItem>
-            <SelectItem value="EGM96">EGM96 (MSL)</SelectItem>
             <SelectItem value="aboveGroundLevel">Above ground level</SelectItem>
           </SelectContent>
         </Select>
@@ -237,22 +262,51 @@ export function MissionConfig() {
       </div>
 
       <div>
-        <Label className="text-xs">Transit speed (m/s)</Label>
+        <Label className="text-xs">Transit speed ({speedUnit(sys)})</Label>
         <Input
           type="number"
-          value={config.globalTransitionalSpeed}
+          value={displaySpeed(config.globalTransitionalSpeed, sys)}
           onChange={(e) =>
             setConfig({
-              globalTransitionalSpeed: parseFloat(e.target.value) || 1,
+              globalTransitionalSpeed: displayToMs(
+                parseFloat(e.target.value) || SPEED_MIN(sys),
+                sys,
+              ),
             })
           }
-          min={1}
-          max={15}
-          step={0.5}
+          min={SPEED_MIN(sys)}
+          max={SPEED_MAX(sys)}
+          step={SPEED_STEP(sys)}
           className="h-8 text-xs"
         />
         <div className="text-[10px] text-muted-foreground mt-0.5">
           Speed to fly to first waypoint
+        </div>
+      </div>
+
+      {/* Unit system */}
+      <div>
+        <Label className="text-xs">Unit system</Label>
+        <div className="flex gap-1.5 mt-1">
+          {(
+            [
+              { value: "metric", label: "Metric (m, m/s)" },
+              { value: "imperial", label: "Imperial (ft, mph)" },
+            ] as { value: UnitSystem; label: string }[]
+          ).map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setGlobalSystem(value)}
+              className={`flex-1 h-7 rounded border text-[11px] font-medium transition-colors ${
+                globalSystem === value
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
     </div>

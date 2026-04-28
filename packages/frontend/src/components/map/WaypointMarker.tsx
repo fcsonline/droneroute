@@ -1,6 +1,8 @@
 import { Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { useMissionStore } from "@/store/missionStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import { fmtAlt, fmtSpeed } from "@/lib/units";
 import type { SelectionMode } from "@/store/missionStore";
 import type { Waypoint } from "@droneroute/shared";
 import { useMemo } from "react";
@@ -134,6 +136,7 @@ function createWaypointIcon(
 export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
   const { selectedWaypointIndices, selectWaypoint, moveWaypoint } =
     useMissionStore();
+  const sys = useUnitSystem();
   const isSelected = selectedWaypointIndices.has(waypoint.index);
 
   const icon = useMemo(
@@ -176,7 +179,8 @@ export function WaypointMarker({ waypoint }: WaypointMarkerProps) {
         <div className="text-xs">
           <strong>{waypoint.name}</strong>
           <br />
-          Alt: {waypoint.height}m | Speed: {waypoint.speed}m/s
+          Alt: {fmtAlt(waypoint.height, sys)} | Speed:{" "}
+          {fmtSpeed(waypoint.speed, sys)}
           <br />
           Gimbal: {waypoint.gimbalPitchAngle}&deg;
           {waypoint.actions.length > 0 && (

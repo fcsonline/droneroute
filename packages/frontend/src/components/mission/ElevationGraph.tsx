@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMissionStore } from "@/store/missionStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import { fmtAlt } from "@/lib/units";
 import type { SelectionMode } from "@/store/missionStore";
 
 const GRAPH_HEIGHT = 100;
@@ -18,6 +20,7 @@ const LS_KEY = "elevationChartOpen";
 
 export function ElevationGraph() {
   const waypoints = useMissionStore((s) => s.waypoints);
+  const sys = useUnitSystem();
   const selectedIndices = useMissionStore((s) => s.selectedWaypointIndices);
   const updateWaypoint = useMissionStore((s) => s.updateWaypoint);
   const selectWaypoint = useMissionStore((s) => s.selectWaypoint);
@@ -170,7 +173,31 @@ export function ElevationGraph() {
     didDrag.current = false;
   }, []);
 
-  if (waypoints.length === 0) return null;
+  if (waypoints.length === 0) {
+    return (
+      <div
+        ref={containerRef}
+        className="border-t border-border bg-background/50"
+      >
+        <button
+          className="flex items-center gap-2 w-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40 transition-colors"
+          onClick={toggleExpanded}
+        >
+          {expanded ? (
+            <ChevronDown className="h-3 w-3" />
+          ) : (
+            <ChevronRight className="h-3 w-3" />
+          )}
+          Elevation chart
+        </button>
+        {expanded && (
+          <div className="px-3 py-4 text-[10px] text-muted-foreground text-center">
+            Add waypoints to see elevation profile
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // Compute edge-to-edge line segments between circles
   const edgeSegments: { x1: number; y1: number; x2: number; y2: number }[] = [];
@@ -299,7 +326,7 @@ export function ElevationGraph() {
 
               return (
                 <g key={wp.index}>
-                  {/* Invisible larger hit area */}
+                  <title>Drag to adjust altitude</title>
                   <circle
                     cx={cx}
                     cy={cy}
@@ -369,7 +396,7 @@ export function ElevationGraph() {
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    {wp.height}m
+                    {fmtAlt(wp.height, sys)}
                   </text>
                 </g>
               );

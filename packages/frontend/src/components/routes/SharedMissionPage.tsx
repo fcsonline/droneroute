@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import {
   MapPin,
   Crosshair,
@@ -23,6 +24,8 @@ import L from "leaflet";
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import { fmtAlt } from "@/lib/units";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
 import { getObstacleWarnings } from "@/lib/geo";
@@ -276,6 +279,7 @@ export function SharedMissionPage({
 }: SharedMissionPageProps) {
   const { loadMission, setCurrentPage } = useMissionStore();
   const { token } = useAuthStore();
+  const unitSys = useUnitSystem();
   const [mission, setMission] = useState<SharedMissionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -333,7 +337,7 @@ export function SharedMissionPage({
       window.history.pushState({}, "", "/");
       setCurrentPage("editor");
     } catch (e: any) {
-      alert("Clone failed: " + (e.message || "Unknown error"));
+      toast.error("Clone failed: " + (e.message || "Unknown error"));
     } finally {
       setCloning(false);
     }
@@ -355,7 +359,7 @@ export function SharedMissionPage({
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(`Export failed: ${err.message}`);
+      toast.error(`Export failed: ${err.message}`);
     }
   };
 
@@ -522,7 +526,7 @@ export function SharedMissionPage({
                               Max altitude
                             </div>
                             <div className="text-sm font-medium text-foreground">
-                              {maxAlt} m
+                              {fmtAlt(maxAlt, unitSys)}
                             </div>
                           </div>
                         )}

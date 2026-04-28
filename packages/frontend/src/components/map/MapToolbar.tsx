@@ -159,6 +159,8 @@ export function MapToolbar() {
               <Building2 className="h-4 w-4" />
             ) : templateMode === "pencil" ? (
               <PenLine className="h-4 w-4" />
+            ) : templateMode === "area" ? (
+              <Pentagon className="h-4 w-4" />
             ) : (
               <Pentagon className="h-4 w-4" />
             )}
