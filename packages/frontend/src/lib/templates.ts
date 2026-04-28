@@ -72,7 +72,7 @@ function haversine(
 
 // ── Template Types ───────────────────────────────────────
 
-export type TemplateType = "orbit" | "grid" | "facade" | "pencil";
+export type TemplateType = "orbit" | "grid" | "facade" | "pencil" | "area";
 
 export interface OrbitParams {
   center: [number, number]; // [lat, lng]

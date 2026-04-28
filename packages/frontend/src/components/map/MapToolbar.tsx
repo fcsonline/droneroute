@@ -4,11 +4,11 @@ import {
   Trash2,
   Crosshair,
   Orbit,
-  Grid3X3,
   Building2,
   PenLine,
   ChevronDown,
   Triangle,
+  Pentagon,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -36,14 +36,6 @@ const TEMPLATE_OPTIONS: {
     key: "O",
   },
   {
-    type: "grid",
-    label: "Grid survey",
-    shortLabel: "Grid",
-    icon: Grid3X3,
-    description: "Lawn-mower scan area",
-    key: "G",
-  },
-  {
     type: "facade",
     label: "Facade scan",
     shortLabel: "Facade",
@@ -58,6 +50,14 @@ const TEMPLATE_OPTIONS: {
     icon: PenLine,
     description: "Draw a freehand path",
     key: "Z",
+  },
+  {
+    type: "area",
+    label: "Survey",
+    shortLabel: "Survey",
+    icon: Pentagon,
+    description: "Polygon-bounded grid survey",
+    key: "A",
   },
 ];
 
@@ -155,14 +155,12 @@ export function MapToolbar() {
           <span className="flex items-center gap-1.5">
             {templateMode === "orbit" ? (
               <Orbit className="h-4 w-4" />
-            ) : templateMode === "grid" ? (
-              <Grid3X3 className="h-4 w-4" />
             ) : templateMode === "facade" ? (
               <Building2 className="h-4 w-4" />
             ) : templateMode === "pencil" ? (
               <PenLine className="h-4 w-4" />
             ) : (
-              <Grid3X3 className="h-4 w-4" />
+              <Pentagon className="h-4 w-4" />
             )}
             <span className="text-xs">
               {templateMode
