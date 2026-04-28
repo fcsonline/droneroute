@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Users/Atown/Downloads/kmz_extract/hilton_contents/**)"
-    ]
-  }
-}
