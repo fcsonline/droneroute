@@ -42,8 +42,10 @@ import { AboutDialog } from "@/components/AboutDialog";
 import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
+import { useUnitSystem } from "@/store/unitsStore";
 import { api } from "@/lib/api";
 import { getObstacleWarnings } from "@/lib/geo";
+import { fmtDist, fmtAlt } from "@/lib/units";
 
 type SidebarSection = "waypoints" | "pois" | "obstacles" | "config";
 
@@ -82,6 +84,7 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { token, email: userEmail, logout, restore, isAdmin } = useAuthStore();
+  const unitSys = useUnitSystem();
   const [gravatarUrl, setGravatarUrl] = useState<string | null>(null);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
 
@@ -328,6 +331,9 @@ export default function App() {
           if (e.metaKey || e.ctrlKey) {
             e.preventDefault();
             selectAllWaypoints();
+          } else {
+            e.preventDefault();
+            setTemplateMode(templateMode === "area" ? null : "area");
           }
           break;
         case "escape":
@@ -644,7 +650,7 @@ export default function App() {
                         >
                           <TrendingUp className="h-3 w-3 text-orange-400" />
                           <span className="text-orange-300 font-medium">
-                            {elevGain}m
+                            {fmtAlt(elevGain, unitSys)}
                           </span>
                         </span>
                       )}
@@ -654,9 +660,7 @@ export default function App() {
                       >
                         <Route className="h-3 w-3 text-emerald-400" />
                         <span className="text-emerald-300 font-medium">
-                          {distance >= 1000
-                            ? `${(distance / 1000).toFixed(1)}km`
-                            : `~${distance.toFixed(0)}m`}
+                          {fmtDist(distance, unitSys)}
                         </span>
                       </span>
                       <span
@@ -776,13 +780,18 @@ function haversine(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Estimate total distance (m) and flight time (s) using per-segment speeds
+// Minimum camera interval assumed for takePhoto actions (seconds)
+const PHOTO_INTERVAL_S = 1.0;
+
+// Estimate total distance (m) and flight time (s) using per-segment speeds.
+// Adds a per-photo dwell for takePhoto actions to match real-world timing.
 function estimateFlightStats(
   waypoints: {
     latitude: number;
     longitude: number;
     speed: number;
     useGlobalSpeed: boolean;
+    actions: { actionType: string }[];
   }[],
   globalSpeed: number,
 ): { distance: number; time: number } {
@@ -801,6 +810,12 @@ function estimateFlightStats(
     distance += segDist;
     time += speed > 0 ? segDist / speed : 0;
   }
+  // Add minimum camera interval for each takePhoto action
+  const photoCount = waypoints.reduce(
+    (n, wp) => n + wp.actions.filter((a) => a.actionType === "takePhoto").length,
+    0,
+  );
+  time += photoCount * PHOTO_INTERVAL_S;
   return { distance, time };
 }
 

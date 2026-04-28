@@ -3,12 +3,21 @@ import { Crosshair, X, Settings, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
+import { useUnitSystem } from "@/store/unitsStore";
+import {
+  altUnit,
+  fmtAlt,
+  displayAlt,
+  displayToM,
+  ALT_MIN,
+  ALT_STEP,
+} from "@/lib/units";
 
 export function PoiList() {
   const { pois, selectedPoiId, selectPoi, removePoi, updatePoi } =
     useMissionStore();
+  const sys = useUnitSystem();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [expandedEditor, setExpandedEditor] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -88,7 +97,7 @@ export function PoiList() {
                 )}
                 <div className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                   <ArrowUp className="h-2.5 w-2.5" />
-                  {poi.height}m
+                  {fmtAlt(poi.height, sys)}
                 </div>
               </div>
               <Button
@@ -122,15 +131,20 @@ export function PoiList() {
             {isEditorOpen && (
               <div className="ml-4 mr-1 mt-1 mb-2 border-l-2 border-amber-400/30 bg-amber-500/5 rounded-r-md p-3 space-y-2">
                 <div>
-                  <Label className="text-xs">Height (m)</Label>
+                  <Label className="text-xs">Height ({altUnit(sys)})</Label>
                   <Input
                     type="number"
-                    value={poi.height}
+                    value={displayAlt(poi.height, sys)}
                     onChange={(e) =>
                       updatePoi(poi.id, {
-                        height: parseFloat(e.target.value) || 0,
+                        height: displayToM(
+                          parseFloat(e.target.value) || 0,
+                          sys,
+                        ),
                       })
                     }
+                    min={ALT_MIN(sys)}
+                    step={ALT_STEP(sys)}
                     className="h-7 text-xs"
                   />
                 </div>

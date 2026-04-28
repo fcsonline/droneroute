@@ -77,7 +77,13 @@ export function TemplateDrawHandler() {
 
   useMapEvents({
     mousedown(e) {
-      if (!templateMode || templateMode === "pencil" || confirmed) return;
+      if (
+        !templateMode ||
+        templateMode === "pencil" ||
+        templateMode === "area" ||
+        confirmed
+      )
+        return;
       // Prevent map drag
       e.originalEvent.preventDefault();
       e.target.dragging?.disable();
@@ -181,7 +187,8 @@ export function TemplateDrawHandler() {
     return null;
   }, [dragging, dragState, templateMode]);
 
-  if (!templateMode || templateMode === "pencil") return null;
+  if (!templateMode || templateMode === "pencil" || templateMode === "area")
+    return null;
 
   const handleApply = () => {
     if (preview) {

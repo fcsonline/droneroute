@@ -217,12 +217,3 @@ export function polygonArea(vertices: [number, number][]): number {
 
   return Math.abs(area / 2);
 }
-
-/**
- * Format an area value as a human-readable string.
- */
-export function formatArea(areaM2: number): string {
-  if (areaM2 >= 1_000_000) return `${(areaM2 / 1_000_000).toFixed(2)} km²`;
-  if (areaM2 >= 10_000) return `${(areaM2 / 10_000).toFixed(2)} ha`;
-  return `${Math.round(areaM2)} m²`;
-}
