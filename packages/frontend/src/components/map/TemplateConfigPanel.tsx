@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,52 @@ interface TemplateConfigPanelProps {
   selectedObliquePaths?: Set<keyof ObliqueSurveyResult>;
   obliquePathLabels?: Record<keyof ObliqueSurveyResult, string>;
   onObliquePathToggle?: (path: keyof ObliqueSurveyResult) => void;
+}
+
+function NumericInput({
+  value,
+  onCommit,
+  fallback,
+  min,
+  max,
+  step,
+  className,
+  readOnly,
+}: {
+  value: number | string;
+  onCommit: (n: number) => void;
+  fallback: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  className?: string;
+  readOnly?: boolean;
+}) {
+  const [str, setStr] = useState(String(value));
+  const focused = useRef(false);
+
+  useEffect(() => {
+    if (!focused.current) setStr(String(value));
+  }, [value]);
+
+  return (
+    <Input
+      type="number"
+      value={str}
+      onChange={(e) => setStr(e.target.value)}
+      onFocus={() => { focused.current = true; }}
+      onBlur={() => {
+        focused.current = false;
+        const n = parseFloat(str);
+        onCommit(isNaN(n) ? fallback : n);
+      }}
+      min={min}
+      max={max}
+      step={step}
+      className={className}
+      readOnly={readOnly}
+    />
+  );
 }
 
 export function TemplateConfigPanel({
@@ -179,16 +225,13 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Radius ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(orbitParams.radiusM, sys)}
-              onChange={(e) =>
+              fallback={5}
+              onCommit={(n) =>
                 onOrbitChange({
                   ...orbitParams,
-                  radiusM: Math.max(
-                    5,
-                    displayToM(parseFloat(e.target.value) || 5, sys),
-                  ),
+                  radiusM: Math.max(5, displayToM(n, sys)),
                 })
               }
               min={sys === "imperial" ? 16 : 5}
@@ -198,16 +241,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Altitude ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(orbitParams.altitude, sys)}
-              onChange={(e) =>
+              fallback={30}
+              onCommit={(n) =>
                 onOrbitChange({
                   ...orbitParams,
-                  altitude: Math.max(
-                    5,
-                    displayToM(parseFloat(e.target.value) || 30, sys),
-                  ),
+                  altitude: Math.max(5, displayToM(n, sys)),
                 })
               }
               min={sys === "imperial" ? 16 : 5}
@@ -217,16 +257,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Points</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={orbitParams.numPoints}
-              onChange={(e) =>
+              fallback={12}
+              onCommit={(n) =>
                 onOrbitChange({
                   ...orbitParams,
-                  numPoints: Math.max(
-                    3,
-                    Math.min(72, parseInt(e.target.value) || 12),
-                  ),
+                  numPoints: Math.max(3, Math.min(72, Math.round(n))),
                 })
               }
               min={3}
@@ -266,16 +303,13 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Altitude ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(gridParams.altitude, sys)}
-              onChange={(e) =>
+              fallback={80}
+              onCommit={(n) =>
                 onGridChange({
                   ...gridParams,
-                  altitude: Math.max(
-                    5,
-                    displayToM(parseFloat(e.target.value) || 80, sys),
-                  ),
+                  altitude: Math.max(5, displayToM(n, sys)),
                 })
               }
               min={sys === "imperial" ? 16 : 5}
@@ -285,16 +319,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Line spacing ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(gridParams.spacingM, sys)}
-              onChange={(e) =>
+              fallback={30}
+              onCommit={(n) =>
                 onGridChange({
                   ...gridParams,
-                  spacingM: Math.max(
-                    3,
-                    displayToM(parseFloat(e.target.value) || 30, sys),
-                  ),
+                  spacingM: Math.max(3, displayToM(n, sys)),
                 })
               }
               min={sys === "imperial" ? 10 : 3}
@@ -304,16 +335,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Rotation (°)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={gridParams.rotationDeg}
-              onChange={(e) =>
+              fallback={0}
+              onCommit={(n) =>
                 onGridChange({
                   ...gridParams,
-                  rotationDeg: Math.max(
-                    -180,
-                    Math.min(180, parseFloat(e.target.value) || 0),
-                  ),
+                  rotationDeg: Math.max(-180, Math.min(180, n)),
                 })
               }
               min={-180}
@@ -354,16 +382,13 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Distance from wall ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(facadeParams.distanceM, sys)}
-              onChange={(e) =>
+              fallback={20}
+              onCommit={(n) =>
                 onFacadeChange({
                   ...facadeParams,
-                  distanceM: Math.max(
-                    3,
-                    displayToM(parseFloat(e.target.value) || 20, sys),
-                  ),
+                  distanceM: Math.max(3, displayToM(n, sys)),
                 })
               }
               min={sys === "imperial" ? 10 : 3}
@@ -373,14 +398,11 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Min altitude ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(facadeParams.minAltitude, sys)}
-              onChange={(e) => {
-                const val = Math.max(
-                  2,
-                  displayToM(parseFloat(e.target.value) || 10, sys),
-                );
+              fallback={10}
+              onCommit={(n) => {
+                const val = Math.max(2, displayToM(n, sys));
                 onFacadeChange({
                   ...facadeParams,
                   minAltitude: val,
@@ -394,15 +416,15 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Max altitude ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(facadeParams.maxAltitude, sys)}
-              onChange={(e) =>
+              fallback={30}
+              onCommit={(n) =>
                 onFacadeChange({
                   ...facadeParams,
                   maxAltitude: Math.max(
                     facadeParams.minAltitude + 5,
-                    displayToM(parseFloat(e.target.value) || 30, sys),
+                    displayToM(n, sys),
                   ),
                 })
               }
@@ -417,16 +439,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Rows</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={facadeParams.numRows}
-              onChange={(e) =>
+              fallback={4}
+              onCommit={(n) =>
                 onFacadeChange({
                   ...facadeParams,
-                  numRows: Math.max(
-                    1,
-                    Math.min(20, parseInt(e.target.value) || 4),
-                  ),
+                  numRows: Math.max(1, Math.min(20, Math.round(n))),
                 })
               }
               min={1}
@@ -436,16 +455,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Columns</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={facadeParams.numColumns}
-              onChange={(e) =>
+              fallback={8}
+              onCommit={(n) =>
                 onFacadeChange({
                   ...facadeParams,
-                  numColumns: Math.max(
-                    2,
-                    Math.min(30, parseInt(e.target.value) || 8),
-                  ),
+                  numColumns: Math.max(2, Math.min(30, Math.round(n))),
                 })
               }
               min={2}
@@ -477,16 +493,13 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Waypoints</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={pencilParams.numPoints}
-              onChange={(e) =>
+              fallback={10}
+              onCommit={(n) =>
                 onPencilChange({
                   ...pencilParams,
-                  numPoints: Math.max(
-                    2,
-                    Math.min(200, parseInt(e.target.value) || 10),
-                  ),
+                  numPoints: Math.max(2, Math.min(200, Math.round(n))),
                 })
               }
               min={2}
@@ -496,16 +509,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Altitude ({altU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displayAlt(pencilParams.altitude, sys)}
-              onChange={(e) =>
+              fallback={30}
+              onCommit={(n) =>
                 onPencilChange({
                   ...pencilParams,
-                  altitude: Math.max(
-                    5,
-                    displayToM(parseFloat(e.target.value) || 30, sys),
-                  ),
+                  altitude: Math.max(5, displayToM(n, sys)),
                 })
               }
               min={sys === "imperial" ? 16 : 5}
@@ -515,19 +525,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Speed ({spdU})</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={displaySpeed(pencilParams.speed, sys)}
-              onChange={(e) =>
+              fallback={7}
+              onCommit={(n) =>
                 onPencilChange({
                   ...pencilParams,
-                  speed: Math.max(
-                    1,
-                    Math.min(
-                      15,
-                      displayToMs(parseFloat(e.target.value) || 7, sys),
-                    ),
-                  ),
+                  speed: Math.max(1, Math.min(15, displayToMs(n, sys))),
                 })
               }
               min={SPEED_MIN(sys)}
@@ -538,16 +542,13 @@ export function TemplateConfigPanel({
           </div>
           <div>
             <Label className="text-[10px]">Gimbal pitch (°)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={pencilParams.gimbalPitchAngle}
-              onChange={(e) =>
+              fallback={-45}
+              onCommit={(n) =>
                 onPencilChange({
                   ...pencilParams,
-                  gimbalPitchAngle: Math.max(
-                    -90,
-                    Math.min(45, parseFloat(e.target.value) || -45),
-                  ),
+                  gimbalPitchAngle: Math.max(-90, Math.min(45, n)),
                 })
               }
               min={-90}
@@ -636,16 +637,13 @@ export function TemplateConfigPanel({
               {/* Altitude */}
               <div>
                 <Label className="text-[10px]">Altitude ({altU})</Label>
-                <Input
-                  type="number"
+                <NumericInput
                   value={displayAlt(areaSurveyParams.altitude, sys)}
-                  onChange={(e) =>
+                  fallback={80}
+                  onCommit={(n) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      altitude: Math.max(
-                        5,
-                        displayToM(parseFloat(e.target.value) || 80, sys),
-                      ),
+                      altitude: Math.max(5, displayToM(n, sys)),
                     })
                   }
                   min={sys === "imperial" ? 16 : 5}
@@ -657,19 +655,13 @@ export function TemplateConfigPanel({
               {/* Speed */}
               <div>
                 <Label className="text-[10px]">Speed ({spdU})</Label>
-                <Input
-                  type="number"
+                <NumericInput
                   value={displaySpeed(areaSurveyParams.speedMs, sys)}
-                  onChange={(e) =>
+                  fallback={7}
+                  onCommit={(n) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      speedMs: Math.max(
-                        1,
-                        Math.min(
-                          15,
-                          displayToMs(parseFloat(e.target.value) || 7, sys),
-                        ),
-                      ),
+                      speedMs: Math.max(1, Math.min(15, displayToMs(n, sys))),
                     })
                   }
                   min={SPEED_MIN(sys)}
@@ -697,16 +689,13 @@ export function TemplateConfigPanel({
                     auto
                   </button>
                 </div>
-                <Input
-                  type="number"
+                <NumericInput
                   value={Math.round(displayedRotation)}
-                  onChange={(e) =>
+                  fallback={0}
+                  onCommit={(n) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      rotationDeg: Math.max(
-                        -180,
-                        Math.min(180, parseFloat(e.target.value) || 0),
-                      ),
+                      rotationDeg: Math.max(-180, Math.min(180, n)),
                     })
                   }
                   min={-180}
@@ -720,16 +709,13 @@ export function TemplateConfigPanel({
               {/* Boundary margin */}
               <div>
                 <Label className="text-[10px]">Boundary margin ({altU})</Label>
-                <Input
-                  type="number"
+                <NumericInput
                   value={displayAlt(areaSurveyParams.marginM, sys)}
-                  onChange={(e) =>
+                  fallback={0}
+                  onCommit={(n) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      marginM: Math.max(
-                        0,
-                        displayToM(parseFloat(e.target.value) || 0, sys),
-                      ),
+                      marginM: Math.max(0, displayToM(n, sys)),
                     })
                   }
                   min={0}
@@ -741,15 +727,13 @@ export function TemplateConfigPanel({
               {/* Front overlap */}
               <div>
                 <Label className="text-[10px]">Front overlap (%)</Label>
-                <Input
-                  type="number"
+                <NumericInput
                   value={Math.round(areaSurveyParams.frontOverlap * 100)}
-                  onChange={(e) =>
+                  fallback={80}
+                  onCommit={(n) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      frontOverlap:
-                        Math.max(5, Math.min(95, parseInt(e.target.value) || 80)) /
-                        100,
+                      frontOverlap: Math.max(5, Math.min(95, Math.round(n))) / 100,
                     })
                   }
                   min={5}
@@ -762,15 +746,13 @@ export function TemplateConfigPanel({
               {/* Side overlap */}
               <div>
                 <Label className="text-[10px]">Side overlap (%)</Label>
-                <Input
-                  type="number"
+                <NumericInput
                   value={Math.round(areaSurveyParams.sideOverlap * 100)}
-                  onChange={(e) =>
+                  fallback={70}
+                  onCommit={(n) =>
                     onAreaSurveyChange({
                       ...areaSurveyParams,
-                      sideOverlap:
-                        Math.max(5, Math.min(95, parseInt(e.target.value) || 70)) /
-                        100,
+                      sideOverlap: Math.max(5, Math.min(95, Math.round(n))) / 100,
                     })
                   }
                   min={5}
@@ -784,13 +766,13 @@ export function TemplateConfigPanel({
               {areaSurveyParams.oblique && (
                 <div className="col-span-2">
                   <Label className="text-[10px]">Oblique pitch (°)</Label>
-                  <Input
-                    type="number"
+                  <NumericInput
                     value={obliquePitch}
-                    onChange={(e) =>
+                    fallback={-45}
+                    onCommit={(n) =>
                       onAreaSurveyChange({
                         ...areaSurveyParams,
-                        obliquePitch: parseFloat(e.target.value) || -45,
+                        obliquePitch: n,
                       })
                     }
                     step={5}
