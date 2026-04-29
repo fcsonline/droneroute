@@ -20,7 +20,7 @@ const upload = multer({
 });
 
 // Generate and download KMZ from mission data (POST body)
-kmzRoutes.post("/generate", authMiddleware, async (req: AuthRequest, res) => {
+kmzRoutes.post("/generate", optionalAuth, async (req: AuthRequest, res) => {
   try {
     const { name, config, waypoints, pois } = req.body;
     if (!config || !waypoints || waypoints.length < 2) {
