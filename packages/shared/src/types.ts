@@ -127,6 +127,8 @@ export const DRONE_MODELS: DroneModel[] = [
       { label: "H20", payloadEnumValue: 42 },
       { label: "H20T", payloadEnumValue: 43 },
       { label: "H20N", payloadEnumValue: 61 },
+      { label: "H30", payloadEnumValue: 82 },
+      { label: "H30T", payloadEnumValue: 83 },
       { label: "PSDK", payloadEnumValue: 65534 },
     ],
   },

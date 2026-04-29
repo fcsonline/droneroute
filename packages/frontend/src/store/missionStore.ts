@@ -114,11 +114,34 @@ interface MissionState {
   setDirty: (dirty: boolean) => void;
 }
 
+const DRONE_LS_KEY = "droneroute_drone_model";
+
+function loadStoredDrone(): Pick<
+  MissionConfig,
+  "droneEnumValue" | "droneSubEnumValue" | "payloadEnumValue"
+> | null {
+  try {
+    const raw = localStorage.getItem(DRONE_LS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      typeof parsed.droneEnumValue === "number" &&
+      typeof parsed.droneSubEnumValue === "number" &&
+      typeof parsed.payloadEnumValue === "number"
+    ) {
+      return parsed;
+    }
+  } catch {
+    // ignore malformed data
+  }
+  return null;
+}
+
 export const useMissionStore = create<MissionState>((set, get) => ({
   missionId: null,
   missionName: "New Mission",
   dirty: false,
-  config: { ...DEFAULT_MISSION_CONFIG },
+  config: { ...DEFAULT_MISSION_CONFIG, ...(loadStoredDrone() ?? {}) },
   waypoints: [],
   selectedWaypointIndices: new Set<number>(),
   lastSelectedWaypointIndex: null,
@@ -139,11 +162,28 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   setMissionName: (name) => set({ missionName: name, dirty: true }),
   setMissionId: (id) => set({ missionId: id }),
 
-  setConfig: (updates) =>
+  setConfig: (updates) => {
+    if (
+      updates.droneEnumValue !== undefined ||
+      updates.droneSubEnumValue !== undefined ||
+      updates.payloadEnumValue !== undefined
+    ) {
+      const current = get().config;
+      localStorage.setItem(
+        DRONE_LS_KEY,
+        JSON.stringify({
+          droneEnumValue: updates.droneEnumValue ?? current.droneEnumValue,
+          droneSubEnumValue:
+            updates.droneSubEnumValue ?? current.droneSubEnumValue,
+          payloadEnumValue: updates.payloadEnumValue ?? current.payloadEnumValue,
+        }),
+      );
+    }
     set((state) => ({
       config: { ...state.config, ...updates },
       dirty: true,
-    })),
+    }));
+  },
 
   addWaypoint: (lat, lng) =>
     set((state) => {
