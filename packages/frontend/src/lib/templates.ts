@@ -91,8 +91,23 @@ export const CAMERA_PRESETS = {
     imageHeightPx: 6048,
   },
   mavic3e: {
-    // TODO: verify sensor specs against DJI Mavic 3E spec sheet — values estimated from 4/3" CMOS
     label: "DJI Mavic 3E",
+    sensorWidthMm: 17.3,
+    sensorHeightMm: 13.0,
+    focalLengthMm: 12.29,
+    imageWidthPx: 5280,
+    imageHeightPx: 3956,
+  },
+  mavic3d: {
+    label: "DJI Mavic 3D",
+    sensorWidthMm: 17.3,
+    sensorHeightMm: 13.0,
+    focalLengthMm: 12.29,
+    imageWidthPx: 5280,
+    imageHeightPx: 3956,
+  },
+  mavic3m: {
+    label: "DJI Mavic 3M",
     sensorWidthMm: 17.3,
     sensorHeightMm: 13.0,
     focalLengthMm: 12.29,
@@ -108,9 +123,118 @@ export const CAMERA_PRESETS = {
     imageWidthPx: 8000,
     imageHeightPx: 6000,
   },
+  h20: {
+    label: "DJI H20",
+    sensorWidthMm: 6.17,
+    sensorHeightMm: 4.55,
+    focalLengthMm: 4.5,
+    imageWidthPx: 4056,
+    imageHeightPx: 3040,
+  },
+  h30: {
+    label: "DJI H30",
+    sensorWidthMm: 9.6,
+    sensorHeightMm: 7.2,
+    focalLengthMm: 6.72,
+    imageWidthPx: 8064,
+    imageHeightPx: 6048,
+  },
+  mini4pro: {
+    label: "DJI Mini 4 Pro",
+    sensorWidthMm: 9.6,
+    sensorHeightMm: 7.2,
+    focalLengthMm: 6.72,
+    imageWidthPx: 8064,
+    imageHeightPx: 6048,
+  },
 } satisfies Record<string, CameraProfile>;
 
 export type CameraPresetKey = keyof typeof CAMERA_PRESETS;
+
+// Maps (droneEnumValue-droneSubEnumValue-payloadEnumValue) → camera preset key.
+// Drones sharing the same wide optical sensor share a preset (e.g. M30T → "m30").
+// PSDK and purely thermal payloads are omitted — no defined sensor geometry.
+const DRONE_PAYLOAD_TO_PRESET: Partial<Record<string, CameraPresetKey>> = {
+  // DJI M300 RTK
+  "60-0-42": "h20",
+  "60-0-43": "h20",  // H20T wide = H20 wide
+  "60-0-61": "h20",  // H20N wide family
+  "60-0-82": "h30",
+  "60-0-83": "h30",  // H30T wide = H30 wide
+  // DJI M30
+  "67-0-52": "m30",
+  // DJI M30T (same wide sensor as M30)
+  "67-1-53": "m30",
+  // DJI M30 (Dock)
+  "68-0-52": "m30",
+  "68-0-53": "m30",
+  // DJI Mavic 3E
+  "77-0-66": "mavic3e",
+  // DJI Mavic 3T (same 4/3" wide as Mavic 3E)
+  "77-1-67": "mavic3e",
+  // DJI Mavic 3M (4/3" wide/RGB camera)
+  "77-2-68": "mavic3m",
+  // DJI Mavic 3TA (same 4/3" wide as Mavic 3E)
+  "77-3-129": "mavic3e",
+  // DJI M350 RTK
+  "89-0-42": "h20",
+  "89-0-43": "h20",
+  "89-0-61": "h20",
+  "89-0-82": "h30",
+  "89-0-83": "h30",
+  // DJI Mavic 3D
+  "91-0-80": "mavic3d",
+  // DJI Mavic 3TD (same 4/3" wide as Mavic 3D)
+  "91-1-81": "mavic3d",
+  // DJI Matrice 4E
+  "99-0-88": "m4e",
+  // DJI Matrice 4T (same wide sensor as Matrice 4E)
+  "99-1-89": "m4e",
+  // DJI Matrice 400
+  "103-0-82": "h30",
+  "103-0-83": "h30",
+  // DJI Mini 4 Pro
+  "100-0-100": "mini4pro",
+};
+
+export function getCameraPresetForDrone(
+  droneEnumValue: number,
+  droneSubEnumValue: number,
+  payloadEnumValue: number,
+): CameraPresetKey | null {
+  return (
+    DRONE_PAYLOAD_TO_PRESET[
+      `${droneEnumValue}-${droneSubEnumValue}-${payloadEnumValue}`
+    ] ?? null
+  );
+}
+
+/** Returns the drone/payload config for the first drone that maps to the given preset.
+ *  Returns null when the current drone already maps to that preset (no change needed). */
+export function getDroneForCameraPreset(
+  presetKey: CameraPresetKey,
+  currentDroneEnumValue?: number,
+  currentDroneSubEnumValue?: number,
+  currentPayloadEnumValue?: number,
+): { droneEnumValue: number; droneSubEnumValue: number; payloadEnumValue: number } | null {
+  if (
+    currentDroneEnumValue !== undefined &&
+    currentDroneSubEnumValue !== undefined &&
+    currentPayloadEnumValue !== undefined &&
+    DRONE_PAYLOAD_TO_PRESET[
+      `${currentDroneEnumValue}-${currentDroneSubEnumValue}-${currentPayloadEnumValue}`
+    ] === presetKey
+  ) {
+    return null;
+  }
+  for (const [key, pk] of Object.entries(DRONE_PAYLOAD_TO_PRESET)) {
+    if (pk === presetKey) {
+      const [d, s, p] = key.split("-").map(Number);
+      return { droneEnumValue: d, droneSubEnumValue: s, payloadEnumValue: p };
+    }
+  }
+  return null;
+}
 
 // ── Template Types ───────────────────────────────────────
 

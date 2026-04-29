@@ -6,7 +6,11 @@ import { TemplatePreview } from "./TemplatePreview";
 import {
   generateAreaSurvey,
   DEFAULT_AREA_SURVEY_PARAMS,
+  CAMERA_PRESETS,
+  getCameraPresetForDrone,
+  getDroneForCameraPreset,
   type AreaSurveyParams,
+  type CameraPresetKey,
   type ObliqueSurveyResult,
 } from "@/lib/templates";
 
@@ -14,6 +18,8 @@ export function AreaDrawHandler() {
   const templateMode = useMissionStore((s) => s.templateMode);
   const setTemplateMode = useMissionStore((s) => s.setTemplateMode);
   const appendWaypoints = useMissionStore((s) => s.appendWaypoints);
+  const config = useMissionStore((s) => s.config);
+  const setConfig = useMissionStore((s) => s.setConfig);
 
   const [vertices, setVertices] = useState<[number, number][]>([]);
   const [confirmed, setConfirmed] = useState(false);
@@ -47,13 +53,56 @@ export function AreaDrawHandler() {
     return () => window.removeEventListener("keydown", handler);
   }, [templateMode, resetState, setTemplateMode]);
 
+  // Sync drone selection → survey camera whenever the mission config drone/payload changes.
+  useEffect(() => {
+    if (!areaSurveyParams) return;
+    const presetKey = getCameraPresetForDrone(
+      config.droneEnumValue,
+      config.droneSubEnumValue,
+      config.payloadEnumValue,
+    );
+    if (!presetKey) return;
+    const newCamera = CAMERA_PRESETS[presetKey];
+    if (newCamera.label !== areaSurveyParams.camera.label) {
+      setAreaSurveyParams((prev) => (prev ? { ...prev, camera: newCamera } : prev));
+    }
+  }, [config.droneEnumValue, config.droneSubEnumValue, config.payloadEnumValue]);
+
+  // Wraps setAreaSurveyParams: when the camera changes, syncs the mission config drone to match.
+  const handleAreaSurveyChange = useCallback(
+    (params: AreaSurveyParams) => {
+      if (areaSurveyParams && params.camera.label !== areaSurveyParams.camera.label) {
+        const presetKey = (Object.keys(CAMERA_PRESETS) as CameraPresetKey[]).find(
+          (k) => CAMERA_PRESETS[k].label === params.camera.label,
+        );
+        if (presetKey) {
+          const droneConfig = getDroneForCameraPreset(
+            presetKey,
+            config.droneEnumValue,
+            config.droneSubEnumValue,
+            config.payloadEnumValue,
+          );
+          if (droneConfig) setConfig(droneConfig);
+        }
+      }
+      setAreaSurveyParams(params);
+    },
+    [areaSurveyParams, config, setConfig],
+  );
+
   const closePolygon = useCallback(
     (verts: [number, number][]) => {
       if (verts.length < 3) return;
       setConfirmed(true);
-      setAreaSurveyParams({ ...DEFAULT_AREA_SURVEY_PARAMS, vertices: verts });
+      const presetKey = getCameraPresetForDrone(
+        config.droneEnumValue,
+        config.droneSubEnumValue,
+        config.payloadEnumValue,
+      );
+      const camera = presetKey ? CAMERA_PRESETS[presetKey] : DEFAULT_AREA_SURVEY_PARAMS.camera;
+      setAreaSurveyParams({ ...DEFAULT_AREA_SURVEY_PARAMS, vertices: verts, camera });
     },
-    [],
+    [config.droneEnumValue, config.droneSubEnumValue, config.payloadEnumValue],
   );
 
   useMapEvents({
@@ -218,7 +267,7 @@ export function AreaDrawHandler() {
         <TemplateConfigPanel
           type="area"
           areaSurveyParams={areaSurveyParams}
-          onAreaSurveyChange={setAreaSurveyParams}
+          onAreaSurveyChange={handleAreaSurveyChange}
           onApply={handleApply}
           onCancel={handleCancel}
           waypointCount={
