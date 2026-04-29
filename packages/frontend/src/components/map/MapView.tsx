@@ -44,6 +44,24 @@ function MapClickHandler() {
   return null;
 }
 
+/** On first load, pan to the user's location if geolocation is available. */
+function GeolocationOnLoad() {
+  const map = useMap();
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+      },
+      () => {
+        // Permission denied or unavailable — keep the default center
+      },
+      { timeout: 8000 },
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 /** Expose the Leaflet map instance on the container for external automation. */
 function ExposeMapInstance() {
   const map = useMap();
@@ -243,6 +261,7 @@ export function MapView() {
           </LayersControl.BaseLayer>
         </LayersControl>
         <MapClickHandler />
+        <GeolocationOnLoad />
         <ExposeMapInstance />
         <FitBoundsOnLoad />
         <FlightPath />
