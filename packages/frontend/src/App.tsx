@@ -42,6 +42,7 @@ import { AboutDialog } from "@/components/AboutDialog";
 import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
+import { useConfigStore } from "@/store/configStore";
 import { api } from "@/lib/api";
 import { getObstacleWarnings } from "@/lib/geo";
 
@@ -82,6 +83,7 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { token, email: userEmail, logout, restore, isAdmin } = useAuthStore();
+  const { selfHosted } = useConfigStore();
   const [gravatarUrl, setGravatarUrl] = useState<string | null>(null);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
 
@@ -417,7 +419,7 @@ export default function App() {
               >
                 <FolderOpen className="h-4 w-4" />
               </Button>
-              {isAdmin && (
+              {!selfHosted && isAdmin && (
                 <Button
                   variant="ghost"
                   size="icon"
