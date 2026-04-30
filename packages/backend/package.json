@@ -15,6 +15,7 @@
     "better-sqlite3": "^12.9.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.4.1",
     "fast-xml-parser": "^5.7.1",
     "google-auth-library": "^10.6.2",
     "jsonwebtoken": "^9.0.2",

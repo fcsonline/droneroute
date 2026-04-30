@@ -11,6 +11,7 @@ import {
   optionalAuth,
   type AuthRequest,
 } from "../middleware/auth.js";
+import { strictLimiter } from "../middleware/rateLimit.js";
 
 export const kmzRoutes = Router();
 
@@ -20,38 +21,46 @@ const upload = multer({
 });
 
 // Generate and download KMZ from mission data (POST body)
-kmzRoutes.post("/generate", optionalAuth, async (req: AuthRequest, res) => {
-  try {
-    const { name, config, waypoints, pois } = req.body;
-    if (!config || !waypoints || waypoints.length < 2) {
-      res
-        .status(400)
-        .json({ error: "At least 2 waypoints and a config are required" });
-      return;
+kmzRoutes.post(
+  "/generate",
+  strictLimiter,
+  optionalAuth,
+  async (req: AuthRequest, res) => {
+    try {
+      const { name, config, waypoints, pois } = req.body;
+      if (!config || !waypoints || waypoints.length < 2) {
+        res
+          .status(400)
+          .json({ error: "At least 2 waypoints and a config are required" });
+        return;
+      }
+
+      const mission: Mission = {
+        id: uuidv4(),
+        name: name || "mission",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        config,
+        waypoints,
+        pois: pois || [],
+        obstacles: [],
+      };
+
+      const buffer = await generateKmzBuffer(mission);
+
+      const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
+      res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+      res.send(buffer);
+    } catch (err: any) {
+      console.error("KMZ download error:", err);
+      res.status(500).json({ error: "Failed to generate KMZ" });
     }
-
-    const mission: Mission = {
-      id: uuidv4(),
-      name: name || "mission",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      config,
-      waypoints,
-      pois: pois || [],
-      obstacles: [],
-    };
-
-    const buffer = await generateKmzBuffer(mission);
-
-    const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
-    res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.send(buffer);
-  } catch (err: any) {
-    console.error("KMZ download error:", err);
-    res.status(500).json({ error: "Failed to generate KMZ" });
-  }
-});
+  },
+);
 
 // Download KMZ for a saved mission
 kmzRoutes.get(

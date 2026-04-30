@@ -8,6 +8,7 @@ import { kmzRoutes } from "./routes/kmz.js";
 import { authRoutes } from "./routes/auth.js";
 import { sharedRoutes } from "./routes/shared.js";
 import { adminRoutes } from "./routes/admin.js";
+import { globalLimiter } from "./middleware/rateLimit.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,7 @@ app.use(
   ),
 );
 app.use(express.json({ limit: "50mb" }));
+app.use(globalLimiter);
 
 // Serve frontend static files in production
 const frontendDist = path.join(__dirname, "../../frontend/dist");
