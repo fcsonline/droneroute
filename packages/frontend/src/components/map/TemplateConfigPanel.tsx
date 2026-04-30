@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
+import { NumericInput } from "@/components/ui/numeric-input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,52 +122,35 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Radius (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={orbitParams.radiusM}
-              onChange={(e) =>
-                onOrbitChange({
-                  ...orbitParams,
-                  radiusM: Math.max(5, parseFloat(e.target.value) || 5),
-                })
-              }
+              onChange={(v) => onOrbitChange({ ...orbitParams, radiusM: v })}
               min={5}
               step={5}
+              fallback={5}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Altitude (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={orbitParams.altitude}
-              onChange={(e) =>
-                onOrbitChange({
-                  ...orbitParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 30),
-                })
-              }
+              onChange={(v) => onOrbitChange({ ...orbitParams, altitude: v })}
               min={5}
               step={5}
+              fallback={30}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Points</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={orbitParams.numPoints}
-              onChange={(e) =>
-                onOrbitChange({
-                  ...orbitParams,
-                  numPoints: Math.max(
-                    3,
-                    Math.min(72, parseInt(e.target.value) || 12),
-                  ),
-                })
-              }
+              onChange={(v) => onOrbitChange({ ...orbitParams, numPoints: v })}
               min={3}
               max={72}
+              fallback={12}
+              integer
               className="h-7 text-xs"
             />
           </div>
@@ -203,53 +186,35 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Altitude (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={gridParams.altitude}
-              onChange={(e) =>
-                onGridChange({
-                  ...gridParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 80),
-                })
-              }
+              onChange={(v) => onGridChange({ ...gridParams, altitude: v })}
               min={5}
               step={5}
+              fallback={80}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Line spacing (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={gridParams.spacingM}
-              onChange={(e) =>
-                onGridChange({
-                  ...gridParams,
-                  spacingM: Math.max(3, parseFloat(e.target.value) || 30),
-                })
-              }
+              onChange={(v) => onGridChange({ ...gridParams, spacingM: v })}
               min={3}
               step={5}
+              fallback={30}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Rotation (°)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={gridParams.rotationDeg}
-              onChange={(e) =>
-                onGridChange({
-                  ...gridParams,
-                  rotationDeg: Math.max(
-                    -180,
-                    Math.min(180, parseFloat(e.target.value) || 0),
-                  ),
-                })
-              }
+              onChange={(v) => onGridChange({ ...gridParams, rotationDeg: v })}
               min={-180}
               max={180}
               step={5}
+              fallback={0}
               className="h-7 text-xs"
             />
           </div>
@@ -285,92 +250,73 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Distance from wall (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={facadeParams.distanceM}
-              onChange={(e) =>
-                onFacadeChange({
-                  ...facadeParams,
-                  distanceM: Math.max(3, parseFloat(e.target.value) || 20),
-                })
+              onChange={(v) =>
+                onFacadeChange({ ...facadeParams, distanceM: v })
               }
               min={3}
               step={5}
+              fallback={20}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Min altitude (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={facadeParams.minAltitude}
-              onChange={(e) => {
-                const val = Math.max(2, parseFloat(e.target.value) || 10);
+              onChange={(v) => {
                 onFacadeChange({
                   ...facadeParams,
-                  minAltitude: val,
-                  maxAltitude: Math.max(val + 5, facadeParams.maxAltitude),
+                  minAltitude: v,
+                  maxAltitude: Math.max(v + 5, facadeParams.maxAltitude),
                 });
               }}
               min={2}
               step={5}
+              fallback={10}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Max altitude (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={facadeParams.maxAltitude}
-              onChange={(e) =>
+              onChange={(v) =>
                 onFacadeChange({
                   ...facadeParams,
-                  maxAltitude: Math.max(
-                    facadeParams.minAltitude + 5,
-                    parseFloat(e.target.value) || 30,
-                  ),
+                  maxAltitude: Math.max(facadeParams.minAltitude + 5, v),
                 })
               }
               min={facadeParams.minAltitude + 5}
               step={5}
+              fallback={30}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Rows</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={facadeParams.numRows}
-              onChange={(e) =>
-                onFacadeChange({
-                  ...facadeParams,
-                  numRows: Math.max(
-                    1,
-                    Math.min(20, parseInt(e.target.value) || 4),
-                  ),
-                })
-              }
+              onChange={(v) => onFacadeChange({ ...facadeParams, numRows: v })}
               min={1}
               max={20}
+              fallback={4}
+              integer
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Columns</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={facadeParams.numColumns}
-              onChange={(e) =>
-                onFacadeChange({
-                  ...facadeParams,
-                  numColumns: Math.max(
-                    2,
-                    Math.min(30, parseInt(e.target.value) || 8),
-                  ),
-                })
+              onChange={(v) =>
+                onFacadeChange({ ...facadeParams, numColumns: v })
               }
               min={2}
               max={30}
+              fallback={8}
+              integer
               className="h-7 text-xs"
             />
           </div>
@@ -398,76 +344,52 @@ export function TemplateConfigPanel({
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <Label className="text-[10px]">Waypoints</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={pencilParams.numPoints}
-              onChange={(e) =>
-                onPencilChange({
-                  ...pencilParams,
-                  numPoints: Math.max(
-                    2,
-                    Math.min(200, parseInt(e.target.value) || 10),
-                  ),
-                })
+              onChange={(v) =>
+                onPencilChange({ ...pencilParams, numPoints: v })
               }
               min={2}
               max={200}
+              fallback={10}
+              integer
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Altitude (m)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={pencilParams.altitude}
-              onChange={(e) =>
-                onPencilChange({
-                  ...pencilParams,
-                  altitude: Math.max(5, parseFloat(e.target.value) || 30),
-                })
-              }
+              onChange={(v) => onPencilChange({ ...pencilParams, altitude: v })}
               min={5}
               step={5}
+              fallback={30}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Speed (m/s)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={pencilParams.speed}
-              onChange={(e) =>
-                onPencilChange({
-                  ...pencilParams,
-                  speed: Math.max(
-                    1,
-                    Math.min(15, parseFloat(e.target.value) || 7),
-                  ),
-                })
-              }
+              onChange={(v) => onPencilChange({ ...pencilParams, speed: v })}
               min={1}
               max={15}
               step={0.5}
+              fallback={7}
               className="h-7 text-xs"
             />
           </div>
           <div>
             <Label className="text-[10px]">Gimbal pitch (°)</Label>
-            <Input
-              type="number"
+            <NumericInput
               value={pencilParams.gimbalPitchAngle}
-              onChange={(e) =>
-                onPencilChange({
-                  ...pencilParams,
-                  gimbalPitchAngle: Math.max(
-                    -90,
-                    Math.min(45, parseFloat(e.target.value) || -45),
-                  ),
-                })
+              onChange={(v) =>
+                onPencilChange({ ...pencilParams, gimbalPitchAngle: v })
               }
               min={-90}
               max={45}
               step={5}
+              fallback={-45}
               className="h-7 text-xs"
             />
           </div>
