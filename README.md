@@ -67,6 +67,10 @@ docker run -d -p 3001:3001 -v droneroute-data:/app/data fcsonline/droneroute:lat
 
 A [docker-compose.yml](docker-compose.yml) with Traefik reverse proxy is also available in the repo.
 
+### Self-hosted limitations
+
+The self-hosted version is designed as a single-account, personal instance. Mission sharing is hidden since share links require your instance to be publicly reachable.
+
 ## Upload to Your DJI Controller
 
 After exporting a KMZ file, push it directly to a USB-connected DJI RC controller:

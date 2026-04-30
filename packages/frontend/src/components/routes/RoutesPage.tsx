@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
+import { useConfigStore } from "@/store/configStore";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
 import type {
@@ -108,6 +109,7 @@ interface RoutesPageProps {
 export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
   const { loadMission, setCurrentPage } = useMissionStore();
   const { token } = useAuthStore();
+  const { selfHosted } = useConfigStore();
   const [missions, setMissions] = useState<SavedMission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -398,32 +400,34 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                             {mission.name || "Untitled route"}
                           </h3>
                           <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className={`h-7 w-7 ${mission.share_token ? "text-emerald-400 hover:text-emerald-300" : "text-muted-foreground hover:text-foreground"}`}
-                              disabled={sharingId === mission.id}
-                              title={
-                                mission.share_token
-                                  ? copiedId === mission.id
-                                    ? "Link copied!"
-                                    : "Copy share link"
-                                  : "Share route"
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleShare(mission);
-                              }}
-                            >
-                              {copiedId === mission.id ? (
-                                <Check className="h-3.5 w-3.5" />
-                              ) : mission.share_token ? (
-                                <Link className="h-3.5 w-3.5" />
-                              ) : (
-                                <Share2 className="h-3.5 w-3.5" />
-                              )}
-                            </Button>
-                            {mission.share_token && (
+                            {!selfHosted && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-7 w-7 ${mission.share_token ? "text-emerald-400 hover:text-emerald-300" : "text-muted-foreground hover:text-foreground"}`}
+                                disabled={sharingId === mission.id}
+                                title={
+                                  mission.share_token
+                                    ? copiedId === mission.id
+                                      ? "Link copied!"
+                                      : "Copy share link"
+                                    : "Share route"
+                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleShare(mission);
+                                }}
+                              >
+                                {copiedId === mission.id ? (
+                                  <Check className="h-3.5 w-3.5" />
+                                ) : mission.share_token ? (
+                                  <Link className="h-3.5 w-3.5" />
+                                ) : (
+                                  <Share2 className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            )}
+                            {!selfHosted && mission.share_token && (
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -473,7 +477,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                               {droneLabel}
                             </div>
                           )}
-                          {mission.share_token && (
+                          {!selfHosted && mission.share_token && (
                             <div className="flex items-center gap-1 text-[11px] text-emerald-400">
                               <Share2 className="h-3 w-3" />
                               Shared
