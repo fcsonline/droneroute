@@ -71,10 +71,27 @@ export const api = {
 
 // Admin API
 export const adminApi = {
-  getUsers: (page = 1, perPage = 20) =>
-    api.get<PaginatedResponse<AdminUser>>(
-      `/admin/users?page=${page}&perPage=${perPage}`,
-    ),
+  getUsers: (
+    params: {
+      page?: number;
+      perPage?: number;
+      search?: string;
+      status?: string;
+      sortBy?: string;
+      sortOrder?: string;
+    } = {},
+  ) => {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", String(params.page));
+    if (params.perPage) query.set("perPage", String(params.perPage));
+    if (params.search) query.set("search", params.search);
+    if (params.status) query.set("status", params.status);
+    if (params.sortBy) query.set("sortBy", params.sortBy);
+    if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+    return api.get<PaginatedResponse<AdminUser>>(
+      `/admin/users?${query.toString()}`,
+    );
+  },
   banUser: (id: string) =>
     api.post<{ message: string }>(`/admin/users/${id}/ban`),
   unbanUser: (id: string) =>

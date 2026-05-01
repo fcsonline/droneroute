@@ -299,6 +299,7 @@ export interface AdminUser {
   id: string;
   email: string;
   createdAt: string;
+  lastLoginAt: string | null;
   isAdmin: boolean;
   isBanned: boolean;
   missionCount: number;

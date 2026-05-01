@@ -111,6 +111,13 @@ export function initDb(): void {
     // Column already exists — ignore
   }
 
+  // Migration: add last_login_at column if missing (for existing DBs)
+  try {
+    database.exec(`ALTER TABLE users ADD COLUMN last_login_at TEXT`);
+  } catch {
+    // Column already exists — ignore
+  }
+
   // Ensure ADMIN_EMAIL user has admin privileges (cloud mode)
   const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
   const adminEmail = process.env.ADMIN_EMAIL || "";
