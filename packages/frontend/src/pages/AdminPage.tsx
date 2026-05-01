@@ -164,7 +164,10 @@ export function AdminPage() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setCurrentPage("editor")}
+              onClick={() => {
+                window.history.pushState({}, "", "/");
+                setCurrentPage("editor");
+              }}
               className="h-8 w-8"
             >
               <ArrowLeft className="h-4 w-4" />

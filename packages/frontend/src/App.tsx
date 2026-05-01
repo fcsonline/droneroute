@@ -92,12 +92,20 @@ export default function App() {
     restore();
   }, []);
 
-  // Detect /shared/:token URL on mount
+  // Detect /shared/:token or /admin URL on mount
   useEffect(() => {
     const match = window.location.pathname.match(/^\/shared\/([^/]+)$/);
     if (match) {
       setShareToken(match[1]);
       setCurrentPage("shared");
+    } else if (window.location.pathname === "/admin") {
+      const token = localStorage.getItem("droneroute_token");
+      const adminFlag = localStorage.getItem("droneroute_is_admin") === "true";
+      if (token && adminFlag) {
+        setCurrentPage("admin");
+      } else {
+        window.history.replaceState({}, "", "/");
+      }
     }
   }, []);
 
@@ -423,7 +431,10 @@ export default function App() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setCurrentPage("admin")}
+                  onClick={() => {
+                    window.history.pushState({}, "", "/admin");
+                    setCurrentPage("admin");
+                  }}
                   className="h-7 w-7 text-purple-400 hover:text-purple-300"
                   title="User management"
                 >
