@@ -60,6 +60,9 @@ authRoutes.post("/google", async (req, res) => {
         .json({ error: "Your account has been suspended", banned: true });
       return;
     }
+    db.prepare(
+      "UPDATE users SET last_login_at = datetime('now') WHERE id = ?",
+    ).run(existingByGoogle.id);
     const token = generateToken(
       existingByGoogle.id,
       !!existingByGoogle.is_admin,
@@ -89,7 +92,7 @@ authRoutes.post("/google", async (req, res) => {
     }
     // Link Google account and verify email
     db.prepare(
-      "UPDATE users SET google_id = ?, email_verified = 1 WHERE id = ?",
+      "UPDATE users SET google_id = ?, email_verified = 1, last_login_at = datetime('now') WHERE id = ?",
     ).run(googleId, existingByEmail.id);
 
     const token = generateToken(existingByEmail.id, !!existingByEmail.is_admin);
@@ -111,7 +114,7 @@ authRoutes.post("/google", async (req, res) => {
   }
 
   db.prepare(
-    "INSERT INTO users (id, email, password_hash, google_id, email_verified, is_admin) VALUES (?, ?, '', ?, 1, ?)",
+    "INSERT INTO users (id, email, password_hash, google_id, email_verified, is_admin, last_login_at) VALUES (?, ?, '', ?, 1, ?, datetime('now'))",
   ).run(id, email, googleId, isAdmin ? 1 : 0);
 
   const token = generateToken(id, isAdmin);
@@ -195,6 +198,9 @@ authRoutes.post("/login", (req, res) => {
     return;
   }
 
+  db.prepare(
+    "UPDATE users SET last_login_at = datetime('now') WHERE id = ?",
+  ).run(user.id);
   const token = generateToken(user.id, !!user.is_admin);
   res.json({
     token,
