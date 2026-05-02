@@ -2,7 +2,6 @@ import { Router } from "express";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import type { Mission } from "@droneroute/shared";
-import { DEFAULT_MISSION_CONFIG } from "@droneroute/shared";
 import { generateKmzBuffer } from "../services/kmzGenerator.js";
 import { parseKmz } from "../services/kmzParser.js";
 import { fetchElevations } from "../services/elevationService.js";
