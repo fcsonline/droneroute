@@ -5,6 +5,7 @@ import type { Mission } from "@droneroute/shared";
 import { DEFAULT_MISSION_CONFIG } from "@droneroute/shared";
 import { generateKmzBuffer } from "../services/kmzGenerator.js";
 import { parseKmz } from "../services/kmzParser.js";
+import { fetchElevations } from "../services/elevationService.js";
 import { getDb } from "../models/db.js";
 import {
   authMiddleware,
@@ -14,6 +15,40 @@ import {
 import { strictLimiter } from "../middleware/rateLimit.js";
 
 export const kmzRoutes = Router();
+
+/**
+ * Convert a mission from AGL (above ground level) heights to ATL (relative to start point).
+ * Fetches terrain elevation for all waypoints and adjusts heights accordingly.
+ * Returns a new mission object with converted heights and heightMode set to relativeToStartPoint.
+ */
+async function convertAglToAtl(mission: Mission): Promise<Mission> {
+  if (
+    mission.config.heightMode !== "aboveGroundLevel" ||
+    mission.waypoints.length === 0
+  ) {
+    return mission;
+  }
+
+  const locations = mission.waypoints.map((wp) => ({
+    latitude: wp.latitude,
+    longitude: wp.longitude,
+  }));
+
+  const elevations = await fetchElevations(locations);
+  const takeoffElev = elevations[0]; // WP0 = takeoff reference
+
+  const convertedWaypoints = mission.waypoints.map((wp, i) => ({
+    ...wp,
+    // ATL = AGL height + (terrain elevation at this WP - terrain elevation at takeoff)
+    height: Math.round(wp.height + (elevations[i] - takeoffElev)),
+  }));
+
+  return {
+    ...mission,
+    config: { ...mission.config, heightMode: "relativeToStartPoint" },
+    waypoints: convertedWaypoints,
+  };
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -46,7 +81,9 @@ kmzRoutes.post(
         obstacles: [],
       };
 
-      const buffer = await generateKmzBuffer(mission);
+      // Convert AGL heights to ATL (relative to start point) for export
+      const exportMission = await convertAglToAtl(mission);
+      const buffer = await generateKmzBuffer(exportMission);
 
       const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
       res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
@@ -89,7 +126,9 @@ kmzRoutes.get(
         obstacles: JSON.parse(row.obstacles || "[]"),
       };
 
-      const buffer = await generateKmzBuffer(mission);
+      // Convert AGL heights to ATL (relative to start point) for export
+      const exportMission = await convertAglToAtl(mission);
+      const buffer = await generateKmzBuffer(exportMission);
       const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
       res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
       res.setHeader(

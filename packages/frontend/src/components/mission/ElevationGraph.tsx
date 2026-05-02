@@ -1,6 +1,7 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMissionStore } from "@/store/missionStore";
+import { useElevationStore } from "@/store/elevationStore";
 import type { SelectionMode } from "@/store/missionStore";
 
 const GRAPH_HEIGHT = 100;
@@ -21,6 +22,13 @@ export function ElevationGraph() {
   const selectedIndices = useMissionStore((s) => s.selectedWaypointIndices);
   const updateWaypoint = useMissionStore((s) => s.updateWaypoint);
   const selectWaypoint = useMissionStore((s) => s.selectWaypoint);
+  const heightMode = useMissionStore((s) => s.config.heightMode);
+
+  const elevations = useElevationStore((s) => s.elevations);
+  const elevLoading = useElevationStore((s) => s.loading);
+  const fetchForWaypoints = useElevationStore((s) => s.fetchForWaypoints);
+
+  const isAgl = heightMode === "aboveGroundLevel";
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -36,6 +44,28 @@ export function ElevationGraph() {
   const [expanded, setExpanded] = useState(
     () => localStorage.getItem(LS_KEY) !== "false",
   );
+
+  // Debounced elevation fetch for AGL mode
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wpCoordsKey = useMemo(
+    () =>
+      waypoints
+        .map((wp) => `${wp.latitude.toFixed(6)},${wp.longitude.toFixed(6)}`)
+        .join("|"),
+    [waypoints],
+  );
+
+  useEffect(() => {
+    if (!isAgl || waypoints.length === 0) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchForWaypoints(waypoints);
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAgl, wpCoordsKey, fetchForWaypoints]);
 
   const toggleExpanded = useCallback(() => {
     setExpanded((prev) => {
@@ -69,14 +99,45 @@ export function ElevationGraph() {
   const plotW = svgWidth - PAD_LEFT - PAD_RIGHT;
   const plotH = GRAPH_HEIGHT - PAD_TOP - PAD_BOTTOM;
 
-  // Compute Y scale
-  const heights = waypoints.map((wp) => wp.height);
-  const rawMin = Math.min(...heights);
-  const rawMax = Math.max(...heights);
-  const spread = rawMax - rawMin;
-  const yPad = Math.max(spread * 0.25, 10);
-  const yMin = Math.max(0, Math.floor(rawMin - yPad));
-  const yMax = Math.ceil(rawMax + yPad);
+  // In AGL mode with elevation data, compute absolute altitudes for the Y scale
+  const hasElevationData =
+    isAgl && elevations.length === waypoints.length && !elevLoading;
+
+  // Compute Y scale values
+  const { yMin, yMax, heights, terrainHeights } = useMemo(() => {
+    if (hasElevationData) {
+      // AGL mode: Y axis = absolute altitude (terrain + AGL height)
+      // Use WP0 elevation as the reference (takeoff point)
+      const takeoffElev = elevations[0];
+      const terrain = elevations.map((e) => e - takeoffElev);
+      const abs = waypoints.map((wp, i) => terrain[i] + wp.height);
+
+      const allValues = [...terrain, ...abs];
+      const rawMin = Math.min(...allValues);
+      const rawMax = Math.max(...allValues);
+      const spread = rawMax - rawMin;
+      const yPad = Math.max(spread * 0.25, 10);
+      return {
+        yMin: Math.floor(rawMin - yPad),
+        yMax: Math.ceil(rawMax + yPad),
+        heights: abs,
+        terrainHeights: terrain,
+      };
+    } else {
+      // ATL mode (or AGL without data): same as before
+      const h = waypoints.map((wp) => wp.height);
+      const rawMin = Math.min(...h);
+      const rawMax = Math.max(...h);
+      const spread = rawMax - rawMin;
+      const yPad = Math.max(spread * 0.25, 10);
+      return {
+        yMin: Math.max(0, Math.floor(rawMin - yPad)),
+        yMax: Math.ceil(rawMax + yPad),
+        heights: h,
+        terrainHeights: null,
+      };
+    }
+  }, [hasElevationData, elevations, waypoints]);
 
   const toX = useCallback(
     (i: number) => {
@@ -96,11 +157,18 @@ export function ElevationGraph() {
 
   const fromY = useCallback(
     (py: number) => {
-      if (yMax === yMin) return rawMin;
+      if (yMax === yMin) return waypoints[0]?.height ?? 30;
       const h = yMin + ((PAD_TOP + plotH - py) / plotH) * (yMax - yMin);
+      if (hasElevationData) {
+        // In AGL mode, dragging changes the AGL value
+        // We need to subtract the terrain height to get the AGL value
+        // But we don't know which WP is being dragged here, so we return
+        // the absolute altitude and let the caller convert
+        return Math.round(Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, h)));
+      }
       return Math.round(Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, h)));
     },
-    [yMin, yMax, plotH, rawMin],
+    [yMin, yMax, plotH, hasElevationData, waypoints],
   );
 
   // Drag handlers (with click-to-select detection)
@@ -138,10 +206,32 @@ export function ElevationGraph() {
 
       const rect = svg.getBoundingClientRect();
       const py = e.clientY - rect.top;
-      const newHeight = fromY(py);
-      updateWaypoint(draggingIndex, { height: newHeight });
+      const absHeight = fromY(py);
+
+      if (hasElevationData && terrainHeights) {
+        // In AGL mode: convert absolute altitude back to AGL
+        const wpArrayIdx = waypoints.findIndex(
+          (wp) => wp.index === draggingIndex,
+        );
+        if (wpArrayIdx >= 0) {
+          const aglHeight = Math.max(
+            MIN_HEIGHT,
+            absHeight - terrainHeights[wpArrayIdx],
+          );
+          updateWaypoint(draggingIndex, { height: aglHeight });
+        }
+      } else {
+        updateWaypoint(draggingIndex, { height: absHeight });
+      }
     },
-    [draggingIndex, fromY, updateWaypoint],
+    [
+      draggingIndex,
+      fromY,
+      updateWaypoint,
+      hasElevationData,
+      terrainHeights,
+      waypoints,
+    ],
   );
 
   const handlePointerUp = useCallback(
@@ -200,9 +290,9 @@ export function ElevationGraph() {
   const edgeSegments: { x1: number; y1: number; x2: number; y2: number }[] = [];
   for (let i = 0; i < waypoints.length - 1; i++) {
     const ax = toX(i);
-    const ay = toY(waypoints[i].height);
+    const ay = toY(heights[i]);
     const bx = toX(i + 1);
-    const by = toY(waypoints[i + 1].height);
+    const by = toY(heights[i + 1]);
     const dx = bx - ax;
     const dy = by - ay;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -225,6 +315,21 @@ export function ElevationGraph() {
     });
   }
 
+  // Build terrain polygon points for AGL mode
+  let terrainPolygon: string | null = null;
+  if (hasElevationData && terrainHeights) {
+    const points: string[] = [];
+    // Start at bottom-left
+    points.push(`${toX(0)},${PAD_TOP + plotH}`);
+    // Terrain line
+    for (let i = 0; i < terrainHeights.length; i++) {
+      points.push(`${toX(i)},${toY(terrainHeights[i])}`);
+    }
+    // Close at bottom-right
+    points.push(`${toX(terrainHeights.length - 1)},${PAD_TOP + plotH}`);
+    terrainPolygon = points.join(" ");
+  }
+
   return (
     <div ref={containerRef} className="border-t border-border bg-background/50">
       {/* Pinned header — always visible */}
@@ -238,6 +343,11 @@ export function ElevationGraph() {
           <ChevronRight className="h-3 w-3" />
         )}
         Elevation chart
+        {isAgl && elevLoading && (
+          <span className="text-[9px] text-amber-400 ml-1 font-normal normal-case tracking-normal">
+            Loading terrain...
+          </span>
+        )}
       </button>
 
       {/* Collapsible body */}
@@ -297,6 +407,30 @@ export function ElevationGraph() {
               return lines;
             })()}
 
+            {/* Terrain fill for AGL mode */}
+            {terrainPolygon && (
+              <polygon
+                points={terrainPolygon}
+                fill="#6b5c3e"
+                opacity={0.5}
+                stroke="#8b7355"
+                strokeWidth={1}
+              />
+            )}
+
+            {/* Terrain top line for AGL mode */}
+            {hasElevationData && terrainHeights && (
+              <polyline
+                points={terrainHeights
+                  .map((h, i) => `${toX(i)},${toY(h)}`)
+                  .join(" ")}
+                fill="none"
+                stroke="#a89070"
+                strokeWidth={1.5}
+                opacity={0.8}
+              />
+            )}
+
             {/* Edge-to-edge dotted line segments between circles */}
             {edgeSegments.map((seg, i) => (
               <line
@@ -316,10 +450,13 @@ export function ElevationGraph() {
             {/* Nodes */}
             {waypoints.map((wp, i) => {
               const cx = toX(i);
-              const cy = toY(wp.height);
+              const cy = toY(heights[i]);
               const isSelected = selectedIndices.has(wp.index);
               const isDragging = draggingIndex === wp.index;
               const r = isDragging ? CIRCLE_RADIUS_ACTIVE : CIRCLE_RADIUS;
+
+              // Height label: show AGL value in AGL mode, ATL in ATL mode
+              const label = isAgl ? `${wp.height}m` : `${wp.height}m`;
 
               return (
                 <g key={wp.index}>
@@ -332,6 +469,20 @@ export function ElevationGraph() {
                     style={{ cursor: isDragging ? "grabbing" : "grab" }}
                     onPointerDown={(e) => handlePointerDown(e, wp.index)}
                   />
+
+                  {/* Vertical dashed line from terrain to drone in AGL mode */}
+                  {hasElevationData && terrainHeights && (
+                    <line
+                      x1={cx}
+                      y1={toY(terrainHeights[i])}
+                      x2={cx}
+                      y2={cy + r}
+                      stroke="#60a5fa"
+                      strokeWidth={1}
+                      strokeDasharray="2,2"
+                      opacity={0.4}
+                    />
+                  )}
 
                   {/* Circle background */}
                   <circle
@@ -393,7 +544,7 @@ export function ElevationGraph() {
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    {wp.height}m
+                    {label}
                   </text>
                 </g>
               );
