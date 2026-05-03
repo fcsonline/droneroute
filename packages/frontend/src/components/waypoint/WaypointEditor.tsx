@@ -62,7 +62,7 @@ export function WaypointEditorInline({
             type="number"
             value={wp.height}
             onChange={(e) =>
-              update({ height: parseFloat(e.target.value) || 0 })
+              update({ height: Math.max(1, parseFloat(e.target.value) || 1) })
             }
             min={1}
             max={500}

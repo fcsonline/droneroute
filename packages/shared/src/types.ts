@@ -326,7 +326,7 @@ export const DEFAULT_MISSION_CONFIG: MissionConfig = {
   globalTransitionalSpeed: 10,
   autoFlightSpeed: 7,
   maxBatteryMinutes: 25,
-  heightMode: "relativeToStartPoint",
+  heightMode: "aboveGroundLevel",
   globalHeadingMode: "followWayline",
   globalTurnMode: "toPointAndStopWithDiscontinuityCurvature",
   gimbalPitchMode: "usePointSetting",

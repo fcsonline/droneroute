@@ -152,9 +152,9 @@ export async function parseKmz(buffer: Buffer): Promise<{
           const poi: PointOfInterest = {
             id: uuidv4(),
             name: `POI ${poiMap.size + 1}`,
-            longitude: parts[0],
-            latitude: parts[1],
-            height: parts[2] || 0,
+            latitude: parts[0],
+            longitude: parts[1],
+            height: Math.round(parts[2] || 0),
           };
           poiMap.set(poiKey, poi);
         }
@@ -171,11 +171,13 @@ export async function parseKmz(buffer: Buffer): Promise<{
         : undefined;
 
     // Height: try wpml:executeHeight (waylines.wpml), wpml:height, wpml:ellipsoidHeight
-    const height = parseFloat(
-      pm["wpml:executeHeight"] ||
-        pm["wpml:height"] ||
-        pm["wpml:ellipsoidHeight"] ||
-        "50",
+    const height = Math.round(
+      parseFloat(
+        pm["wpml:executeHeight"] ||
+          pm["wpml:height"] ||
+          pm["wpml:ellipsoidHeight"] ||
+          "50",
+      ),
     );
 
     // Gimbal pitch: try direct field or extract from gimbalRotate action

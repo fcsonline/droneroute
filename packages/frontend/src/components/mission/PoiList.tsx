@@ -128,9 +128,11 @@ export function PoiList() {
                     value={poi.height}
                     onChange={(e) =>
                       updatePoi(poi.id, {
-                        height: parseFloat(e.target.value) || 0,
+                        height: Math.max(1, parseFloat(e.target.value) || 1),
                       })
                     }
+                    min={1}
+                    max={500}
                     className="h-7 text-xs"
                   />
                 </div>

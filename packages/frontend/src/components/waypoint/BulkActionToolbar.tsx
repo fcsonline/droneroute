@@ -213,7 +213,8 @@ export function BulkActionToolbar() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const v = parseFloat(e.currentTarget.value);
-                      if (!isNaN(v)) updateSelectedWaypoints({ height: v });
+                      if (!isNaN(v) && v >= 1)
+                        updateSelectedWaypoints({ height: v });
                     }
                   }}
                   min={1}

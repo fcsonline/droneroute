@@ -159,7 +159,7 @@ export function buildTemplateKml(mission: Mission): string {
           headingOverrideXml = `
         <wpml:waypointHeadingParam>
           <wpml:waypointHeadingMode>towardPOI</wpml:waypointHeadingMode>
-          <wpml:waypointPoiPoint>${poi.longitude},${poi.latitude},${poi.height}</wpml:waypointPoiPoint>
+          <wpml:waypointPoiPoint>${poi.latitude},${poi.longitude},${poi.height}</wpml:waypointPoiPoint>
           <wpml:waypointHeadingPathMode>clockwise</wpml:waypointHeadingPathMode>
         </wpml:waypointHeadingParam>`;
         }
@@ -255,7 +255,7 @@ export function buildWaylinesWpml(mission: Mission): string {
             poi.longitude,
           );
           poiXml = `
-          <wpml:waypointPoiPoint>${poi.longitude},${poi.latitude},${poi.height}</wpml:waypointPoiPoint>`;
+          <wpml:waypointPoiPoint>${poi.latitude},${poi.longitude},${poi.height}</wpml:waypointPoiPoint>`;
         }
       }
 

@@ -27,4 +27,5 @@ Configure your drone model, camera, altitude reference, and safety options for t
 
 - The available cameras change depending on which drone you select.
 - If the estimated flight time exceeds the battery limit you set, a warning appears.
-- Height reference affects how altitude values are interpreted by the drone — choose the one that matches your operational needs.
+- Height reference affects how altitude values are interpreted by the drone — choose the one that matches your operational needs. The default is **above ground level**.
+- All height fields enforce a minimum of 1 meter.
