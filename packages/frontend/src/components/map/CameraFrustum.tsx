@@ -219,7 +219,7 @@ export function CameraFrustum({ waypoint, pois, is3D }: CameraFrustumProps) {
           id="camera-frustum-2d-fill"
           type="fill"
           paint={{
-            "fill-color": "#3b82f6",
+            "fill-color": "#94a3b8",
             "fill-opacity": is3D ? 0 : 0.12,
           }}
         />
@@ -227,7 +227,7 @@ export function CameraFrustum({ waypoint, pois, is3D }: CameraFrustumProps) {
           id="camera-frustum-2d-outline"
           type="line"
           paint={{
-            "line-color": "#3b82f6",
+            "line-color": "#94a3b8",
             "line-width": 1.5,
             "line-opacity": is3D ? 0 : 0.5,
           }}
@@ -244,7 +244,7 @@ export function CameraFrustum({ waypoint, pois, is3D }: CameraFrustumProps) {
           id="camera-frustum-2d-edges-layer"
           type="line"
           paint={{
-            "line-color": "#3b82f6",
+            "line-color": "#94a3b8",
             "line-width": 1.5,
             "line-opacity": is3D ? 0 : 0.5,
           }}
@@ -262,7 +262,7 @@ export function CameraFrustum({ waypoint, pois, is3D }: CameraFrustumProps) {
           id="camera-frustum-edges-layer"
           type="line"
           paint={{
-            "line-color": "#3b82f6",
+            "line-color": "#94a3b8",
             "line-width": 2,
             "line-opacity": is3D ? 0.7 : 0,
           }}
@@ -295,7 +295,7 @@ export function CameraFrustum({ waypoint, pois, is3D }: CameraFrustumProps) {
           id="camera-frustum-plane-layer"
           type="line"
           paint={{
-            "line-color": "#3b82f6",
+            "line-color": "#94a3b8",
             "line-width": 2,
             "line-opacity": is3D ? 0.8 : 0,
           }}
