@@ -28,6 +28,7 @@ When you switch to 3D:
 - **Vertical poles** — dashed lines from ground to waypoint altitude.
 - **Ground shadow** — a faint gray line on the ground traces the flight path from above.
 - **POI pointing lines** — green lines from waypoints to POIs are elevated to match their respective heights.
+- **Camera frustum** — when a waypoint is selected and has a POI target, a translucent slate-gray cone is drawn from the waypoint toward the POI, visualizing the camera's field of view and gimbal pitch.
 - The camera tilts to 45° pitch and you can freely rotate and tilt the view.
 
 ## 2D mode (default)
