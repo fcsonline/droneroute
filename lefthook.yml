@@ -7,7 +7,7 @@ pre-commit:
   jobs:
     - name: format
       glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,md,mdx,css,html,yaml,yml}"
-      run: npx prettier --check {staged_files}
+      run: npx oxfmt --check {staged_files}
 
     - name: lint
       glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
