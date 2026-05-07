@@ -9,16 +9,16 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@droneroute/shared": "*",
+    "@droneroute/shared": "^0.5.0",
     "archiver": "^7.0.1",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.9.0",
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "express-rate-limit": "^8.4.1",
-    "fast-xml-parser": "^5.7.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.1",
+    "fast-xml-parser": "^5.7.3",
     "google-auth-library": "^10.6.2",
-    "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken": "^9.0.3",
     "jszip": "^3.10.1",
     "multer": "^2.1.1",
     "uuid": "^14.0.0"
@@ -26,13 +26,13 @@
   "devDependencies": {
     "@types/archiver": "^7.0.0",
     "@types/bcryptjs": "^3.0.0",
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/jsonwebtoken": "^9.0.9",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.1.0",
     "@types/uuid": "^11.0.0",
-    "tsx": "^4.19.3",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
 }
