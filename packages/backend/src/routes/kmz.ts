@@ -2,7 +2,6 @@ import { Router } from "express";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import type { Mission } from "@droneroute/shared";
-import { DEFAULT_MISSION_CONFIG } from "@droneroute/shared";
 import { generateKmzBuffer } from "../services/kmzGenerator.js";
 import { parseKmz } from "../services/kmzParser.js";
 import { getDb } from "../models/db.js";
@@ -20,11 +19,25 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+const ALLOWED_KMZ_MIME_TYPES = new Set([
+  "application/vnd.google-earth.kmz",
+  "application/zip",
+  "application/x-zip-compressed",
+  "application/octet-stream",
+]);
+
+function isValidKmzUpload(file: Express.Multer.File): boolean {
+  return (
+    /\.kmz$/i.test(file.originalname) &&
+    ALLOWED_KMZ_MIME_TYPES.has(file.mimetype.toLowerCase())
+  );
+}
+
 // Generate and download KMZ from mission data (POST body)
 kmzRoutes.post(
   "/generate",
-  strictLimiter,
   optionalAuth,
+  strictLimiter,
   async (req: AuthRequest, res) => {
     try {
       const { name, config, waypoints, pois } = req.body;
@@ -99,7 +112,7 @@ kmzRoutes.get(
       res.send(buffer);
     } catch (err: any) {
       console.error("KMZ download error:", err);
-      res.status(500).json({ error: err.message || "Failed to generate KMZ" });
+      res.status(500).json({ error: "Failed to generate KMZ" });
     }
   },
 );
@@ -115,8 +128,12 @@ kmzRoutes.post(
         res.status(400).json({ error: "No file uploaded" });
         return;
       }
+      if (!isValidKmzUpload(req.file)) {
+        res.status(400).json({ error: "Upload must be a KMZ file" });
+        return;
+      }
 
-      const { config, waypoints, pois } = await parseKmz(req.file.buffer);
+      const { config, waypoints, pois, wpmz } = await parseKmz(req.file.buffer);
 
       // Optionally save to DB
       const save = req.query.save === "true";
@@ -140,7 +157,7 @@ kmzRoutes.post(
         );
       }
 
-      res.json({ id: missionId, config, waypoints, pois });
+      res.json({ id: missionId, config, waypoints, pois, wpmz });
     } catch (err: any) {
       console.error("KMZ import error:", err);
       res.status(500).json({ error: "Failed to parse KMZ" });

@@ -114,7 +114,7 @@ interface MissionState {
   setDirty: (dirty: boolean) => void;
 }
 
-export const useMissionStore = create<MissionState>((set, get) => ({
+export const useMissionStore = create<MissionState>((set) => ({
   missionId: null,
   missionName: "New Mission",
   dirty: false,
@@ -176,7 +176,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     set((state) => {
       const filtered = state.waypoints
         .filter((wp) => wp.index !== index)
-        .map((wp, i) => ({ ...wp, index: i }));
+        .map((wp, i) => ({ ...wp, index: i, wpmzActionGroups: undefined }));
 
       // Rebuild selection: remove the deleted index, adjust indices above it
       const newSelection = new Set<number>();
@@ -276,7 +276,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       if (state.selectedWaypointIndices.size === 0) return state;
       const filtered = state.waypoints
         .filter((wp) => !state.selectedWaypointIndices.has(wp.index))
-        .map((wp, i) => ({ ...wp, index: i }));
+        .map((wp, i) => ({ ...wp, index: i, wpmzActionGroups: undefined }));
       return {
         waypoints: filtered,
         selectedWaypointIndices: new Set<number>(),
@@ -301,7 +301,11 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       const [moved] = items.splice(fromIndex, 1);
       items.splice(toIndex, 0, moved);
       // Re-index after reorder
-      const reindexed = items.map((wp, i) => ({ ...wp, index: i }));
+      const reindexed = items.map((wp, i) => ({
+        ...wp,
+        index: i,
+        wpmzActionGroups: undefined,
+      }));
       return {
         waypoints: reindexed,
         selectedWaypointIndices: new Set([toIndex]),
@@ -322,7 +326,11 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     set((state) => ({
       waypoints: state.waypoints.map((wp) =>
         wp.index === waypointIndex
-          ? { ...wp, actions: [...wp.actions, action] }
+          ? {
+              ...wp,
+              actions: [...wp.actions, action],
+              wpmzActionGroups: undefined,
+            }
           : wp,
       ),
       dirty: true,
@@ -337,6 +345,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
               actions: wp.actions.map((a) =>
                 a.actionId === actionId ? { ...a, ...updates } : a,
               ),
+              wpmzActionGroups: undefined,
             }
           : wp,
       ),
@@ -350,6 +359,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
           ? {
               ...wp,
               actions: wp.actions.filter((a) => a.actionId !== actionId),
+              wpmzActionGroups: undefined,
             }
           : wp,
       ),

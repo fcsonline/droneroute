@@ -5,13 +5,14 @@
   "description": "DJI Waypoint Mission KMZ Builder",
   "workspaces": [
     "packages/shared",
+    "packages/wpmz",
     "packages/backend",
     "packages/frontend",
     "packages/cli"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev -w packages/backend\" \"npm run dev -w packages/frontend\"",
-    "build": "npm run build -w packages/shared && npm run build -w packages/backend && npm run build -w packages/frontend && npm run build -w packages/cli",
+    "build": "npm run build -w packages/shared && npm run build -w packages/wpmz && npm run build -w packages/backend && npm run build -w packages/frontend && npm run build -w packages/cli",
     "start": "npm run start -w packages/backend",
     "lint": "oxlint packages/",
     "lint:fix": "oxlint --fix packages/",

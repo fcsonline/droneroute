@@ -30,8 +30,8 @@ droneroute/
 | UI         | shadcn/ui + Tailwind CSS v4                   |
 | State      | Zustand 5                                     |
 | Backend    | Node.js 22, Express 5, TypeScript             |
-| KMZ Gen    | archiver (ZIP) + XML string templates         |
-| KMZ Parse  | jszip + fast-xml-parser                       |
+| KMZ Gen    | @droneroute/dji-wpmz-universal                |
+| KMZ Parse  | @droneroute/dji-wpmz-universal                |
 | Database   | SQLite via better-sqlite3                     |
 | Auth       | bcryptjs + jsonwebtoken (JWT, 7-day expiry)   |
 | Deployment | Docker (multi-stage, Alpine, volume for data) |
@@ -42,15 +42,16 @@ A KMZ is a ZIP archive containing:
 
 ```
 mission.kmz
-├── template.kml      # User-editable mission parameters
-├── waylines.wpml     # Executable flight instructions
-└── res/              # Resources (reference images, etc.)
+└── wpmz/
+    ├── template.kml      # Mission metadata and config
+    └── waylines.wpml     # Executable flight instructions
 ```
 
 Both files use KML extended with DJI WPML namespace:
 
 - KML: `http://www.opengis.net/kml/2.2`
 - WPML: `http://www.dji.com/wpmz/1.0.2`
+- DJI Fly/Lito observed WPML: `http://www.uav.com/wpmz/1.0.2`
 
 ### Supported Drones
 
@@ -270,13 +271,11 @@ Actions are executed sequentially when the drone reaches the waypoint.
 
 ### KMZ Generation
 
-The backend generates a valid DJI WPML KMZ containing:
+The backend generates a DJI Fly/Lito-style WPMZ KMZ containing:
 
-1. **template.kml** - Mission config + waypoints with `useGlobal*` flags,
-   action groups, and POI heading references
-2. **waylines.wpml** - Execution file with explicit per-waypoint speed,
-   heading, turn params, and computed POI angles
-3. **res/** - Empty resource directory
+1. **wpmz/template.kml** - Mission metadata and config
+2. **wpmz/waylines.wpml** - Execution file with explicit waypoint speed,
+   height, heading, turn params, and action groups
 
 When a waypoint uses `towardPOI` heading mode, the backend computes the
 bearing from the waypoint to the referenced POI and emits it as a
@@ -286,11 +285,12 @@ bearing from the waypoint to the referenced POI and emits it as a
 
 Upload a `.kmz` file to parse it back into editable mission data:
 
-- Extracts `template.kml` from the ZIP
+- Extracts `template.kml` and `waylines.wpml` from either root or `wpmz/` paths
 - Parses mission config, waypoints, and actions
 - Extracts POIs from `waypointPoiPoint` elements in per-waypoint heading params
 - De-duplicates POIs sharing the same coordinates
-- Returns JSON with `config`, `waypoints`, and `pois` ready to load into the editor
+- Preserves imported WPMZ action groups on each waypoint for future export
+- Returns JSON with `config`, `waypoints`, `pois`, and WPMZ metadata ready to load into the editor
 
 ## Database Schema (SQLite)
 
@@ -387,14 +387,16 @@ packages/
   shared/
     src/types.ts                     # All TypeScript types and constants
     tsconfig.json                    # Compiles to dist/ for backend runtime
+  wpmz/
+    src/                           # Namespace-tolerant WPMZ parser/writer
   backend/src/
     index.ts                       # Express app entry
     models/db.ts                   # SQLite setup
     routes/auth.ts                 # Auth endpoints
     routes/missions.ts             # Mission CRUD
     routes/kmz.ts                  # KMZ gen/import endpoints
-    services/kmzGenerator.ts       # archiver-based KMZ builder
-    services/kmzParser.ts          # jszip + XML parser
+    services/kmzGenerator.ts       # WPMZ-backed KMZ builder
+    services/kmzParser.ts          # WPMZ-backed KMZ parser
     services/authService.ts        # JWT + bcrypt
     middleware/auth.ts             # Auth middleware
     lib/wpml.ts                    # WPML XML builders

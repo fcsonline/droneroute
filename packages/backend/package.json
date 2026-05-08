@@ -9,6 +9,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@droneroute/dji-wpmz-universal": "^0.5.0",
     "@droneroute/shared": "^0.5.0",
     "archiver": "^7.0.1",
     "bcryptjs": "^3.0.3",

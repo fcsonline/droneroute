@@ -1,3 +1,7 @@
+export type KnownString<T extends string> =
+  | T
+  | (string & { readonly __unknownString?: never });
+
 // ── Heading & Turn Modes ─────────────────────────────────
 
 export type HeadingMode =
@@ -29,7 +33,7 @@ export type GimbalPitchMode = "manual" | "usePointSetting";
 
 // ── Action Types ─────────────────────────────────────────
 
-export type ActionType =
+export type ActionType = KnownString<
   | "takePhoto"
   | "startRecord"
   | "stopRecord"
@@ -38,7 +42,8 @@ export type ActionType =
   | "rotateYaw"
   | "hover"
   | "zoom"
-  | "focus";
+  | "focus"
+>;
 
 export interface TakePhotoParams {
   payloadPositionIndex: number;
@@ -102,6 +107,46 @@ export interface WaypointAction {
   actionId: number;
   actionType: ActionType;
   params: ActionParams;
+}
+
+export type WpmzPrimitiveValue = string | number | boolean;
+
+export interface WpmzXmlTextNode {
+  readonly kind: "text";
+  readonly text: string;
+}
+
+export interface WpmzXmlElement {
+  readonly kind: "element";
+  readonly name: string;
+  readonly attributes: Readonly<Record<string, string>>;
+  readonly children: readonly WpmzXmlNode[];
+}
+
+export type WpmzXmlNode = WpmzXmlTextNode | WpmzXmlElement;
+
+export interface WpmzActionTrigger {
+  readonly actionTriggerType?: string;
+  readonly actionTriggerParam?: number;
+  readonly extraElements?: readonly WpmzXmlElement[];
+}
+
+export interface WpmzAction {
+  readonly actionId?: number;
+  readonly actionActuatorFunc: string;
+  readonly params: Readonly<Record<string, WpmzPrimitiveValue>>;
+  readonly paramElements?: readonly WpmzXmlElement[];
+  readonly extraElements?: readonly WpmzXmlElement[];
+}
+
+export interface WpmzActionGroup {
+  readonly actionGroupId?: number;
+  readonly actionGroupStartIndex?: number;
+  readonly actionGroupEndIndex?: number;
+  readonly actionGroupMode?: string;
+  readonly actionTrigger?: WpmzActionTrigger;
+  readonly actions: readonly WpmzAction[];
+  readonly extraElements?: readonly WpmzXmlElement[];
 }
 
 // ── Drone & Payload ──────────────────────────────────────
@@ -242,6 +287,7 @@ export interface Waypoint {
   turnDampingDist?: number;
   gimbalPitchAngle: number;
   actions: WaypointAction[];
+  wpmzActionGroups?: readonly WpmzActionGroup[];
 }
 
 // ── Mission Config ───────────────────────────────────────
