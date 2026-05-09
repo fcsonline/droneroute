@@ -164,7 +164,11 @@ function GeocoderControl() {
     geocoderRef.current = geocoder;
 
     return () => {
-      m.removeControl(geocoder);
+      try {
+        m.removeControl(geocoder);
+      } catch {
+        // DOM already detached — ignore
+      }
       geocoderRef.current = null;
     };
   }, [map, mapboxToken]);
