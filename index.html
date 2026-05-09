@@ -1013,6 +1013,30 @@
               obstacles are highlighted in red with a warning count.
             </p>
           </div>
+          <div class="feature-card">
+            <div
+              class="feature-icon"
+              style="background: rgba(251, 146, 60, 0.15)"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#fb923c"
+                stroke-width="2"
+              >
+                <path d="M12 9v4m0 4h.01M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                <path d="M9 3l3 2 3-2" />
+              </svg>
+            </div>
+            <h3>Airspace restrictions</h3>
+            <p>
+              Display prohibited and restricted airspace zones as color-coded
+              overlays on the map. Hover any zone to see details. Waypoints
+              inside a restricted area trigger instant warnings.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -1209,6 +1233,50 @@
             </p>
           </div>
         </div>
+
+        <div class="showcase reverse" style="margin-bottom: 80px">
+          <img
+            class="showcase-img"
+            src="https://raw.githubusercontent.com/fcsonline/droneroute/gh-pages/docs/screenshots/airspace-zones-map.png"
+            alt="Airspace restriction zones displayed on the map"
+            loading="lazy"
+          />
+          <div class="showcase-text">
+            <h3>Airspace restriction zones</h3>
+            <p>
+              Visualize prohibited and restricted airspace zones directly on the
+              map. Color-coded overlays — red for prohibited, orange for
+              restricted — make it easy to identify no-fly areas at a glance.
+            </p>
+            <p>
+              Hover over any zone to see its name, classification, and altitude
+              limits. Enable the layer from Settings → Visualization → Extra
+              layers, or press <strong>A</strong> to toggle it.
+            </p>
+          </div>
+        </div>
+
+        <div class="showcase" style="margin-bottom: 80px">
+          <img
+            class="showcase-img"
+            src="https://raw.githubusercontent.com/fcsonline/droneroute/gh-pages/docs/screenshots/airspace-warnings.png"
+            alt="Warning banner when flight path enters a restricted airspace zone"
+            loading="lazy"
+          />
+          <div class="showcase-text">
+            <h3>Airspace violation warnings</h3>
+            <p>
+              When a waypoint falls inside a restriction zone, a warning banner
+              appears instantly. Prohibited zones block flight entirely, while
+              restricted zones alert that authorization may be required.
+            </p>
+            <p>
+              Warnings update in real-time as you add, move, or remove waypoints
+              — so you always know if your flight path is clear before
+              exporting.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1250,6 +1318,10 @@
           <div class="shortcut-item">
             <span class="shortcut-key">B</span>
             <span class="shortcut-label">Draw obstacle</span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-key">A</span>
+            <span class="shortcut-label">Toggle airspace zones</span>
           </div>
           <div class="shortcut-item">
             <span class="shortcut-key">Esc</span>
