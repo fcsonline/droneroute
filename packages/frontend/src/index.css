@@ -62,6 +62,19 @@ body {
   background: transparent;
 }
 
+/* Airspace zone tooltip */
+.airspace-tooltip .mapboxgl-popup-content {
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  color: #fafafa;
+}
+.airspace-tooltip .mapboxgl-popup-tip {
+  border-top-color: #18181b;
+}
+
 /* Sidebar section expand animation */
 @keyframes section-expand {
   from {

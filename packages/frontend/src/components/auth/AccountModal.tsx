@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuthStore } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import { usePreferencesStore } from "@/store/preferencesStore";
+import { useAirspaceStore } from "@/store/airspaceStore";
 import { api } from "@/lib/api";
 import { X, KeyRound } from "lucide-react";
 import {
@@ -51,6 +52,8 @@ export function AccountModal({ onClose }: AccountModalProps) {
   const { email } = useAuthStore();
   const { selfHosted } = useConfigStore();
   const { preferences, updatePreferences } = usePreferencesStore();
+  const airspaceEnabled = useAirspaceStore((s) => s.enabled);
+  const setAirspaceEnabled = useAirspaceStore((s) => s.setEnabled);
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -282,6 +285,27 @@ export function AccountModal({ onClose }: AccountModalProps) {
                     <SelectItem value="street">Street</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Extra layers */}
+              <div>
+                <Label className="text-xs font-medium text-muted-foreground mb-2 block">
+                  Extra layers
+                </Label>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={airspaceEnabled}
+                    onChange={(e) => setAirspaceEnabled(e.target.checked)}
+                    className="h-4 w-4 mt-0.5 rounded border-border accent-primary"
+                  />
+                  <div>
+                    <span className="text-sm">Airspace restrictions</span>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      ENAIRE zones for Spain — prohibited and restricted areas
+                    </p>
+                  </div>
+                </label>
               </div>
 
               <Button
