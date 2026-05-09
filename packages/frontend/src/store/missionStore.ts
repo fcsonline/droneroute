@@ -7,6 +7,7 @@ import type {
   Obstacle,
 } from "@droneroute/shared";
 import { DEFAULT_MISSION_CONFIG, DEFAULT_WAYPOINT } from "@droneroute/shared";
+import { usePreferencesStore } from "@/store/preferencesStore";
 import type { TemplateType } from "@/lib/templates";
 
 export type SelectionMode = "replace" | "toggle" | "range";
@@ -557,11 +558,12 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       dirty: false,
     }),
 
-  clearMission: () =>
+  clearMission: () => {
+    const prefs = usePreferencesStore.getState().preferences;
     set({
       missionId: null,
       missionName: "New Mission",
-      config: { ...DEFAULT_MISSION_CONFIG },
+      config: { ...DEFAULT_MISSION_CONFIG, ...prefs.missionDefaults },
       waypoints: [],
       pois: [],
       obstacles: [],
@@ -572,7 +574,8 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       isDrawingObstacle: false,
       drawingVertices: [],
       dirty: false,
-    }),
+    });
+  },
 
   setDirty: (dirty) => set({ dirty }),
 }));

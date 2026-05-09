@@ -29,3 +29,4 @@ Configure your drone model, camera, altitude reference, and safety options for t
 - If the estimated flight time exceeds the battery limit you set, a warning appears.
 - Height reference affects how altitude values are interpreted by the drone — choose the one that matches your operational needs. The default is **above ground level**.
 - All height fields enforce a minimum of 1 meter.
+- You can set default values for all mission settings in the **Mission defaults** tab of the settings dialog. New missions will use those defaults instead of the factory defaults.

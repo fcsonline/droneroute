@@ -8,6 +8,7 @@ import { kmzRoutes } from "./routes/kmz.js";
 import { authRoutes } from "./routes/auth.js";
 import { sharedRoutes } from "./routes/shared.js";
 import { adminRoutes } from "./routes/admin.js";
+import { preferencesRoutes } from "./routes/preferences.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,6 +43,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/missions", missionRoutes);
 app.use("/api/kmz", kmzRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/preferences", preferencesRoutes);
 app.use("/api", sharedRoutes);
 
 // Health check

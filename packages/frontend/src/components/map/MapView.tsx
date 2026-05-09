@@ -13,6 +13,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import { useMissionStore } from "@/store/missionStore";
 import { useConfigStore } from "@/store/configStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
 import { getObstacleWarnings } from "@/lib/geo";
 import { WaypointMarker } from "./WaypointMarker";
 import { PoiMarker } from "./PoiMarker";
@@ -468,10 +469,13 @@ export function MapView() {
   const addWaypoint = useMissionStore((s) => s.addWaypoint);
   const addPoi = useMissionStore((s) => s.addPoi);
   const addObstacle = useMissionStore((s) => s.addObstacle);
+  const vizPrefs = usePreferencesStore((s) => s.preferences?.visualization);
   const [mapStyle, setMapStyle] = useState(
-    "mapbox://styles/mapbox/satellite-streets-v12",
+    vizPrefs?.mapStyle === "street"
+      ? "mapbox://styles/mapbox/dark-v11"
+      : "mapbox://styles/mapbox/satellite-streets-v12",
   );
-  const [is3D, setIs3D] = useState(false);
+  const [is3D, setIs3D] = useState(vizPrefs?.viewMode === "3d");
   const [buildingPopup, setBuildingPopup] = useState<BuildingPopupData | null>(
     null,
   );

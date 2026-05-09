@@ -1,4 +1,6 @@
 import Database from "better-sqlite3";
+import bcrypt from "bcryptjs";
+import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -118,6 +120,16 @@ export function initDb(): void {
     // Column already exists — ignore
   }
 
+  // Migration: create user_preferences table
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS user_preferences (
+      user_id TEXT PRIMARY KEY,
+      preferences TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+  `);
+
   // Ensure ADMIN_EMAIL user has admin privileges (cloud mode)
   const selfHosted = (process.env.SELF_HOSTED ?? "true") === "true";
   const adminEmail = process.env.ADMIN_EMAIL || "";
@@ -125,6 +137,26 @@ export function initDb(): void {
     database
       .prepare("UPDATE users SET is_admin = 1 WHERE LOWER(email) = LOWER(?)")
       .run(adminEmail);
+  }
+
+  // Seed a dev account when ADMIN_EMAIL is set (self-hosted, development only)
+  const isDev = process.env.NODE_ENV !== "production";
+  if (isDev && selfHosted && adminEmail) {
+    const existing = database
+      .prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?)")
+      .get(adminEmail);
+    if (!existing) {
+      const id = uuidv4();
+      const passwordHash = bcrypt.hashSync(adminEmail, 10);
+      database
+        .prepare(
+          "INSERT INTO users (id, email, password_hash, email_verified, is_admin) VALUES (?, ?, ?, 1, 1)",
+        )
+        .run(id, adminEmail, passwordHash);
+      console.log(
+        `Dev account created — email: ${adminEmail} / password: ${adminEmail}`,
+      );
+    }
   }
 
   console.log("Database initialized at", DB_PATH);

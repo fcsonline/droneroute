@@ -312,6 +312,18 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+// ── User Preferences ────────────────────────────────────
+
+export interface VisualizationPreferences {
+  viewMode: "2d" | "3d";
+  mapStyle: "satellite" | "street";
+}
+
+export interface UserPreferences {
+  visualization: VisualizationPreferences;
+  missionDefaults: MissionConfig;
+}
+
 // ── Default Config ───────────────────────────────────────
 
 export const DEFAULT_MISSION_CONFIG: MissionConfig = {
@@ -344,4 +356,12 @@ export const DEFAULT_WAYPOINT: Omit<
   useGlobalTurnParam: true,
   gimbalPitchAngle: -45,
   actions: [],
+};
+
+export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  visualization: {
+    viewMode: "2d",
+    mapStyle: "satellite",
+  },
+  missionDefaults: { ...DEFAULT_MISSION_CONFIG },
 };

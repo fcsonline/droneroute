@@ -43,6 +43,7 @@ import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
 import { api } from "@/lib/api";
 import { getObstacleWarnings } from "@/lib/geo";
 
@@ -91,6 +92,14 @@ export default function App() {
   useEffect(() => {
     restore();
   }, []);
+
+  // Fetch user preferences after auth is restored
+  const { fetchPreferences } = usePreferencesStore();
+  useEffect(() => {
+    if (token) {
+      fetchPreferences();
+    }
+  }, [token]);
 
   // Detect /shared/:token or /admin URL on mount
   useEffect(() => {
