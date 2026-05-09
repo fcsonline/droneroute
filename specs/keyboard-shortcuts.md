@@ -13,6 +13,7 @@ Quick reference for all available keyboard shortcuts.
 | **F**                      | Open the facade scan template                    |
 | **Z**                      | Open the pencil path template                    |
 | **B**                      | Enter obstacle drawing mode                      |
+| **A**                      | Toggle airspace restriction zones overlay        |
 | **Escape**                 | Cancel the current action or deselect everything |
 | **Delete** / **Backspace** | Remove the selected waypoint, POI, or obstacle   |
 | **Ctrl+A** / **Cmd+A**     | Select all waypoints                             |

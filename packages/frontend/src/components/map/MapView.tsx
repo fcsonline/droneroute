@@ -22,6 +22,7 @@ import { TemplateDrawHandler } from "./TemplateDrawHandler";
 import { PencilDrawHandler } from "./PencilDrawHandler";
 import { ObstacleDrawHandler } from "./ObstacleDrawHandler";
 import { ObstaclePolygon } from "./ObstaclePolygon";
+import { AirspaceOverlay } from "./AirspaceOverlay";
 import { CameraFrustum } from "./CameraFrustum";
 import { Triangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -600,6 +601,7 @@ export function MapView() {
         <TemplateDrawHandler />
         <PencilDrawHandler />
         <ObstacleDrawHandler />
+        <AirspaceOverlay />
         {obstacles.map((obstacle) => (
           <ObstaclePolygon key={obstacle.id} obstacle={obstacle} />
         ))}

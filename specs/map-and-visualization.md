@@ -49,3 +49,13 @@ The map is the central workspace. Everything you do — placing waypoints, POIs,
 - You can click waypoints and POIs directly on the map to select and edit them.
 - The geocoding search box collapses to an icon when not in use to save space.
 - A Mapbox access token is required. Self-hosted instances must set `MAPBOX_TOKEN` in their `.env` file.
+
+## Airspace restriction zones
+
+You can overlay airspace restriction zones on the map to check for drone no-fly areas:
+
+- Toggle the overlay by pressing **A** or enabling **Airspace restrictions** in the **Visualization** tab of the settings dialog under **Extra layers**.
+- Zones are fetched from ENAIRE (Spain) and classified as either **prohibited** (red) or **restricted** (orange).
+- When the flight path enters a prohibited zone, a red warning banner appears at the bottom of the map.
+- When the flight path enters a restricted zone, an orange warning banner appears indicating authorization may be required.
+- Zones update automatically as you pan the map — data is fetched for the current viewport with caching to avoid redundant requests.
