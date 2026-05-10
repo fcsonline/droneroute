@@ -22,22 +22,22 @@
     "@react-oauth/google": "^0.13.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.8.0",
-    "mapbox-gl": "^3.23.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "lucide-react": "^1.14.0",
+    "mapbox-gl": "^3.23.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "react-map-gl": "^8.1.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.0.0",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.4",
+    "@tailwindcss/vite": "^4.3.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.1",
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
-    "vite": "^8.0.9"
+    "vite": "^8.0.11"
   }
 }
