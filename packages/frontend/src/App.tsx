@@ -44,6 +44,7 @@ import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import { usePreferencesStore } from "@/store/preferencesStore";
+import { formatDistance } from "@/lib/units";
 import { useAirspaceStore } from "@/store/airspaceStore";
 import { api } from "@/lib/api";
 import { getObstacleWarnings, getAirspaceWarnings } from "@/lib/geo";
@@ -95,7 +96,8 @@ export default function App() {
   }, []);
 
   // Fetch user preferences after auth is restored
-  const { fetchPreferences } = usePreferencesStore();
+  const { fetchPreferences, preferences } = usePreferencesStore();
+  const unitSystem = preferences.unitSystem;
   useEffect(() => {
     if (token) {
       fetchPreferences();
@@ -712,9 +714,7 @@ export default function App() {
                       >
                         <Route className="h-3 w-3 text-emerald-400" />
                         <span className="text-emerald-300 font-medium">
-                          {distance >= 1000
-                            ? `${(distance / 1000).toFixed(1)}km`
-                            : `~${distance.toFixed(0)}m`}
+                          {formatDistance(distance, unitSystem)}
                         </span>
                       </span>
                       <span

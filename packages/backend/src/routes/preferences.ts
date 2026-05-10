@@ -24,6 +24,7 @@ preferencesRoutes.get("/", authMiddleware, (req: AuthRequest, res) => {
     const saved = JSON.parse(row.preferences);
     // Merge with defaults to fill in any new fields
     const merged: UserPreferences = {
+      unitSystem: saved.unitSystem ?? DEFAULT_USER_PREFERENCES.unitSystem,
       visualization: {
         ...DEFAULT_USER_PREFERENCES.visualization,
         ...saved.visualization,

@@ -1,5 +1,7 @@
 import { useMissionStore } from "@/store/missionStore";
 import type { SelectionMode } from "@/store/missionStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
+import { formatHeight, formatSpeed } from "@/lib/units";
 import type { Waypoint } from "@droneroute/shared";
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { useMap } from "react-map-gl/mapbox";
@@ -107,6 +109,7 @@ function DropLine({ waypoint }: { waypoint: Waypoint }) {
 export function WaypointMarker({ waypoint, is3D }: WaypointMarkerProps) {
   const { selectedWaypointIndices, selectWaypoint, moveWaypoint } =
     useMissionStore();
+  const unitSystem = usePreferencesStore((s) => s.preferences.unitSystem);
   const isSelected = selectedWaypointIndices.has(waypoint.index);
 
   const bg = isSelected ? "#3b82f6" : "#1e293b";
@@ -159,7 +162,7 @@ export function WaypointMarker({ waypoint, is3D }: WaypointMarkerProps) {
     >
       <div
         onClick={handleClick}
-        title={`${waypoint.name}\nAlt: ${waypoint.height}m | Speed: ${waypoint.speed}m/s\nGimbal: ${waypoint.gimbalPitchAngle}°\n${waypoint.latitude.toFixed(6)}, ${waypoint.longitude.toFixed(6)}`}
+        title={`${waypoint.name}\nAlt: ${formatHeight(waypoint.height, unitSystem)} | Speed: ${formatSpeed(waypoint.speed, unitSystem)}\nGimbal: ${waypoint.gimbalPitchAngle}°\n${waypoint.latitude.toFixed(6)}, ${waypoint.longitude.toFixed(6)}`}
         style={{
           position: "relative",
           background: bg,

@@ -11,6 +11,18 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ActionEditor } from "./ActionEditor";
 import { calculateIdealGimbalPitch } from "@/lib/geo";
+import { usePreferencesStore } from "@/store/preferencesStore";
+import {
+  heightLabel,
+  speedLabel,
+  toDisplayHeight,
+  fromDisplayHeight,
+  toDisplaySpeed,
+  fromDisplaySpeed,
+  formatDistance,
+  formatHeight,
+  speedRange,
+} from "@/lib/units";
 import type { HeadingMode, TurnMode } from "@droneroute/shared";
 
 /**
@@ -45,6 +57,7 @@ export function WaypointEditorInline({
   waypointIndex,
 }: WaypointEditorInlineProps) {
   const { waypoints, updateWaypoint, config, pois } = useMissionStore();
+  const unitSystem = usePreferencesStore((s) => s.preferences.unitSystem);
 
   const wp = waypoints.find((w) => w.index === waypointIndex);
   if (!wp) return null;
@@ -57,12 +70,22 @@ export function WaypointEditorInline({
     <div className="p-3 space-y-3">
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label className="text-xs">Altitude (m)</Label>
+          <Label className="text-xs">
+            Altitude ({heightLabel(unitSystem)})
+          </Label>
           <Input
             type="number"
-            value={wp.height}
+            value={toDisplayHeight(wp.height, unitSystem)}
             onChange={(e) =>
-              update({ height: Math.max(1, parseFloat(e.target.value) || 1) })
+              update({
+                height: Math.max(
+                  1,
+                  fromDisplayHeight(
+                    parseFloat(e.target.value) || 1,
+                    unitSystem,
+                  ),
+                ),
+              })
             }
             min={1}
             max={500}
@@ -70,19 +93,22 @@ export function WaypointEditorInline({
           />
         </div>
         <div>
-          <Label className="text-xs">Speed (m/s)</Label>
+          <Label className="text-xs">Speed ({speedLabel(unitSystem)})</Label>
           <Input
             type="number"
-            value={wp.speed}
+            value={toDisplaySpeed(wp.speed, unitSystem)}
             onChange={(e) =>
               update({
-                speed: parseFloat(e.target.value) || 1,
+                speed: fromDisplaySpeed(
+                  parseFloat(e.target.value) || 1,
+                  unitSystem,
+                ),
                 useGlobalSpeed: false,
               })
             }
-            min={1}
-            max={15}
-            step={0.5}
+            min={speedRange(unitSystem).min}
+            max={speedRange(unitSystem).max}
+            step={speedRange(unitSystem).step}
             className="h-8 text-xs"
           />
         </div>
@@ -105,15 +131,12 @@ export function WaypointEditorInline({
             );
             const isAlreadyApplied = wp.gimbalPitchAngle === suggested;
             const heightDiff = wp.height - targetPoi.height;
-            const distLabel =
-              distance >= 1000
-                ? `${(distance / 1000).toFixed(1)}km`
-                : `${Math.round(distance)}m`;
+            const distLabel = formatDistance(distance, unitSystem);
             const heightDesc =
               heightDiff > 0
-                ? `${Math.round(heightDiff)}m above`
+                ? `${formatHeight(heightDiff, unitSystem)} above`
                 : heightDiff < 0
-                  ? `${Math.round(Math.abs(heightDiff))}m below`
+                  ? `${formatHeight(Math.abs(heightDiff), unitSystem)} below`
                   : "level with";
             const tooltip = `Point your camera right at ${targetPoi.name} — the perfect angle for the shot.\n\n${distLabel} away, ${heightDesc}. Click to apply ${suggested}°.`;
             return (

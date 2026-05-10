@@ -17,6 +17,15 @@ import { useAirspaceStore, AIRSPACE_PROVIDERS } from "@/store/airspaceStore";
 import { api } from "@/lib/api";
 import { X, KeyRound } from "lucide-react";
 import {
+  speedLabel,
+  heightLabel,
+  toDisplaySpeed,
+  fromDisplaySpeed,
+  toDisplayHeight,
+  fromDisplayHeight,
+  speedRange,
+} from "@/lib/units";
+import {
   DRONE_MODELS,
   DEFAULT_USER_PREFERENCES,
   DEFAULT_MISSION_CONFIG,
@@ -30,6 +39,7 @@ import type {
   MissionConfig,
   UserPreferences,
   VisualizationPreferences,
+  UnitSystem,
 } from "@droneroute/shared";
 
 interface AccountModalProps {
@@ -70,6 +80,9 @@ export function AccountModal({ onClose }: AccountModalProps) {
   const [missionDefaults, setMissionDefaults] = useState(
     preferences?.missionDefaults ?? DEFAULT_MISSION_CONFIG,
   );
+  const [unitSystem, setUnitSystem] = useState<UnitSystem>(
+    preferences?.unitSystem ?? "metric",
+  );
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [prefsSaved, setPrefsSaved] = useState(false);
 
@@ -78,6 +91,7 @@ export function AccountModal({ onClose }: AccountModalProps) {
     if (preferences?.visualization) setVizPrefs(preferences.visualization);
     if (preferences?.missionDefaults)
       setMissionDefaults(preferences.missionDefaults);
+    if (preferences?.unitSystem) setUnitSystem(preferences.unitSystem);
   }, [preferences]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -108,6 +122,7 @@ export function AccountModal({ onClose }: AccountModalProps) {
     setPrefsSaving(true);
     setPrefsSaved(false);
     const newPrefs: UserPreferences = {
+      unitSystem,
       visualization: vizPrefs,
       missionDefaults,
     };
@@ -287,6 +302,24 @@ export function AccountModal({ onClose }: AccountModalProps) {
                 </Select>
               </div>
 
+              <div>
+                <Label className="text-xs">Unit system</Label>
+                <Select
+                  value={unitSystem}
+                  onValueChange={(v) => setUnitSystem(v as UnitSystem)}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="metric">Metric (m, m/s, km)</SelectItem>
+                    <SelectItem value="imperial">
+                      Imperial (ft, mph, mi)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Extra layers */}
               <div>
                 <Label className="text-xs font-medium text-muted-foreground mb-2 block">
@@ -406,30 +439,45 @@ export function AccountModal({ onClose }: AccountModalProps) {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-xs">Flight speed (m/s)</Label>
+                  <Label className="text-xs">
+                    Flight speed ({speedLabel(unitSystem)})
+                  </Label>
                   <Input
                     type="number"
-                    value={missionDefaults.autoFlightSpeed}
+                    value={toDisplaySpeed(
+                      missionDefaults.autoFlightSpeed,
+                      unitSystem,
+                    )}
                     onChange={(e) =>
                       setMissionDefault({
-                        autoFlightSpeed: parseFloat(e.target.value) || 1,
+                        autoFlightSpeed: fromDisplaySpeed(
+                          parseFloat(e.target.value) || 1,
+                          unitSystem,
+                        ),
                       })
                     }
-                    min={1}
-                    max={15}
-                    step={0.5}
+                    min={speedRange(unitSystem).min}
+                    max={speedRange(unitSystem).max}
+                    step={speedRange(unitSystem).step}
                     className="h-8 text-xs"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">Takeoff height (m)</Label>
+                  <Label className="text-xs">
+                    Takeoff height ({heightLabel(unitSystem)})
+                  </Label>
                   <Input
                     type="number"
-                    value={missionDefaults.takeOffSecurityHeight}
+                    value={toDisplayHeight(
+                      missionDefaults.takeOffSecurityHeight,
+                      unitSystem,
+                    )}
                     onChange={(e) =>
                       setMissionDefault({
-                        takeOffSecurityHeight:
+                        takeOffSecurityHeight: fromDisplayHeight(
                           parseFloat(e.target.value) || 1.2,
+                          unitSystem,
+                        ),
                       })
                     }
                     min={1.2}
@@ -574,18 +622,26 @@ export function AccountModal({ onClose }: AccountModalProps) {
               </div>
 
               <div>
-                <Label className="text-xs">Transit speed (m/s)</Label>
+                <Label className="text-xs">
+                  Transit speed ({speedLabel(unitSystem)})
+                </Label>
                 <Input
                   type="number"
-                  value={missionDefaults.globalTransitionalSpeed}
+                  value={toDisplaySpeed(
+                    missionDefaults.globalTransitionalSpeed,
+                    unitSystem,
+                  )}
                   onChange={(e) =>
                     setMissionDefault({
-                      globalTransitionalSpeed: parseFloat(e.target.value) || 1,
+                      globalTransitionalSpeed: fromDisplaySpeed(
+                        parseFloat(e.target.value) || 1,
+                        unitSystem,
+                      ),
                     })
                   }
-                  min={1}
-                  max={15}
-                  step={0.5}
+                  min={speedRange(unitSystem).min}
+                  max={speedRange(unitSystem).max}
+                  step={speedRange(unitSystem).step}
                   className="h-8 text-xs"
                 />
                 <div className="text-[10px] text-muted-foreground mt-0.5">
