@@ -22,3 +22,5 @@ policy, and no plaintext credentials in logs.
   is served same-origin), instead of reflecting every origin. Document
   `CORS_ORIGIN` in `.env.example`.
 - Stop logging the seeded dev account's password to stdout.
+- Update dependencies to clear high-severity advisories flagged by `npm audit`
+  (`multer` DoS, transitive `form-data` CRLF injection).
