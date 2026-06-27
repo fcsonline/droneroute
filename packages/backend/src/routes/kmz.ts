@@ -12,6 +12,7 @@ import {
   type AuthRequest,
 } from "../middleware/auth.js";
 import { strictLimiter } from "../middleware/rateLimit.js";
+import { validateMissionGeometry } from "../services/missionValidation.js";
 
 export const kmzRoutes = Router();
 
@@ -32,6 +33,12 @@ kmzRoutes.post(
         res
           .status(400)
           .json({ error: "At least 2 waypoints and a config are required" });
+        return;
+      }
+
+      const geometryError = validateMissionGeometry({ waypoints, pois });
+      if (geometryError) {
+        res.status(400).json({ error: geometryError });
         return;
       }
 
@@ -117,6 +124,14 @@ kmzRoutes.post(
       }
 
       const { config, waypoints, pois } = await parseKmz(req.file.buffer);
+
+      const geometryError = validateMissionGeometry({ waypoints, pois });
+      if (geometryError) {
+        res
+          .status(400)
+          .json({ error: `Invalid KMZ contents: ${geometryError}` });
+        return;
+      }
 
       // Optionally save to DB
       const save = req.query.save === "true";

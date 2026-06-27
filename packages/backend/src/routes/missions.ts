@@ -7,6 +7,10 @@ import {
   type AuthRequest,
 } from "../middleware/auth.js";
 import type { Mission } from "@droneroute/shared";
+import {
+  validateMissionCreate,
+  validateMissionUpdate,
+} from "../services/missionValidation.js";
 
 export const missionRoutes = Router();
 
@@ -62,6 +66,12 @@ missionRoutes.post("/", optionalAuth, (req: AuthRequest, res) => {
     return;
   }
 
+  const validationError = validateMissionCreate(req.body);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
   const db = getDb();
   const id = uuidv4();
   db.prepare(
@@ -94,6 +104,12 @@ missionRoutes.put("/:id", authMiddleware, (req: AuthRequest, res) => {
 
   if (existing.user_id !== req.userId) {
     res.status(403).json({ error: "Not authorized" });
+    return;
+  }
+
+  const validationError = validateMissionUpdate(req.body);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
     return;
   }
 
