@@ -2,7 +2,6 @@ import { Router } from "express";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import type { Mission } from "@droneroute/shared";
-import { DEFAULT_MISSION_CONFIG } from "@droneroute/shared";
 import { generateKmzBuffer } from "../services/kmzGenerator.js";
 import { parseKmz } from "../services/kmzParser.js";
 import { getDb } from "../models/db.js";
@@ -12,6 +11,7 @@ import {
   type AuthRequest,
 } from "../middleware/auth.js";
 import { strictLimiter } from "../middleware/rateLimit.js";
+import { validateMissionGeometry } from "../services/missionValidation.js";
 
 export const kmzRoutes = Router();
 
@@ -32,6 +32,12 @@ kmzRoutes.post(
         res
           .status(400)
           .json({ error: "At least 2 waypoints and a config are required" });
+        return;
+      }
+
+      const geometryError = validateMissionGeometry({ waypoints, pois });
+      if (geometryError) {
+        res.status(400).json({ error: geometryError });
         return;
       }
 
@@ -99,7 +105,7 @@ kmzRoutes.get(
       res.send(buffer);
     } catch (err: any) {
       console.error("KMZ download error:", err);
-      res.status(500).json({ error: err.message || "Failed to generate KMZ" });
+      res.status(500).json({ error: "Failed to generate KMZ" });
     }
   },
 );
@@ -117,6 +123,14 @@ kmzRoutes.post(
       }
 
       const { config, waypoints, pois } = await parseKmz(req.file.buffer);
+
+      const geometryError = validateMissionGeometry({ waypoints, pois });
+      if (geometryError) {
+        res
+          .status(400)
+          .json({ error: `Invalid KMZ contents: ${geometryError}` });
+        return;
+      }
 
       // Optionally save to DB
       const save = req.query.save === "true";

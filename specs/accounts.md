@@ -32,3 +32,6 @@ Settings are saved to your account and sync across devices.
 - Your profile picture comes from Gravatar based on your email address.
 - The unit system setting affects all distances, speeds, and heights throughout the app. Metric uses m, m/s, and km. Imperial uses ft, mph, and mi. Internal storage is always metric — the conversion happens at the display layer only.
 - Administrators can manage users, ban accounts, and promote other users to admin.
+- Sign-in, registration and password changes are rate limited to protect against
+  brute-force attempts. After too many failed attempts you'll be asked to wait a
+  few minutes before trying again.

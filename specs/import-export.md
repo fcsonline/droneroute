@@ -27,3 +27,5 @@ Bring in existing missions or export your planned flight as a file ready for DJI
 - The exported KMZ follows DJI's WPML standard, so it works with DJI's own flight apps too.
 - Imported missions may not look exactly the same if the original file used features not supported by DroneRoute.
 - The maximum import file size is 50 MB.
+- Imported and saved missions are validated: files with malformed contents or
+  out-of-range coordinates are rejected with an error rather than being loaded.
