@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@droneroute/shared": "*",
-    "archiver": "^8.0.0",
+    "archiver": "^7.0.1",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.10.0",
     "cors": "^2.8.5",
