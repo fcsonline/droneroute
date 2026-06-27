@@ -12,6 +12,7 @@ import { airspaceRoutes } from "./routes/airspace.js";
 import { adminRoutes } from "./routes/admin.js";
 import { preferencesRoutes } from "./routes/preferences.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
+import { resolveDefaultMapView } from "./lib/config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -77,6 +78,7 @@ app.get("/api/config", (_req, res) => {
     selfHosted,
     googleClientId: selfHosted ? undefined : process.env.GOOGLE_CLIENT_ID,
     mapboxToken: process.env.MAPBOX_TOKEN || "",
+    defaultMapView: resolveDefaultMapView(),
   });
 });
 

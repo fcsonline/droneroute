@@ -461,6 +461,7 @@ function PoiPointingLines({ is3D }: { is3D: boolean }) {
 
 export function MapView() {
   const mapboxToken = useConfigStore((s) => s.mapboxToken);
+  const defaultMapView = useConfigStore((s) => s.defaultMapView);
   const waypoints = useMissionStore((s) => s.waypoints);
   const pois = useMissionStore((s) => s.pois);
   const obstacles = useMissionStore((s) => s.obstacles);
@@ -572,9 +573,9 @@ export function MapView() {
       <Map
         mapboxAccessToken={mapboxToken}
         initialViewState={{
-          longitude: 2.1686,
-          latitude: 41.3874,
-          zoom: 13,
+          longitude: defaultMapView.longitude,
+          latitude: defaultMapView.latitude,
+          zoom: defaultMapView.zoom,
           pitch: 0,
         }}
         style={{ width: "100%", height: "100%" }}

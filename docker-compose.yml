@@ -31,6 +31,10 @@ services:
       - DB_PATH=/app/data/droneroute.db
       # - SELF_HOSTED=false
       # - ADMIN_EMAIL=admin@example.com
+      # Default map location shown on load (optional). Defaults to Barcelona.
+      # - DEFAULT_MAP_LAT=41.3874
+      # - DEFAULT_MAP_LNG=2.1686
+      # - DEFAULT_MAP_ZOOM=13
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.droneroute.rule=Host(`droneroute.localhost`)"

@@ -327,6 +327,15 @@ export interface UserPreferences {
   missionDefaults: MissionConfig;
 }
 
+// ── Map ──────────────────────────────────────────────────
+
+/** Map center (latitude/longitude) and zoom shown when the app first loads. */
+export interface MapViewState {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+}
+
 // ── Default Config ───────────────────────────────────────
 
 export const DEFAULT_MISSION_CONFIG: MissionConfig = {
@@ -368,4 +377,14 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
     mapStyle: "satellite",
   },
   missionDefaults: { ...DEFAULT_MISSION_CONFIG },
+};
+
+/**
+ * Built-in default map view (Barcelona). Used when no DEFAULT_MAP_* env vars are
+ * configured, and as the client-side fallback before the config endpoint loads.
+ */
+export const DEFAULT_MAP_VIEW: MapViewState = {
+  latitude: 41.3874,
+  longitude: 2.1686,
+  zoom: 13,
 };

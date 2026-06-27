@@ -46,6 +46,7 @@ The map is the central workspace. Everything you do — placing waypoints, POIs,
 ## Good to know
 
 - The default view is **satellite** imagery in **2D** mode. Users can change these defaults in the **Visualization** tab of the settings dialog — the preferred view mode and map style are applied when the app loads.
+- The map opens centered on Barcelona by default. Self-hosted instances can change the starting location by setting `DEFAULT_MAP_LAT`, `DEFAULT_MAP_LNG`, and `DEFAULT_MAP_ZOOM` in their environment (or `docker-compose.yml`) so the map opens on their local area. Invalid or out-of-range values fall back to the built-in default.
 - You can click waypoints and POIs directly on the map to select and edit them.
 - The geocoding search box collapses to an icon when not in use to save space.
 - A Mapbox access token is required. Self-hosted instances must set `MAPBOX_TOKEN` in their `.env` file.

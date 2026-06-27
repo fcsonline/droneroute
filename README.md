@@ -71,6 +71,10 @@ A [docker-compose.yml](docker-compose.yml) with Traefik reverse proxy is also av
 
 The self-hosted version is designed as a single-account, personal instance. Mission sharing is hidden since share links require your instance to be publicly reachable.
 
+### Default map location
+
+By default the map opens centered on Barcelona. Set `DEFAULT_MAP_LAT`, `DEFAULT_MAP_LNG`, and `DEFAULT_MAP_ZOOM` (in your `.env` or `docker-compose.yml`) to make the map open on your local area instead. See [.env.example](.env.example) for the accepted ranges.
+
 ## Upload to Your DJI Controller
 
 After exporting a KMZ file, push it directly to a USB-connected DJI RC controller:
