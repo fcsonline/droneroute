@@ -19,6 +19,16 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useMissionStore } from "@/store/missionStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
+import {
+  heightLabel,
+  speedLabel,
+  toDisplayHeight,
+  fromDisplayHeight,
+  toDisplaySpeed,
+  fromDisplaySpeed,
+  speedRange,
+} from "@/lib/units";
 import type { HeadingMode, TurnMode, Waypoint } from "@droneroute/shared";
 
 /**
@@ -46,6 +56,7 @@ export function BulkActionToolbar() {
     removeSelectedWaypoints,
     updateSelectedWaypoints,
   } = useMissionStore();
+  const unitSystem = usePreferencesStore((s) => s.preferences.unitSystem);
 
   const [showEditor, setShowEditor] = useState(false);
 
@@ -197,24 +208,35 @@ export function BulkActionToolbar() {
               <div>
                 <Label className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <ArrowUp className="h-2.5 w-2.5" />
-                  Altitude (m)
+                  Altitude ({heightLabel(unitSystem)})
                 </Label>
                 <Input
                   type="number"
                   placeholder={
-                    commonHeight !== undefined ? String(commonHeight) : "Mixed"
+                    commonHeight !== undefined
+                      ? String(toDisplayHeight(commonHeight, unitSystem))
+                      : "Mixed"
                   }
-                  defaultValue={commonHeight !== undefined ? commonHeight : ""}
+                  defaultValue={
+                    commonHeight !== undefined
+                      ? toDisplayHeight(commonHeight, unitSystem)
+                      : ""
+                  }
                   key={`h-${commonHeight}`}
                   onBlur={(e) => {
                     const v = parseFloat(e.target.value);
-                    if (!isNaN(v)) updateSelectedWaypoints({ height: v });
+                    if (!isNaN(v))
+                      updateSelectedWaypoints({
+                        height: fromDisplayHeight(v, unitSystem),
+                      });
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       const v = parseFloat(e.currentTarget.value);
                       if (!isNaN(v) && v >= 1)
-                        updateSelectedWaypoints({ height: v });
+                        updateSelectedWaypoints({
+                          height: fromDisplayHeight(v, unitSystem),
+                        });
                     }
                   }}
                   min={1}
@@ -227,20 +249,26 @@ export function BulkActionToolbar() {
               <div>
                 <Label className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <Gauge className="h-2.5 w-2.5" />
-                  Speed (m/s)
+                  Speed ({speedLabel(unitSystem)})
                 </Label>
                 <Input
                   type="number"
                   placeholder={
-                    commonSpeed !== undefined ? String(commonSpeed) : "Mixed"
+                    commonSpeed !== undefined
+                      ? String(toDisplaySpeed(commonSpeed, unitSystem))
+                      : "Mixed"
                   }
-                  defaultValue={commonSpeed !== undefined ? commonSpeed : ""}
+                  defaultValue={
+                    commonSpeed !== undefined
+                      ? toDisplaySpeed(commonSpeed, unitSystem)
+                      : ""
+                  }
                   key={`s-${commonSpeed}`}
                   onBlur={(e) => {
                     const v = parseFloat(e.target.value);
                     if (!isNaN(v))
                       updateSelectedWaypoints({
-                        speed: v,
+                        speed: fromDisplaySpeed(v, unitSystem),
                         useGlobalSpeed: false,
                       });
                   }}
@@ -249,13 +277,13 @@ export function BulkActionToolbar() {
                       const v = parseFloat(e.currentTarget.value);
                       if (!isNaN(v))
                         updateSelectedWaypoints({
-                          speed: v,
+                          speed: fromDisplaySpeed(v, unitSystem),
                           useGlobalSpeed: false,
                         });
                     }
                   }}
-                  min={1}
-                  max={15}
+                  min={speedRange(unitSystem).min}
+                  max={speedRange(unitSystem).max}
                   step={0.5}
                   className="h-7 text-xs mt-0.5"
                 />

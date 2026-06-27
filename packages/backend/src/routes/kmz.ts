@@ -105,7 +105,7 @@ kmzRoutes.get(
       res.send(buffer);
     } catch (err: any) {
       console.error("KMZ download error:", err);
-      res.status(500).json({ error: err.message || "Failed to generate KMZ" });
+      res.status(500).json({ error: "Failed to generate KMZ" });
     }
   },
 );

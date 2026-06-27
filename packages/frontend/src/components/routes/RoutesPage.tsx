@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
+import { formatDistance } from "@/lib/units";
 import { api } from "@/lib/api";
 import { DRONE_MODELS } from "@droneroute/shared";
 import type {
@@ -110,6 +112,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
   const { loadMission, setCurrentPage } = useMissionStore();
   const { token } = useAuthStore();
   const { selfHosted } = useConfigStore();
+  const unitSystem = usePreferencesStore((s) => s.preferences.unitSystem);
   const [missions, setMissions] = useState<SavedMission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -510,9 +513,7 @@ export function RoutesPage({ onRequestAuth }: RoutesPageProps) {
                           {dist > 0 && (
                             <span className="flex items-center gap-1">
                               <Route className="h-3 w-3 text-emerald-400" />
-                              {dist >= 1000
-                                ? `${(dist / 1000).toFixed(1)}km`
-                                : `${Math.round(dist)}m`}
+                              {formatDistance(dist, unitSystem)}
                             </span>
                           )}
                           {flightTime > 0 && (

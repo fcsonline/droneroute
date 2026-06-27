@@ -319,7 +319,10 @@ export interface VisualizationPreferences {
   mapStyle: "satellite" | "street";
 }
 
+export type UnitSystem = "metric" | "imperial";
+
 export interface UserPreferences {
+  unitSystem: UnitSystem;
   visualization: VisualizationPreferences;
   missionDefaults: MissionConfig;
 }
@@ -359,6 +362,7 @@ export const DEFAULT_WAYPOINT: Omit<
 };
 
 export const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  unitSystem: "metric",
   visualization: {
     viewMode: "2d",
     mapStyle: "satellite",

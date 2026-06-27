@@ -11,6 +11,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Check, X, MapPin } from "lucide-react";
+import { usePreferencesStore } from "@/store/preferencesStore";
+import {
+  heightLabel,
+  speedLabel,
+  distanceLabel,
+  toDisplayHeight,
+  fromDisplayHeight,
+  toDisplaySpeed,
+  fromDisplaySpeed,
+  toDisplayDistance,
+  fromDisplayDistance,
+  speedRange,
+} from "@/lib/units";
 import type {
   TemplateType,
   OrbitParams,
@@ -51,6 +64,7 @@ export function TemplateConfigPanel({
   waypointCount,
   pois,
 }: TemplateConfigPanelProps) {
+  const unitSystem = usePreferencesStore((s) => s.preferences.unitSystem);
   const title =
     type === "orbit"
       ? "Orbit"
@@ -121,10 +135,17 @@ export function TemplateConfigPanel({
       {type === "orbit" && orbitParams && onOrbitChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
-            <Label className="text-[10px]">Radius (m)</Label>
+            <Label className="text-[10px]">
+              Radius ({distanceLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={orbitParams.radiusM}
-              onChange={(v) => onOrbitChange({ ...orbitParams, radiusM: v })}
+              value={toDisplayDistance(orbitParams.radiusM, unitSystem)}
+              onChange={(v) =>
+                onOrbitChange({
+                  ...orbitParams,
+                  radiusM: fromDisplayDistance(v, unitSystem),
+                })
+              }
               min={5}
               step={5}
               fallback={5}
@@ -132,10 +153,17 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Altitude (m)</Label>
+            <Label className="text-[10px]">
+              Altitude ({heightLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={orbitParams.altitude}
-              onChange={(v) => onOrbitChange({ ...orbitParams, altitude: v })}
+              value={toDisplayHeight(orbitParams.altitude, unitSystem)}
+              onChange={(v) =>
+                onOrbitChange({
+                  ...orbitParams,
+                  altitude: fromDisplayHeight(v, unitSystem),
+                })
+              }
               min={5}
               step={5}
               fallback={30}
@@ -185,10 +213,17 @@ export function TemplateConfigPanel({
       {type === "grid" && gridParams && onGridChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
-            <Label className="text-[10px]">Altitude (m)</Label>
+            <Label className="text-[10px]">
+              Altitude ({heightLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={gridParams.altitude}
-              onChange={(v) => onGridChange({ ...gridParams, altitude: v })}
+              value={toDisplayHeight(gridParams.altitude, unitSystem)}
+              onChange={(v) =>
+                onGridChange({
+                  ...gridParams,
+                  altitude: fromDisplayHeight(v, unitSystem),
+                })
+              }
               min={5}
               step={5}
               fallback={80}
@@ -196,10 +231,17 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Line spacing (m)</Label>
+            <Label className="text-[10px]">
+              Line spacing ({distanceLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={gridParams.spacingM}
-              onChange={(v) => onGridChange({ ...gridParams, spacingM: v })}
+              value={toDisplayDistance(gridParams.spacingM, unitSystem)}
+              onChange={(v) =>
+                onGridChange({
+                  ...gridParams,
+                  spacingM: fromDisplayDistance(v, unitSystem),
+                })
+              }
               min={3}
               step={5}
               fallback={30}
@@ -249,11 +291,16 @@ export function TemplateConfigPanel({
       {type === "facade" && facadeParams && onFacadeChange && (
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
-            <Label className="text-[10px]">Distance from wall (m)</Label>
+            <Label className="text-[10px]">
+              Distance from wall ({distanceLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={facadeParams.distanceM}
+              value={toDisplayDistance(facadeParams.distanceM, unitSystem)}
               onChange={(v) =>
-                onFacadeChange({ ...facadeParams, distanceM: v })
+                onFacadeChange({
+                  ...facadeParams,
+                  distanceM: fromDisplayDistance(v, unitSystem),
+                })
               }
               min={3}
               step={5}
@@ -262,14 +309,17 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Min altitude (m)</Label>
+            <Label className="text-[10px]">
+              Min altitude ({heightLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={facadeParams.minAltitude}
+              value={toDisplayHeight(facadeParams.minAltitude, unitSystem)}
               onChange={(v) => {
+                const metricV = fromDisplayHeight(v, unitSystem);
                 onFacadeChange({
                   ...facadeParams,
-                  minAltitude: v,
-                  maxAltitude: Math.max(v + 5, facadeParams.maxAltitude),
+                  minAltitude: metricV,
+                  maxAltitude: Math.max(metricV + 5, facadeParams.maxAltitude),
                 });
               }}
               min={2}
@@ -279,16 +329,21 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Max altitude (m)</Label>
+            <Label className="text-[10px]">
+              Max altitude ({heightLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={facadeParams.maxAltitude}
+              value={toDisplayHeight(facadeParams.maxAltitude, unitSystem)}
               onChange={(v) =>
                 onFacadeChange({
                   ...facadeParams,
-                  maxAltitude: Math.max(facadeParams.minAltitude + 5, v),
+                  maxAltitude: Math.max(
+                    facadeParams.minAltitude + 5,
+                    fromDisplayHeight(v, unitSystem),
+                  ),
                 })
               }
-              min={facadeParams.minAltitude + 5}
+              min={toDisplayHeight(facadeParams.minAltitude + 5, unitSystem)}
               step={5}
               fallback={30}
               className="h-7 text-xs"
@@ -357,10 +412,17 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Altitude (m)</Label>
+            <Label className="text-[10px]">
+              Altitude ({heightLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={pencilParams.altitude}
-              onChange={(v) => onPencilChange({ ...pencilParams, altitude: v })}
+              value={toDisplayHeight(pencilParams.altitude, unitSystem)}
+              onChange={(v) =>
+                onPencilChange({
+                  ...pencilParams,
+                  altitude: fromDisplayHeight(v, unitSystem),
+                })
+              }
               min={5}
               step={5}
               fallback={30}
@@ -368,13 +430,20 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
-            <Label className="text-[10px]">Speed (m/s)</Label>
+            <Label className="text-[10px]">
+              Speed ({speedLabel(unitSystem)})
+            </Label>
             <NumericInput
-              value={pencilParams.speed}
-              onChange={(v) => onPencilChange({ ...pencilParams, speed: v })}
-              min={1}
-              max={15}
-              step={0.5}
+              value={toDisplaySpeed(pencilParams.speed, unitSystem)}
+              onChange={(v) =>
+                onPencilChange({
+                  ...pencilParams,
+                  speed: fromDisplaySpeed(v, unitSystem),
+                })
+              }
+              min={speedRange(unitSystem).min}
+              max={speedRange(unitSystem).max}
+              step={speedRange(unitSystem).step}
               fallback={7}
               className="h-7 text-xs"
             />

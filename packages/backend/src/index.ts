@@ -1,5 +1,6 @@
-import express from "express";
+import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initDb } from "./models/db.js";
@@ -20,7 +21,23 @@ const PORT = process.env.PORT || 3001;
 // Trust reverse proxy (e.g. nginx, Docker) so rate limiting uses real client IP
 app.set("trust proxy", 1);
 
-// CORS configuration — restrict to configured origins in production
+// Security headers. CSP and COEP are disabled because the SPA embeds Mapbox GL
+// (web workers loaded from blob: URLs) and, in cloud mode, Google OAuth — a strict
+// CSP/COEP breaks both. All other baseline headers (nosniff, frameguard, HSTS,
+// referrer-policy, …) are applied. Tightening CSP is tracked as a follow-up.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    // Allow Google OAuth popups (cloud mode) to message back to the opener.
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  }),
+);
+
+// CORS configuration. The SPA is served same-origin (and dev uses the Vite /api
+// proxy), so cross-origin access is only needed for split deployments. When
+// CORS_ORIGIN is unset we disable cross-origin requests entirely rather than
+// reflecting every origin.
 const corsOrigin = process.env.CORS_ORIGIN;
 app.use(
   cors(
@@ -29,7 +46,7 @@ app.use(
           origin: corsOrigin.split(",").map((o) => o.trim()),
           credentials: true,
         }
-      : undefined,
+      : { origin: false },
   ),
 );
 app.use(express.json({ limit: "50mb" }));
@@ -67,6 +84,27 @@ app.get("/api/config", (_req, res) => {
 app.get("/{*splat}", (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });
+
+// Global error handler — log the full error server-side, never leak details
+// (stack traces, SQL, internal paths) to the client.
+const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
+  console.error("Unhandled error:", err);
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+  // Preserve client-error status codes (e.g. malformed JSON, payload too large)
+  // but never echo the underlying message, stack trace or internal details.
+  const status =
+    (err as { status?: number; statusCode?: number })?.status ??
+    (err as { statusCode?: number })?.statusCode ??
+    500;
+  const isClientError = status >= 400 && status < 500;
+  res
+    .status(isClientError ? status : 500)
+    .json({ error: isClientError ? "Bad request" : "Internal server error" });
+};
+app.use(errorHandler);
 
 // Initialize database and start server
 initDb();

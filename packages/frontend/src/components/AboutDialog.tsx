@@ -1,5 +1,12 @@
 import { useEffect } from "react";
-import { X, BookOpen, Terminal, Lightbulb, TriangleAlert } from "lucide-react";
+import {
+  X,
+  BookOpen,
+  Terminal,
+  Lightbulb,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
 import { GithubIcon } from "@/components/icons/GithubIcon";
 
 interface AboutDialogProps {
@@ -113,6 +120,15 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             >
               <Lightbulb className="h-4 w-4 shrink-0" />
               Feature Requests — Vote &amp; suggest ideas
+            </a>
+            <a
+              href="https://github.com/fcsonline/droneroute/blob/main/PRIVACY.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              Privacy &amp; data — what we store and where
             </a>
             <div className="mt-2 pt-2 border-t border-border">
               <p className="text-xs text-muted-foreground mb-2">

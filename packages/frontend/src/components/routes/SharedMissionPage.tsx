@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { formatDistance } from "@/lib/units";
 import {
   MapPin,
   Crosshair,
@@ -550,9 +551,7 @@ export function SharedMissionPage({
                               Distance
                             </div>
                             <div className="text-sm font-medium text-foreground">
-                              {dist >= 1000
-                                ? `${(dist / 1000).toFixed(1)} km`
-                                : `${Math.round(dist)} m`}
+                              {formatDistance(dist)}
                             </div>
                           </div>
                         )}

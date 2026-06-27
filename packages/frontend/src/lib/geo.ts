@@ -1,4 +1,10 @@
-import type { Waypoint, PointOfInterest, Obstacle } from "@droneroute/shared";
+import type {
+  Waypoint,
+  PointOfInterest,
+  Obstacle,
+  UnitSystem,
+} from "@droneroute/shared";
+import { formatArea as formatAreaUnit } from "@/lib/units";
 
 export function haversineDistance(
   lat1: number,
@@ -221,10 +227,11 @@ export function polygonArea(vertices: [number, number][]): number {
 /**
  * Format an area value as a human-readable string.
  */
-export function formatArea(areaM2: number): string {
-  if (areaM2 >= 1_000_000) return `${(areaM2 / 1_000_000).toFixed(2)} km²`;
-  if (areaM2 >= 10_000) return `${(areaM2 / 10_000).toFixed(2)} ha`;
-  return `${Math.round(areaM2)} m²`;
+export function formatArea(
+  areaM2: number,
+  unitSystem: UnitSystem = "metric",
+): string {
+  return formatAreaUnit(areaM2, unitSystem);
 }
 
 // ── Airspace zone intersection utilities ─────────────────

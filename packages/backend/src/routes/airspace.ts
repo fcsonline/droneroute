@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { fetchZones, listProviders } from "../services/airspace/index.js";
+import { airspaceLimiter } from "../middleware/rateLimit.js";
 
 export const airspaceRoutes = Router();
 
@@ -12,7 +13,7 @@ export const airspaceRoutes = Router();
  * The optional `providers` param limits which country providers are queried.
  * When omitted, all providers are queried.
  */
-airspaceRoutes.get("/zones", async (req, res) => {
+airspaceRoutes.get("/zones", airspaceLimiter, async (req, res) => {
   const { south, west, north, east, providers } = req.query;
 
   if (!south || !west || !north || !east) {

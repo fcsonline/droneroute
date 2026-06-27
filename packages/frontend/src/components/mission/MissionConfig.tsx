@@ -1,4 +1,14 @@
 import { useMissionStore } from "@/store/missionStore";
+import { usePreferencesStore } from "@/store/preferencesStore";
+import {
+  speedLabel,
+  heightLabel,
+  toDisplaySpeed,
+  fromDisplaySpeed,
+  toDisplayHeight,
+  fromDisplayHeight,
+  speedRange,
+} from "@/lib/units";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,7 +21,6 @@ import {
 import { DRONE_MODELS } from "@droneroute/shared";
 import type {
   HeadingMode,
-  TurnMode,
   FinishAction,
   RCLostAction,
   HeightMode,
@@ -20,6 +29,7 @@ import type {
 
 export function MissionConfig() {
   const { config, setConfig } = useMissionStore();
+  const unitSystem = usePreferencesStore((s) => s.preferences.unitSystem);
 
   const selectedDrone = DRONE_MODELS.find(
     (d) =>
@@ -89,27 +99,39 @@ export function MissionConfig() {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label className="text-xs">Flight speed (m/s)</Label>
+          <Label className="text-xs">
+            Flight speed ({speedLabel(unitSystem)})
+          </Label>
           <Input
             type="number"
-            value={config.autoFlightSpeed}
+            value={toDisplaySpeed(config.autoFlightSpeed, unitSystem)}
             onChange={(e) =>
-              setConfig({ autoFlightSpeed: parseFloat(e.target.value) || 1 })
+              setConfig({
+                autoFlightSpeed: fromDisplaySpeed(
+                  parseFloat(e.target.value) || 1,
+                  unitSystem,
+                ),
+              })
             }
-            min={1}
-            max={15}
-            step={0.5}
+            min={speedRange(unitSystem).min}
+            max={speedRange(unitSystem).max}
+            step={speedRange(unitSystem).step}
             className="h-8 text-xs"
           />
         </div>
         <div>
-          <Label className="text-xs">Takeoff height (m)</Label>
+          <Label className="text-xs">
+            Takeoff height ({heightLabel(unitSystem)})
+          </Label>
           <Input
             type="number"
-            value={config.takeOffSecurityHeight}
+            value={toDisplayHeight(config.takeOffSecurityHeight, unitSystem)}
             onChange={(e) =>
               setConfig({
-                takeOffSecurityHeight: parseFloat(e.target.value) || 1.2,
+                takeOffSecurityHeight: fromDisplayHeight(
+                  parseFloat(e.target.value) || 1.2,
+                  unitSystem,
+                ),
               })
             }
             min={1.2}
@@ -236,18 +258,23 @@ export function MissionConfig() {
       </div>
 
       <div>
-        <Label className="text-xs">Transit speed (m/s)</Label>
+        <Label className="text-xs">
+          Transit speed ({speedLabel(unitSystem)})
+        </Label>
         <Input
           type="number"
-          value={config.globalTransitionalSpeed}
+          value={toDisplaySpeed(config.globalTransitionalSpeed, unitSystem)}
           onChange={(e) =>
             setConfig({
-              globalTransitionalSpeed: parseFloat(e.target.value) || 1,
+              globalTransitionalSpeed: fromDisplaySpeed(
+                parseFloat(e.target.value) || 1,
+                unitSystem,
+              ),
             })
           }
-          min={1}
-          max={15}
-          step={0.5}
+          min={speedRange(unitSystem).min}
+          max={speedRange(unitSystem).max}
+          step={speedRange(unitSystem).step}
           className="h-8 text-xs"
         />
         <div className="text-[10px] text-muted-foreground mt-0.5">
