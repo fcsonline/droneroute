@@ -18,6 +18,7 @@
     "express-rate-limit": "^8.4.1",
     "fast-xml-parser": "^5.7.3",
     "google-auth-library": "^10.6.2",
+    "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
     "multer": "^2.1.1",

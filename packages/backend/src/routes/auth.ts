@@ -8,6 +8,7 @@ import {
   verifyGoogleToken,
 } from "../services/authService.js";
 import { authMiddleware, type AuthRequest } from "../middleware/auth.js";
+import { authLimiter } from "../middleware/rateLimit.js";
 
 export const authRoutes = Router();
 
@@ -16,7 +17,7 @@ const isSelfHosted = () => (process.env.SELF_HOSTED ?? "true") === "true";
 // ---------------------------------------------------------------------------
 // Google OAuth sign-in (cloud mode only)
 // ---------------------------------------------------------------------------
-authRoutes.post("/google", async (req, res) => {
+authRoutes.post("/google", authLimiter, async (req, res) => {
   if (isSelfHosted()) {
     res.status(404).json({
       error: "Google authentication is not available in self-hosted mode",
@@ -124,7 +125,7 @@ authRoutes.post("/google", async (req, res) => {
 // ---------------------------------------------------------------------------
 // Password-based routes (self-hosted mode only)
 // ---------------------------------------------------------------------------
-authRoutes.post("/register", (req, res) => {
+authRoutes.post("/register", authLimiter, (req, res) => {
   if (!isSelfHosted()) {
     res.status(410).json({
       error: "Password registration is disabled. Use Google sign-in.",
@@ -161,7 +162,7 @@ authRoutes.post("/register", (req, res) => {
   res.status(201).json({ token, userId: id, email, isAdmin: false });
 });
 
-authRoutes.post("/login", (req, res) => {
+authRoutes.post("/login", authLimiter, (req, res) => {
   if (!isSelfHosted()) {
     res
       .status(410)
@@ -210,47 +211,52 @@ authRoutes.post("/login", (req, res) => {
   });
 });
 
-authRoutes.post("/change-password", authMiddleware, (req: AuthRequest, res) => {
-  if (!isSelfHosted()) {
-    res
-      .status(410)
-      .json({ error: "Password management is disabled in cloud mode." });
-    return;
-  }
+authRoutes.post(
+  "/change-password",
+  authLimiter,
+  authMiddleware,
+  (req: AuthRequest, res) => {
+    if (!isSelfHosted()) {
+      res
+        .status(410)
+        .json({ error: "Password management is disabled in cloud mode." });
+      return;
+    }
 
-  const { currentPassword, newPassword } = req.body;
-  if (!currentPassword || !newPassword) {
-    res
-      .status(400)
-      .json({ error: "Current password and new password are required" });
-    return;
-  }
-  if (newPassword.length < 6) {
-    res
-      .status(400)
-      .json({ error: "New password must be at least 6 characters" });
-    return;
-  }
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      res
+        .status(400)
+        .json({ error: "Current password and new password are required" });
+      return;
+    }
+    if (newPassword.length < 6) {
+      res
+        .status(400)
+        .json({ error: "New password must be at least 6 characters" });
+      return;
+    }
 
-  const db = getDb();
-  const user = db
-    .prepare("SELECT password_hash FROM users WHERE id = ?")
-    .get(req.userId) as any;
+    const db = getDb();
+    const user = db
+      .prepare("SELECT password_hash FROM users WHERE id = ?")
+      .get(req.userId) as any;
 
-  if (
-    !user ||
-    !user.password_hash ||
-    !comparePassword(currentPassword, user.password_hash)
-  ) {
-    res.status(401).json({ error: "Current password is incorrect" });
-    return;
-  }
+    if (
+      !user ||
+      !user.password_hash ||
+      !comparePassword(currentPassword, user.password_hash)
+    ) {
+      res.status(401).json({ error: "Current password is incorrect" });
+      return;
+    }
 
-  const newHash = hashPassword(newPassword);
-  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(
-    newHash,
-    req.userId,
-  );
+    const newHash = hashPassword(newPassword);
+    db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(
+      newHash,
+      req.userId,
+    );
 
-  res.json({ message: "Password updated" });
-});
+    res.json({ message: "Password updated" });
+  },
+);

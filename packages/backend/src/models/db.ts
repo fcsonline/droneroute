@@ -154,7 +154,7 @@ export function initDb(): void {
         )
         .run(id, adminEmail, passwordHash);
       console.log(
-        `Dev account created — email: ${adminEmail} / password: ${adminEmail}`,
+        `Dev account created for ${adminEmail} (password equals the email — change it after first login)`,
       );
     }
   }

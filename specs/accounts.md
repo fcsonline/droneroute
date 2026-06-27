@@ -31,3 +31,6 @@ Settings are saved to your account and sync across devices.
 - If you register with the same email used for Google sign-in, the accounts are linked automatically.
 - Your profile picture comes from Gravatar based on your email address.
 - Administrators can manage users, ban accounts, and promote other users to admin.
+- Sign-in, registration and password changes are rate limited to protect against
+  brute-force attempts. After too many failed attempts you'll be asked to wait a
+  few minutes before trying again.
