@@ -15,7 +15,7 @@ jobs:
     steps:
       # Use REPO_PAT so the push creates a real commit that re-triggers
       # pull_request workflows (GITHUB_TOKEN pushes are ignored by design).
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.REPO_PAT }}
