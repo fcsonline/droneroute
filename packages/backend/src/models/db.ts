@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -13,7 +14,7 @@ let db: Database.Database;
 export function getDb(): Database.Database {
   if (!db) {
     const dir = path.dirname(DB_PATH);
-    import("fs").then((fs) => fs.mkdirSync(dir, { recursive: true }));
+    fs.mkdirSync(dir, { recursive: true });
     db = new Database(DB_PATH);
     db.pragma("journal_mode = WAL");
   }
