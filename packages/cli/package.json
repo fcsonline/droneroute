@@ -1,6 +1,6 @@
 {
   "name": "droneroute",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Upload DJI waypoint mission KMZ files to RC controllers via USB",
   "type": "module",
   "bin": {
