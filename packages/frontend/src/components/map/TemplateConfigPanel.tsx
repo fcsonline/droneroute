@@ -45,6 +45,8 @@ import {
 } from "@/lib/templates";
 import {
   recommendSolarSpacing,
+  recommendGridSpacing,
+  computeGsdCm,
   THERMAL_CAMERA_FOV,
   WIDE_CAMERA_FOV,
 } from "@/lib/solarCamera";
@@ -185,6 +187,12 @@ export function TemplateConfigPanel({
   const [savingPreset, setSavingPreset] = useState(false);
   const [presetName, setPresetName] = useState("");
   const [presetSaveInFlight, setPresetSaveInFlight] = useState(false);
+
+  // Grid overlap-%/GSD calculator inputs — ephemeral (not part of GridParams
+  // itself), used only to compute a spacingM/photoSpacingM recommendation.
+  // 75%/65% are common photogrammetry defaults (front/side overlap).
+  const [gridFrontOverlapPct, setGridFrontOverlapPct] = useState(75);
+  const [gridSideOverlapPct, setGridSideOverlapPct] = useState(65);
 
   const handleSavePreset = async () => {
     const name = presetName.trim();
@@ -748,6 +756,30 @@ export function TemplateConfigPanel({
             />
           </div>
           <div>
+            <Label
+              className="text-[10px]"
+              title="Vzdálenost mezi fotkami podél každého letového řádku (podél trati). Bez toho by byly vyfoceny jen oba konce každé řady."
+            >
+              Rozestup fotek ({distanceLabel(unitSystem)})
+            </Label>
+            <NumericInput
+              value={toDisplayDistance(
+                gridParams.photoSpacingM ?? gridParams.spacingM,
+                unitSystem,
+              )}
+              onChange={(v) =>
+                onGridChange({
+                  ...gridParams,
+                  photoSpacingM: fromDisplayDistance(v, unitSystem),
+                })
+              }
+              min={1}
+              step={1}
+              fallback={20}
+              className="h-7 text-xs"
+            />
+          </div>
+          <div>
             <Label className="text-[10px]">Rotace (°)</Label>
             <NumericInput
               value={gridParams.rotationDeg}
@@ -759,6 +791,92 @@ export function TemplateConfigPanel({
               className="h-7 text-xs"
             />
           </div>
+          <div>
+            <Label className="text-[10px]">Podélný překryv (%)</Label>
+            <NumericInput
+              value={gridFrontOverlapPct}
+              onChange={setGridFrontOverlapPct}
+              min={10}
+              max={95}
+              step={5}
+              fallback={75}
+              className="h-7 text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px]">Boční překryv (%)</Label>
+            <NumericInput
+              value={gridSideOverlapPct}
+              onChange={setGridSideOverlapPct}
+              min={10}
+              max={95}
+              step={5}
+              fallback={65}
+              className="h-7 text-xs"
+            />
+          </div>
+          {(() => {
+            const rec = recommendGridSpacing(
+              gridParams.altitude,
+              payloadEnumValue,
+              gridFrontOverlapPct,
+              gridSideOverlapPct,
+            );
+            if (!rec) {
+              return (
+                <div className="col-span-2 text-[10px] text-muted-foreground">
+                  Zorné pole aktuální kamery není známé — nastavte rozestup
+                  ručně.
+                </div>
+              );
+            }
+            const gsdCm = computeGsdCm(gridParams.altitude, payloadEnumValue);
+            return (
+              <div className="col-span-2 flex flex-col gap-1 text-[10px] text-muted-foreground bg-muted/20 rounded-md px-2 py-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span>
+                    Doporučeno pro {wideFov?.label} v této výšce:{" "}
+                    {Math.round(
+                      toDisplayDistance(rec.lineSpacingM, unitSystem),
+                    )}
+                    {distanceLabel(unitSystem)} řádek /{" "}
+                    {Math.round(
+                      toDisplayDistance(rec.photoSpacingM, unitSystem),
+                    )}
+                    {distanceLabel(unitSystem)} fotka
+                    {gsdCm !== null && ` · GSD ${gsdCm.toFixed(1)} cm/px`}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-5 text-[10px] px-2 shrink-0"
+                    onClick={() =>
+                      onGridChange({
+                        ...gridParams,
+                        spacingM: rec.lineSpacingM,
+                        photoSpacingM: rec.photoSpacingM,
+                      })
+                    }
+                  >
+                    Použít
+                  </Button>
+                </div>
+                {gsdCm === null && (
+                  <div>
+                    Rozlišení kamery není známé — GSD nelze spočítat, ale
+                    doporučený rozestup podle zorného pole platí.
+                  </div>
+                )}
+                {wideFov?.experimental && (
+                  <div className="text-amber-500">
+                    Identita tohoto dronu/kamery není potvrzená (žádná
+                    zveřejněná specifikace DJI) — považujte toto doporučení za
+                    orientační, dokud nebude ověřeno na reálném hardwaru.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <div>
             <CaptureModeToggle
               value={gridParams.captureMode === "video" ? "video" : "photo"}

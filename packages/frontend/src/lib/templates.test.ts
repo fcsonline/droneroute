@@ -25,7 +25,13 @@ import type {
   GridParams,
   FacadeParams,
 } from "./templates";
-import { recommendSolarSpacing, THERMAL_CAMERA_FOV } from "@/lib/solarCamera";
+import {
+  recommendSolarSpacing,
+  recommendGridSpacing,
+  computeGsdCm,
+  computeAltitudeForGsd,
+  THERMAL_CAMERA_FOV,
+} from "@/lib/solarCamera";
 import { haversineDistance } from "@/lib/geo";
 
 const CENTER: [number, number] = [50.06, 14.43];
@@ -517,6 +523,54 @@ describe("recommendSolarSpacing", () => {
   });
 });
 
+describe("computeGsdCm / computeAltitudeForGsd", () => {
+  const M3E = 66; // 20MP, 5280x3956, vfovDeg 56.8
+
+  it("returns null for a payload with no known wide-camera FOV", () => {
+    expect(computeGsdCm(80, 999999)).toBeNull();
+    expect(computeAltitudeForGsd(2, 999999)).toBeNull();
+  });
+
+  it("returns null for a payload with known FOV but unknown resolution (e.g. H30)", () => {
+    expect(computeGsdCm(80, 82)).toBeNull();
+  });
+
+  it("computeAltitudeForGsd is the inverse of computeGsdCm", () => {
+    const gsd = computeGsdCm(80, M3E)!;
+    expect(gsd).toBeGreaterThan(0);
+    const altitude = computeAltitudeForGsd(gsd, M3E)!;
+    expect(altitude).toBeCloseTo(80, 1);
+  });
+
+  it("GSD grows with altitude (coarser resolution higher up)", () => {
+    const low = computeGsdCm(40, M3E)!;
+    const high = computeGsdCm(120, M3E)!;
+    expect(high).toBeGreaterThan(low);
+  });
+});
+
+describe("recommendGridSpacing", () => {
+  const M3E = 66;
+
+  it("returns null for a payload with no known wide-camera FOV", () => {
+    expect(recommendGridSpacing(80, 999999, 75, 65)).toBeNull();
+  });
+
+  it("returns positive spacing below the raw (no-overlap) footprint", () => {
+    const rec = recommendGridSpacing(80, M3E, 75, 65)!;
+    expect(rec).not.toBeNull();
+    expect(rec.lineSpacingM).toBeGreaterThan(0);
+    expect(rec.photoSpacingM).toBeGreaterThan(0);
+  });
+
+  it("higher overlap % recommends tighter spacing", () => {
+    const looseOverlap = recommendGridSpacing(80, M3E, 50, 50)!;
+    const tightOverlap = recommendGridSpacing(80, M3E, 90, 90)!;
+    expect(tightOverlap.lineSpacingM).toBeLessThan(looseOverlap.lineSpacingM);
+    expect(tightOverlap.photoSpacingM).toBeLessThan(looseOverlap.photoSpacingM);
+  });
+});
+
 describe("computeOrbitSeedForBuilding", () => {
   it("centers on the footprint centroid and radius covers the farthest corner plus clearance", () => {
     const size = 40;
@@ -686,6 +740,36 @@ describe("capture mode (photo/video)", () => {
           wp.actions.length === 1 && wp.actions[0].actionType === "takePhoto",
       ),
     ).toBe(true);
+  });
+
+  it("generateGrid: places photos at regular intervals along each pass, not just at its two endpoints", () => {
+    const result = generateGrid({
+      ...DEFAULT_GRID_PARAMS,
+      corner1: CENTER,
+      corner2: destinationPoint(CENTER[0], CENTER[1], 200, 45),
+      spacingM: 100,
+      photoSpacingM: 20,
+    } satisfies GridParams);
+
+    // Each pass is roughly 200m long with a 20m photo spacing, so every
+    // pass should contribute well more than its 2 endpoints.
+    expect(result.waypoints.length).toBeGreaterThan(4);
+  });
+
+  it("generateGrid: missing photoSpacingM (legacy saved data) falls back to spacingM instead of breaking", () => {
+    const { photoSpacingM: _omit, ...legacyParams } = {
+      ...DEFAULT_GRID_PARAMS,
+      corner1: CENTER,
+      corner2: destinationPoint(CENTER[0], CENTER[1], 200, 45),
+      spacingM: 30,
+    } satisfies GridParams;
+
+    const result = generateGrid(legacyParams as GridParams);
+
+    expect(result.waypoints.length).toBeGreaterThan(0);
+    expect(result.waypoints.every((wp) => Number.isFinite(wp.latitude))).toBe(
+      true,
+    );
   });
 
   it("generateGrid: video mode puts startRecord/stopRecord only on the first/last waypoint, after the reverse step", () => {

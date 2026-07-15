@@ -131,7 +131,15 @@ export interface GridParams {
   corner1: [number, number]; // [lat, lng]
   corner2: [number, number]; // [lat, lng]
   altitude: number;
-  spacingM: number;
+  spacingM: number; // distance between flight lines (cross-track)
+  /**
+   * Distance between photos along each flight line (along-track). Missing
+   * on data saved before this field existed — `generateGrid` falls back to
+   * `spacingM` in that case, which still places interior photos (a strict
+   * improvement over the old endpoints-only behavior) without requiring a
+   * migration.
+   */
+  photoSpacingM?: number;
   /** @deprecated superseded by captureMode, kept for old saved data — true means "photo" when captureMode is unset. */
   addPhotos: boolean;
   rotationDeg: number; // rotation of the grid in degrees (0-360)
@@ -208,6 +216,7 @@ export const DEFAULT_ORBIT_PARAMS: Omit<OrbitParams, "center" | "radiusM"> = {
 export const DEFAULT_GRID_PARAMS: Omit<GridParams, "corner1" | "corner2"> = {
   altitude: 80,
   spacingM: 30,
+  photoSpacingM: 20,
   addPhotos: true,
   rotationDeg: 0,
   reverse: false,
@@ -711,12 +720,14 @@ export function generateGrid(params: GridParams): TemplateResult {
     corner2,
     altitude,
     spacingM,
+    photoSpacingM,
     addPhotos,
     rotationDeg,
     reverse,
     captureMode,
   } = params;
   const mode = captureMode ?? (addPhotos ? "photo" : "none");
+  const safePhotoSpacingM = Math.max(photoSpacingM ?? spacingM, 0.1);
   const [lat1, lng1] = corner1;
   const [lat2, lng2] = corner2;
 
@@ -798,30 +809,30 @@ export function generateGrid(params: GridParams): TemplateResult {
     const [rLat1, rLng1] = rotatePoint(wpLat1, wpLng1);
     const [rLat2, rLng2] = rotatePoint(wpLat2, wpLng2);
 
-    waypoints.push({
-      ...DEFAULT_WAYPOINT,
-      latitude: rLat1,
-      longitude: rLng1,
-      height: altitude,
-      gimbalPitchAngle: -90,
-      useGlobalHeadingParam: false,
-      headingMode: "followWayline",
-      turnMode: "toPointAndStopWithContinuityCurvature",
-      useGlobalTurnParam: false,
-      actions: mode === "photo" ? [{ ...takePhotoAction, actionId: 0 }] : [],
-    });
-    waypoints.push({
-      ...DEFAULT_WAYPOINT,
-      latitude: rLat2,
-      longitude: rLng2,
-      height: altitude,
-      gimbalPitchAngle: -90,
-      useGlobalHeadingParam: false,
-      headingMode: "followWayline",
-      turnMode: "toPointAndStopWithContinuityCurvature",
-      useGlobalTurnParam: false,
-      actions: mode === "photo" ? [{ ...takePhotoAction, actionId: 0 }] : [],
-    });
+    // Evenly spaced points along the whole pass (not just its two
+    // endpoints), so a photo is taken every ~photoSpacingM the entire
+    // length of the line — required for real photogrammetry overlap.
+    const passLengthM = haversine(rLat1, rLng1, rLat2, rLng2);
+    const numPointsOnPass = Math.max(
+      2,
+      Math.ceil(passLengthM / safePhotoSpacingM) + 1,
+    );
+
+    for (let k = 0; k < numPointsOnPass; k++) {
+      const t = numPointsOnPass <= 1 ? 0 : k / (numPointsOnPass - 1);
+      waypoints.push({
+        ...DEFAULT_WAYPOINT,
+        latitude: rLat1 + t * (rLat2 - rLat1),
+        longitude: rLng1 + t * (rLng2 - rLng1),
+        height: altitude,
+        gimbalPitchAngle: -90,
+        useGlobalHeadingParam: false,
+        headingMode: "followWayline",
+        turnMode: "toPointAndStopWithContinuityCurvature",
+        useGlobalTurnParam: false,
+        actions: mode === "photo" ? [{ ...takePhotoAction, actionId: 0 }] : [],
+      });
+    }
   }
 
   if (reverse) {

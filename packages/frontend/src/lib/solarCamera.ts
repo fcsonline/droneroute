@@ -31,6 +31,14 @@ export const THERMAL_CAMERA_FOV: Record<number, ThermalCameraFov> = {
 export interface WideCameraFov {
   label: string;
   vfovDeg: number;
+  /**
+   * Vertical photo resolution (pixels) of the wide/RGB sensor's max-size
+   * still photo — needed for GSD (ground sample distance) calculations.
+   * Sourced from each product's published spec sheet; omitted for cameras
+   * where the resolution isn't confidently known, in which case GSD/overlap
+   * helpers below return `null` rather than guessing.
+   */
+  imageHeightPx?: number;
   experimental?: boolean;
 }
 
@@ -51,20 +59,22 @@ export interface WideCameraFov {
  * entry as "FOV unknown" rather than guessing.
  */
 export const WIDE_CAMERA_FOV: Record<number, WideCameraFov> = {
-  42: { label: "H20", vfovDeg: 55.7 }, // DFOV 82.9° (DJI spec)
-  61: { label: "H20N", vfovDeg: 55.7 }, // same wide module as H20
-  43: { label: "H20T", vfovDeg: 55.7 }, // same wide module as H20
-  52: { label: "M30 Camera", vfovDeg: 56.8 }, // DFOV 84° (DJI spec)
-  53: { label: "M30T Camera", vfovDeg: 56.8 }, // same wide module as M30
-  66: { label: "M3E Camera", vfovDeg: 56.8 }, // DFOV 84° (DJI spec)
-  67: { label: "M3T Camera", vfovDeg: 56.8 }, // DFOV 84° (DJI spec)
-  68: { label: "M3M Camera", vfovDeg: 56.8 }, // same wide module as M3E
-  80: { label: "M3D Camera", vfovDeg: 56.8 }, // same wide module as M3E
-  81: { label: "M3TD Camera", vfovDeg: 56.8 }, // same wide module as M3T
+  42: { label: "H20", vfovDeg: 55.7, imageHeightPx: 3888 }, // DFOV 82.9° (DJI spec), 20MP 5184x3888
+  61: { label: "H20N", vfovDeg: 55.7, imageHeightPx: 3888 }, // same wide module as H20
+  43: { label: "H20T", vfovDeg: 55.7, imageHeightPx: 3888 }, // same wide module as H20
+  52: { label: "M30 Camera", vfovDeg: 56.8, imageHeightPx: 3000 }, // DFOV 84° (DJI spec), 12MP 4000x3000
+  53: { label: "M30T Camera", vfovDeg: 56.8, imageHeightPx: 3000 }, // same wide module as M30
+  66: { label: "M3E Camera", vfovDeg: 56.8, imageHeightPx: 3956 }, // DFOV 84° (DJI spec), 20MP 5280x3956
+  67: { label: "M3T Camera", vfovDeg: 56.8, imageHeightPx: 3956 }, // DFOV 84° (DJI spec), 20MP 5280x3956
+  68: { label: "M3M Camera", vfovDeg: 56.8, imageHeightPx: 3956 }, // same wide module as M3E
+  80: { label: "M3D Camera", vfovDeg: 56.8, imageHeightPx: 3956 }, // same wide module as M3E
+  81: { label: "M3TD Camera", vfovDeg: 56.8, imageHeightPx: 3956 }, // same wide module as M3T
+  // H30/H30T resolution not confidently sourced yet — omit imageHeightPx so
+  // GSD/overlap helpers correctly report "unknown" instead of guessing.
   82: { label: "H30", vfovDeg: 55.1 }, // DFOV 82.1° (DJI spec)
   83: { label: "H30T", vfovDeg: 55.1 }, // same wide module as H30
-  100: { label: "Mini 4 Pro Camera", vfovDeg: 55.1 }, // DFOV 82.1° (DJI spec)
-  89: { label: "Matrice 4T Camera", vfovDeg: 55.0 }, // DFOV 82° (DJI spec)
+  100: { label: "Mini 4 Pro Camera", vfovDeg: 55.1, imageHeightPx: 6048 }, // DFOV 82.1° (DJI spec), 48MP 8064x6048
+  89: { label: "Matrice 4T Camera", vfovDeg: 55.0, imageHeightPx: 6048 }, // DFOV 82° (DJI spec), 48MP 8064x6048 (same generation sensor as Mini 4 Pro)
 };
 
 const DEFAULT_SOLAR_OVERLAP = 0.2;
@@ -94,5 +104,79 @@ export function recommendSolarSpacing(
   return {
     lineSpacingM: Math.round(footprintWidth * (1 - overlap) * 10) / 10,
     photoSpacingM: Math.round(footprintHeight * (1 - overlap) * 10) / 10,
+  };
+}
+
+/**
+ * `WIDE_CAMERA_FOV` only stores vertical FOV (all that Orbit-framing ever
+ * needed). Grid's GSD/overlap math also needs horizontal FOV, so derive it
+ * from VFOV using the same 4:3 sensor aspect ratio these VFOV values were
+ * themselves derived from (tan(HFOV/2) = tan(VFOV/2) * width/height).
+ */
+function deriveHfovFromVfov(vfovDeg: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const toDeg = (r: number) => (r * 180) / Math.PI;
+  return toDeg(2 * Math.atan(Math.tan(toRad(vfovDeg) / 2) * (4 / 3)));
+}
+
+/**
+ * Ground sample distance (cm/pixel) for the given payload's wide/RGB camera
+ * at the given altitude. Returns `null` when the camera's photo resolution
+ * isn't known (see `WIDE_CAMERA_FOV`) rather than guessing.
+ */
+export function computeGsdCm(
+  altitude: number,
+  payloadEnumValue: number,
+): number | null {
+  const fov = WIDE_CAMERA_FOV[payloadEnumValue];
+  if (!fov || !fov.imageHeightPx) return null;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const footprintHeightM = 2 * altitude * Math.tan(toRad(fov.vfovDeg) / 2);
+  return (footprintHeightM / fov.imageHeightPx) * 100;
+}
+
+/** Inverse of `computeGsdCm`: altitude needed to hit a target GSD (cm/pixel). */
+export function computeAltitudeForGsd(
+  targetGsdCm: number,
+  payloadEnumValue: number,
+): number | null {
+  const fov = WIDE_CAMERA_FOV[payloadEnumValue];
+  if (!fov || !fov.imageHeightPx) return null;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const footprintHeightM = (targetGsdCm / 100) * fov.imageHeightPx;
+  return footprintHeightM / (2 * Math.tan(toRad(fov.vfovDeg) / 2));
+}
+
+export interface GridSpacingRecommendation {
+  lineSpacingM: number;
+  photoSpacingM: number;
+}
+
+/**
+ * Recommended flight-line spacing (cross-track) and photo spacing
+ * (along-track) for a Grid photogrammetry survey, given the desired front
+ * (along-track) and side (cross-track) overlap percentages. Unlike
+ * `recommendSolarSpacing`'s fixed 20% overlap, Grid overlap is a direct
+ * user input — professional photogrammetry commonly wants 70-80%
+ * front / 60-70% side overlap, far higher than solar-panel inspection
+ * needs. Returns `null` when the payload's wide-camera FOV isn't known.
+ */
+export function recommendGridSpacing(
+  altitude: number,
+  payloadEnumValue: number,
+  frontOverlapPct: number,
+  sideOverlapPct: number,
+): GridSpacingRecommendation | null {
+  const fov = WIDE_CAMERA_FOV[payloadEnumValue];
+  if (!fov) return null;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const hfovDeg = deriveHfovFromVfov(fov.vfovDeg);
+  const footprintWidthM = 2 * altitude * Math.tan(toRad(hfovDeg) / 2);
+  const footprintHeightM = 2 * altitude * Math.tan(toRad(fov.vfovDeg) / 2);
+  return {
+    lineSpacingM:
+      Math.round(footprintWidthM * (1 - sideOverlapPct / 100) * 10) / 10,
+    photoSpacingM:
+      Math.round(footprintHeightM * (1 - frontOverlapPct / 100) * 10) / 10,
   };
 }
