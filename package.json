@@ -20,12 +20,12 @@
     "prepare": "lefthook install"
   },
   "devDependencies": {
-    "@types/mapbox__mapbox-gl-geocoder": "^5.1.1",
-    "concurrently": "^10.0.3",
-    "lefthook": "^2.1.9",
-    "oxlint": "^1.68.0",
-    "prettier": "^3.5.0",
-    "typescript": "^6.0.3"
+    "@types/mapbox__mapbox-gl-geocoder": "^5.1.2",
+    "concurrently": "^10.0.5",
+    "lefthook": "^2.1.12",
+    "oxlint": "^1.80.0",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@mapbox/mapbox-gl-geocoder": "^5.1.2"
