@@ -35,11 +35,11 @@
   },
   "dependencies": {
     "commander": "^15.0.0",
-    "@inquirer/prompts": "^8.5.2",
-    "chalk": "^5.0.0"
+    "@inquirer/prompts": "^8.7.0",
+    "chalk": "^6.0.0"
   },
   "devDependencies": {
-    "typescript": "^6.0.3",
-    "@types/node": "^25.9.1"
+    "typescript": "^7.0.2",
+    "@types/node": "^26.4.0"
   }
 }
