@@ -48,6 +48,7 @@ import { formatDistance } from "@/lib/units";
 import { useAirspaceStore } from "@/store/airspaceStore";
 import { api } from "@/lib/api";
 import { getObstacleWarnings, getAirspaceWarnings } from "@/lib/geo";
+import { getKmzExportError } from "@droneroute/shared";
 
 type SidebarSection = "waypoints" | "pois" | "obstacles" | "config";
 
@@ -230,6 +231,11 @@ export default function App() {
   const handleExport = async () => {
     if (waypoints.length < 2) {
       toast.warning("Need at least 2 waypoints to export");
+      return;
+    }
+    const exportError = getKmzExportError({ config, waypoints, pois });
+    if (exportError) {
+      toast.error(exportError);
       return;
     }
 

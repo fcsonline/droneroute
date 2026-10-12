@@ -33,7 +33,11 @@ A free, open-source mission planner for DJI drones. Plan waypoint missions on an
 
 ## Supported Drones
 
-DJI M300 RTK, M350 RTK, M30/M30T, Mavic 3E/3T/3M/3D/3TD, Mini 4 Pro.
+DJI M300 RTK, M350 RTK, M30/M30T, Mavic 3E/3T/3M/3D/3TD, Mini 4 Pro, Air 3S.
+
+Air 3S uses a dedicated DJI Fly export profile based on a native reference file.
+Review takeoff-relative heights before exporting; generated Air 3S missions still
+need controller and flight validation. See the [Air 3S guide](docs/air-3s-kmz.md).
 
 ## Getting Started
 

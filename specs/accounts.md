@@ -23,6 +23,9 @@ Click the settings icon (gear) next to your avatar to open the settings dialog. 
 - **Visualization** — choose your default view mode (2D or 3D), map style (satellite or street), and unit system (metric or imperial). These defaults are applied when the app loads.
 - **Mission defaults** — set default values for new missions: drone model, payload, flight speed, takeoff height, max battery, height reference, heading mode, fly-to mode, finish action, RC lost action, and transit speed. When you create a new mission, these defaults are used instead of the hardcoded factory defaults.
 
+  Choosing DJI Air 3S as the default uses **Relative to start** and shows the
+  takeoff point at 0 m; configure takeoff clearance separately in DJI Fly.
+
 Settings are saved to your account and sync across devices.
 
 ## Good to know

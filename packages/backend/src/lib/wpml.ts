@@ -17,7 +17,7 @@ function escapeXml(str: string): string {
 }
 
 /** Compute bearing (degrees, 0=N, CW) from point A to point B */
-function computeBearing(
+export function computeBearing(
   lat1: number,
   lon1: number,
   lat2: number,
@@ -43,19 +43,19 @@ function findPoi(
 
 // ── Action XML ───────────────────────────────────────────
 
-function buildActionXml(action: WaypointAction): string {
+export function buildActionXml(action: WaypointAction, air3S = false): string {
   let paramsXml = "";
 
   switch (action.actionType) {
     case "takePhoto":
       paramsXml = `
               <wpml:payloadPositionIndex>${(action.params as any).payloadPositionIndex ?? 0}</wpml:payloadPositionIndex>
-              <wpml:fileSuffix>${escapeXml((action.params as any).fileSuffix || "")}</wpml:fileSuffix>`;
+              ${air3S ? "<wpml:useGlobalPayloadLensIndex>0</wpml:useGlobalPayloadLensIndex>" : `<wpml:fileSuffix>${escapeXml((action.params as any).fileSuffix || "")}</wpml:fileSuffix>`}`;
       break;
     case "startRecord":
       paramsXml = `
               <wpml:payloadPositionIndex>${(action.params as any).payloadPositionIndex ?? 0}</wpml:payloadPositionIndex>
-              <wpml:fileSuffix>${escapeXml((action.params as any).fileSuffix || "")}</wpml:fileSuffix>`;
+              ${air3S ? "<wpml:useGlobalPayloadLensIndex>0</wpml:useGlobalPayloadLensIndex>" : `<wpml:fileSuffix>${escapeXml((action.params as any).fileSuffix || "")}</wpml:fileSuffix>`}`;
       break;
     case "stopRecord":
       paramsXml = `
@@ -64,13 +64,13 @@ function buildActionXml(action: WaypointAction): string {
     case "gimbalRotate": {
       const p = action.params as any;
       paramsXml = `
-              <wpml:gimbalHeadingYawBase>north</wpml:gimbalHeadingYawBase>
+              <wpml:gimbalHeadingYawBase>${air3S ? "aircraft" : "north"}</wpml:gimbalHeadingYawBase>
               <wpml:gimbalRotateMode>${p.gimbalRotateMode || "absoluteAngle"}</wpml:gimbalRotateMode>
               <wpml:gimbalPitchRotateEnable>1</wpml:gimbalPitchRotateEnable>
               <wpml:gimbalPitchRotateAngle>${p.gimbalPitchRotateAngle ?? 0}</wpml:gimbalPitchRotateAngle>
               <wpml:gimbalRollRotateEnable>0</wpml:gimbalRollRotateEnable>
               <wpml:gimbalRollRotateAngle>${p.gimbalRollRotateAngle ?? 0}</wpml:gimbalRollRotateAngle>
-              <wpml:gimbalYawRotateEnable>1</wpml:gimbalYawRotateEnable>
+              <wpml:gimbalYawRotateEnable>${air3S ? 0 : 1}</wpml:gimbalYawRotateEnable>
               <wpml:gimbalYawRotateAngle>${p.gimbalYawRotateAngle ?? 0}</wpml:gimbalYawRotateAngle>
               <wpml:gimbalRotateTimeEnable>0</wpml:gimbalRotateTimeEnable>
               <wpml:gimbalRotateTime>0</wpml:gimbalRotateTime>
@@ -122,7 +122,9 @@ function buildActionXml(action: WaypointAction): string {
 function buildActionGroupXml(wp: Waypoint, groupIdOffset: number): string {
   if (wp.actions.length === 0) return "";
 
-  const actionsXml = wp.actions.map(buildActionXml).join("");
+  const actionsXml = wp.actions
+    .map((action) => buildActionXml(action))
+    .join("");
 
   return `
         <wpml:actionGroup>

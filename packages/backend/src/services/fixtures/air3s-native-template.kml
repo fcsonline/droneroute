@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:wpml="http://www.uav.com/wpmz/1.0.2">
+  <Document>
+    <wpml:author>fly</wpml:author>
+    <wpml:createTime>0</wpml:createTime>
+    <wpml:updateTime>0</wpml:updateTime>
+    <wpml:missionConfig>
+      <wpml:flyToWaylineMode>safely</wpml:flyToWaylineMode>
+      <wpml:finishAction>goHome</wpml:finishAction>
+      <wpml:exitOnRCLost>executeLostAction</wpml:exitOnRCLost>
+      <wpml:executeRCLostAction>goBack</wpml:executeRCLostAction>
+      <wpml:globalTransitionalSpeed>2.5</wpml:globalTransitionalSpeed>
+      <wpml:droneInfo>
+        <wpml:droneEnumValue>68</wpml:droneEnumValue>
+        <wpml:droneSubEnumValue>0</wpml:droneSubEnumValue>
+      </wpml:droneInfo>
+    </wpml:missionConfig>
+  </Document>
+</kml>

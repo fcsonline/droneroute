@@ -415,20 +415,27 @@ To stop sharing a mission, open **My routes** and click the **unshare** button (
 
 ## Supported Drones
 
-| Drone              | Payloads                         |
-| ------------------ | -------------------------------- |
-| **DJI M300 RTK**   | H20, H20T, H20N, PSDK            |
-| **DJI M350 RTK**   | H20, H20T, H20N, H30, H30T, PSDK |
-| **DJI M30**        | M30 Camera                       |
-| **DJI M30T**       | M30T Camera                      |
-| **DJI Mavic 3E**   | M3E Camera                       |
-| **DJI Mavic 3T**   | M3T Camera                       |
-| **DJI Mavic 3M**   | M3M Camera                       |
-| **DJI Mavic 3D**   | M3D Camera                       |
-| **DJI Mavic 3TD**  | M3TD Camera                      |
-| **DJI Mini 4 Pro** | Mini 4 Pro Camera                |
+| Drone              | Payloads                          |
+| ------------------ | --------------------------------- |
+| **DJI M300 RTK**   | H20, H20T, H20N, PSDK             |
+| **DJI M350 RTK**   | H20, H20T, H20N, H30, H30T, PSDK  |
+| **DJI M30**        | M30 Camera                        |
+| **DJI M30T**       | M30T Camera                       |
+| **DJI Mavic 3E**   | M3E Camera                        |
+| **DJI Mavic 3T**   | M3T Camera                        |
+| **DJI Mavic 3M**   | M3M Camera                        |
+| **DJI Mavic 3D**   | M3D Camera                        |
+| **DJI Mavic 3TD**  | M3TD Camera                       |
+| **DJI Mini 4 Pro** | Mini 4 Pro Camera                 |
+| **DJI Air 3S**     | Built-in camera (DJI Fly profile) |
 
 The PSDK (Payload SDK) option on M300/M350 represents third-party payloads.
+
+For Air 3S facade scans, import or generate the wall, choose **DJI Air 3S**,
+review waypoint heights, and select **Relative to start** before exporting.
+Ground-relative heights are not converted automatically. The profile commands
+the wall heading and camera pitch before photos. Configure takeoff clearance
+in DJI Fly. See [Air 3S export details and validation limits](docs/air-3s-kmz.md).
 
 ---
 

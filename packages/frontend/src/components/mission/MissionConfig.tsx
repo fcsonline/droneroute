@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DRONE_MODELS } from "@droneroute/shared";
+import { DRONE_MODELS, getDroneModelKey, isAir3S } from "@droneroute/shared";
 import type {
   HeadingMode,
   FinishAction,
@@ -32,9 +32,7 @@ export function MissionConfig() {
   const unitSystem = usePreferencesStore((s) => s.preferences.unitSystem);
 
   const selectedDrone = DRONE_MODELS.find(
-    (d) =>
-      d.droneEnumValue === config.droneEnumValue &&
-      d.droneSubEnumValue === config.droneSubEnumValue,
+    (d) => getDroneModelKey(d) === getDroneModelKey(config),
   );
 
   return (
@@ -42,17 +40,18 @@ export function MissionConfig() {
       <div>
         <Label className="text-xs">Drone model</Label>
         <Select
-          value={`${config.droneEnumValue}-${config.droneSubEnumValue}`}
+          value={getDroneModelKey(config)}
           onValueChange={(v) => {
-            const [drone, sub] = v.split("-").map(Number);
-            const model = DRONE_MODELS.find(
-              (d) => d.droneEnumValue === drone && d.droneSubEnumValue === sub,
-            );
+            const model = DRONE_MODELS.find((d) => getDroneModelKey(d) === v);
             if (model) {
               setConfig({
                 droneEnumValue: model.droneEnumValue,
                 droneSubEnumValue: model.droneSubEnumValue,
+                kmzProfile: model.kmzProfile,
                 payloadEnumValue: model.payloads[0]?.payloadEnumValue || 0,
+                ...(isAir3S(model) && {
+                  heightMode: "relativeToStartPoint",
+                }),
               });
             }
           }}
@@ -62,16 +61,20 @@ export function MissionConfig() {
           </SelectTrigger>
           <SelectContent>
             {DRONE_MODELS.map((d) => (
-              <SelectItem
-                key={`${d.droneEnumValue}-${d.droneSubEnumValue}`}
-                value={`${d.droneEnumValue}-${d.droneSubEnumValue}`}
-              >
+              <SelectItem key={getDroneModelKey(d)} value={getDroneModelKey(d)}>
                 {d.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
+
+      {isAir3S(config) && (
+        <p className="text-xs text-muted-foreground" role="note">
+          DJI Fly export. The takeoff point is 0 m; waypoint heights are used as
+          entered relative to it. Check the route in DJI Fly before flight.
+        </p>
+      )}
 
       {selectedDrone && selectedDrone.payloads.length > 1 && (
         <div>
@@ -121,11 +124,18 @@ export function MissionConfig() {
         </div>
         <div>
           <Label className="text-xs">
-            Takeoff height ({heightLabel(unitSystem)})
+            {isAir3S(config)
+              ? "Takeoff reference (m)"
+              : `Takeoff height (${heightLabel(unitSystem)})`}
           </Label>
           <Input
             type="number"
-            value={toDisplayHeight(config.takeOffSecurityHeight, unitSystem)}
+            value={
+              isAir3S(config)
+                ? "0"
+                : toDisplayHeight(config.takeOffSecurityHeight, unitSystem)
+            }
+            disabled={isAir3S(config)}
             onChange={(e) =>
               setConfig({
                 takeOffSecurityHeight: fromDisplayHeight(
@@ -138,6 +148,12 @@ export function MissionConfig() {
             max={1500}
             className="h-8 text-xs"
           />
+          {isAir3S(config) && (
+            <p className="text-[10px] text-muted-foreground">
+              Waypoint heights use this point as 0 m. Set takeoff clearance in
+              DJI Fly.
+            </p>
+          )}
         </div>
       </div>
 
@@ -166,6 +182,7 @@ export function MissionConfig() {
         <Select
           value={config.heightMode}
           onValueChange={(v) => setConfig({ heightMode: v as HeightMode })}
+          disabled={isAir3S(config)}
         >
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />

@@ -102,6 +102,19 @@ export interface WaypointAction {
   actionId: number;
   actionType: ActionType;
   params: ActionParams;
+  /** Imported execution boundaries; absent for actions created in the editor. */
+  group?: {
+    id: number;
+    startIndex: number;
+    endIndex: number;
+    mode: "sequence" | "parallel";
+    triggerType:
+      | "reachPoint"
+      | "betweenAdjacentPoints"
+      | "multipleTiming"
+      | "multipleDistance";
+    triggerParam?: number;
+  };
 }
 
 // ── Drone & Payload ──────────────────────────────────────
@@ -110,6 +123,8 @@ export interface DroneModel {
   label: string;
   droneEnumValue: number;
   droneSubEnumValue: number;
+  /** Optional internal serializer selection; not a DJI aircraft identifier. */
+  kmzProfile?: "air3s";
   payloads: PayloadModel[];
 }
 
@@ -151,6 +166,14 @@ export const DRONE_MODELS: DroneModel[] = [
       { label: "M30 Camera", payloadEnumValue: 52 },
       { label: "M30T Camera", payloadEnumValue: 53 },
     ],
+  },
+  {
+    // Identifiers observed in an Air 3S DJI Fly export. No payloadInfo is emitted.
+    label: "DJI Air 3S",
+    droneEnumValue: 68,
+    droneSubEnumValue: 0,
+    kmzProfile: "air3s",
+    payloads: [],
   },
   {
     label: "DJI Mavic 3E",
@@ -237,6 +260,8 @@ export interface Waypoint {
   useGlobalTurnParam: boolean;
   headingMode?: HeadingMode;
   headingAngle?: number;
+  headingAngleEnable?: boolean;
+  useStraightLine?: boolean;
   poiId?: string; // Reference to PointOfInterest when headingMode = "towardPOI"
   turnMode?: TurnMode;
   turnDampingDist?: number;
@@ -249,6 +274,8 @@ export interface Waypoint {
 export interface MissionConfig {
   droneEnumValue: number;
   droneSubEnumValue: number;
+  /** Missing on existing missions, which retain the legacy KMZ serializer. */
+  kmzProfile?: "air3s";
   payloadEnumValue: number;
   flyToWaylineMode: FlyToWaylineMode;
   finishAction: FinishAction;
@@ -388,3 +415,218 @@ export const DEFAULT_MAP_VIEW: MapViewState = {
   longitude: 2.1686,
   zoom: 13,
 };
+
+/** DJI Fly profile observed in the supplied Air 3S reference mission. */
+export function isAir3S(
+  config: Pick<
+    MissionConfig,
+    "droneEnumValue" | "droneSubEnumValue" | "kmzProfile"
+  >,
+): boolean {
+  return (
+    config.kmzProfile === "air3s" &&
+    config.droneEnumValue === 68 &&
+    config.droneSubEnumValue === 0
+  );
+}
+
+/** Distinguish profiles even when their DJI numeric identifiers overlap. */
+export function getDroneModelKey(
+  config: Pick<
+    MissionConfig,
+    "droneEnumValue" | "droneSubEnumValue" | "kmzProfile"
+  >,
+): string {
+  return `${config.droneEnumValue}-${config.droneSubEnumValue}${config.kmzProfile ? `-${config.kmzProfile}` : ""}`;
+}
+
+/** Export checks shared by the editor, saved downloads, and the generator. */
+export function getKmzExportError(
+  mission: Pick<Mission, "config" | "waypoints" | "pois">,
+): string | null {
+  const { config, waypoints, pois } = mission;
+  if (!isAir3S(config)) return null;
+  if (config.heightMode !== "relativeToStartPoint") {
+    return "DJI Air 3S requires heights relative to the takeoff point. Review waypoint heights, then select Relative to start. Heights are not converted automatically.";
+  }
+  if (waypoints.length < 2 || waypoints.length > 200) {
+    return "This DJI Air 3S profile supports 2 to 200 waypoints.";
+  }
+  if (
+    ![config.autoFlightSpeed, config.globalTransitionalSpeed].every(
+      (n) => Number.isFinite(n) && n > 0 && n <= 15,
+    )
+  ) {
+    return "DJI Air 3S mission speeds must be greater than 0 and at most 15 m/s.";
+  }
+  if (
+    !["safely", "pointToPoint"].includes(config.flyToWaylineMode) ||
+    !["goHome", "noAction", "autoLand", "gotoFirstWaypoint"].includes(
+      config.finishAction,
+    ) ||
+    !["goContinue", "executeLostAction"].includes(config.exitOnRCLost) ||
+    !["goBack", "landing", "hover"].includes(config.executeRCLostAction)
+  )
+    return "Unsupported DJI Air 3S flight behavior.";
+  if (!["manual", "usePointSetting"].includes(config.gimbalPitchMode))
+    return "Unsupported gimbal pitch mode.";
+  for (const [i, wp] of waypoints.entries()) {
+    if (wp.index !== i)
+      return "Reorder the waypoints before exporting: indices must be consecutive from zero.";
+    if (
+      !Number.isFinite(wp.height) ||
+      !Number.isFinite(wp.latitude) ||
+      !Number.isFinite(wp.longitude)
+    )
+      return "Waypoint coordinates and heights must be finite numbers.";
+    if (
+      !wp.useGlobalSpeed &&
+      (!Number.isFinite(wp.speed) || wp.speed <= 0 || wp.speed > 15)
+    )
+      return "DJI Air 3S waypoint speeds must be greater than 0 and at most 15 m/s.";
+    if (
+      config.gimbalPitchMode !== "manual" &&
+      (!Number.isFinite(wp.gimbalPitchAngle) ||
+        wp.gimbalPitchAngle < -90 ||
+        wp.gimbalPitchAngle > 60)
+    )
+      return "DJI Air 3S gimbal pitch must be between -90° and 60°.";
+    const heading = wp.useGlobalHeadingParam
+      ? config.globalHeadingMode
+      : (wp.headingMode ?? config.globalHeadingMode);
+    if (
+      ![
+        "fixed",
+        "smoothTransition",
+        "followWayline",
+        "manually",
+        "towardPOI",
+      ].includes(heading)
+    )
+      return "Unsupported DJI Air 3S heading mode.";
+    if (
+      (wp.headingAngle != null ||
+        ["fixed", "smoothTransition"].includes(heading)) &&
+      (!Number.isFinite(wp.headingAngle) || Math.abs(wp.headingAngle!) > 180)
+    )
+      return "Set a heading between -180° and 180° for every waypoint with a custom heading.";
+    if (heading === "towardPOI" && !pois.some((p) => p.id === wp.poiId))
+      return "Select a valid POI for every waypoint that faces a POI.";
+    const turn = wp.useGlobalTurnParam
+      ? config.globalTurnMode
+      : (wp.turnMode ?? config.globalTurnMode);
+    if (
+      ![
+        "toPointAndStopWithDiscontinuityCurvature",
+        "toPointAndStopWithContinuityCurvature",
+        "toPointAndPassWithContinuityCurvature",
+      ].includes(turn)
+    )
+      return "This DJI Air 3S profile supports stop or pass-through turns. Select one of these turn modes.";
+    if (
+      wp.turnDampingDist != null &&
+      (!Number.isFinite(wp.turnDampingDist) || wp.turnDampingDist < 0)
+    )
+      return "Turn damping distances must be finite and non-negative.";
+    if (!Array.isArray(wp.actions)) return "Waypoint actions must be a list.";
+    for (const action of wp.actions) {
+      if (!action || !action.params || typeof action.params !== "object")
+        return "Invalid waypoint action.";
+      if (
+        ![
+          "takePhoto",
+          "startRecord",
+          "stopRecord",
+          "gimbalRotate",
+          "gimbalEvenlyRotate",
+          "rotateYaw",
+          "hover",
+        ].includes(action.actionType)
+      )
+        return "This DJI Air 3S profile does not support the selected action. Use photo, video, hover, aircraft heading, or gimbal pitch actions.";
+      const p = action.params as unknown as Record<string, unknown>;
+      if (p.payloadPositionIndex != null && p.payloadPositionIndex !== 0)
+        return "DJI Air 3S uses payload position 0.";
+      if (p.gimbalRotateMode != null && p.gimbalRotateMode !== "absoluteAngle")
+        return "This DJI Air 3S profile requires absolute gimbal angles.";
+      if (
+        p.aircraftPathMode != null &&
+        !["clockwise", "counterClockwise"].includes(String(p.aircraftPathMode))
+      )
+        return "Unsupported aircraft rotation direction.";
+      if (
+        action.actionType === "gimbalRotate" ||
+        action.actionType === "gimbalEvenlyRotate"
+      ) {
+        const pitch = p.gimbalPitchRotateAngle;
+        if (
+          typeof pitch !== "number" ||
+          !Number.isFinite(pitch) ||
+          pitch < -90 ||
+          pitch > 60
+        )
+          return "DJI Air 3S gimbal pitch must be between -90° and 60°.";
+        if (
+          Number(p.gimbalYawRotateAngle ?? 0) !== 0 ||
+          Number(p.gimbalRollRotateAngle ?? 0) !== 0
+        )
+          return "This DJI Air 3S profile supports gimbal pitch only. Set aircraft heading to turn the camera.";
+        if (
+          action.actionType === "gimbalEvenlyRotate" &&
+          i === waypoints.length - 1
+        )
+          return "A smooth gimbal action needs a following waypoint.";
+      }
+      if (
+        action.actionType === "rotateYaw" &&
+        (typeof p.aircraftHeading !== "number" ||
+          !Number.isFinite(p.aircraftHeading) ||
+          Math.abs(p.aircraftHeading) > 180)
+      )
+        return "Aircraft heading actions must be between -180° and 180°.";
+      if (
+        action.actionType === "hover" &&
+        (typeof p.hoverTime !== "number" ||
+          !Number.isFinite(p.hoverTime) ||
+          p.hoverTime < 0)
+      )
+        return "Hover actions need a valid duration.";
+      const g = action.group;
+      if (
+        g &&
+        (!Number.isInteger(g.id) ||
+          (g.triggerParam != null &&
+            (!Number.isFinite(g.triggerParam) || g.triggerParam <= 0)))
+      )
+        return "Invalid imported action group.";
+      if (
+        g &&
+        ["multipleTiming", "multipleDistance"].includes(g.triggerType) &&
+        g.triggerParam == null
+      )
+        return "Repeated actions need an interval.";
+      if (
+        g &&
+        action.actionType === "gimbalEvenlyRotate" &&
+        g.endIndex !== i + 1
+      )
+        return "A smooth gimbal action must end at the next waypoint.";
+      if (
+        g &&
+        (g.startIndex !== i ||
+          !Number.isInteger(g.endIndex) ||
+          g.endIndex < i ||
+          g.endIndex >= waypoints.length ||
+          !["sequence", "parallel"].includes(g.mode) ||
+          ![
+            "reachPoint",
+            "betweenAdjacentPoints",
+            "multipleTiming",
+            "multipleDistance",
+          ].includes(g.triggerType))
+      )
+        return "Imported action boundaries no longer match the route. Recreate the affected actions before exporting.";
+    }
+  }
+  return null;
+}
