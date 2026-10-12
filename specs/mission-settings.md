@@ -4,7 +4,7 @@ Configure your drone model, camera, altitude reference, and safety options for t
 
 ## What you can do
 
-- **Choose your drone model**: M300 RTK, M350 RTK, M30/M30T, M30 Dock, Mavic 3E/3T/3M/3D/3TD, Mini 4 Pro.
+- **Choose your drone model**: M300 RTK, M350 RTK, M30/M30T, M30 Dock, Air 3S, Mavic 3E/3T/3M/3D/3TD, Mini 4 Pro.
 - **Choose a camera/payload** available for the selected drone.
 - **Set a global flight speed** and takeoff security height.
 - **Choose a height reference**:
@@ -30,3 +30,12 @@ Configure your drone model, camera, altitude reference, and safety options for t
 - Height reference affects how altitude values are interpreted by the drone — choose the one that matches your operational needs. The default is **above ground level**.
 - All height fields enforce a minimum of 1 meter.
 - You can set default values for all mission settings in the **Mission defaults** tab of the settings dialog. New missions will use those defaults instead of the factory defaults.
+
+- **DJI Air 3S** uses its built-in camera and a dedicated DJI Fly export profile.
+  Review heights relative to the takeoff point before selecting **Relative to start**.
+  Selecting a drone does not change or convert waypoint heights.
+- For Air 3S, configure takeoff clearance in DJI Fly; the takeoff height input is
+  disabled because this export dialect does not carry that setting.
+
+- Existing M30, M30T, and M30 Dock profiles remain available. Selecting Air 3S
+  is separate from those profiles, including in mission defaults and saved routes.

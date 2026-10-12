@@ -20,7 +20,7 @@ import { useMissionStore } from "@/store/missionStore";
 import { useAuthStore } from "@/store/authStore";
 import { useConfigStore } from "@/store/configStore";
 import { api } from "@/lib/api";
-import { DRONE_MODELS } from "@droneroute/shared";
+import { DRONE_MODELS, getDroneModelKey } from "@droneroute/shared";
 import { getObstacleWarnings } from "@/lib/geo";
 import type {
   Waypoint,
@@ -97,9 +97,7 @@ function formatFlightTime(seconds: number): string {
 
 function getDroneLabel(config: MissionConfig): string | null {
   const model = DRONE_MODELS.find(
-    (d) =>
-      d.droneEnumValue === config.droneEnumValue &&
-      d.droneSubEnumValue === config.droneSubEnumValue,
+    (d) => getDroneModelKey(d) === getDroneModelKey(config),
   );
   return model?.label ?? null;
 }

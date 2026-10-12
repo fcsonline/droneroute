@@ -27,6 +27,7 @@ import {
 } from "@/lib/units";
 import {
   DRONE_MODELS,
+  getDroneModelKey,
   DEFAULT_USER_PREFERENCES,
   DEFAULT_MISSION_CONFIG,
 } from "@droneroute/shared";
@@ -137,9 +138,7 @@ export function AccountModal({ onClose }: AccountModalProps) {
   };
 
   const selectedDrone = DRONE_MODELS.find(
-    (d) =>
-      d.droneEnumValue === missionDefaults.droneEnumValue &&
-      d.droneSubEnumValue === missionDefaults.droneSubEnumValue,
+    (d) => getDroneModelKey(d) === getDroneModelKey(missionDefaults),
   );
 
   return (
@@ -377,18 +376,16 @@ export function AccountModal({ onClose }: AccountModalProps) {
               <div>
                 <Label className="text-xs">Drone model</Label>
                 <Select
-                  value={`${missionDefaults.droneEnumValue}-${missionDefaults.droneSubEnumValue}`}
+                  value={getDroneModelKey(missionDefaults)}
                   onValueChange={(v) => {
-                    const [drone, sub] = v.split("-").map(Number);
                     const model = DRONE_MODELS.find(
-                      (d) =>
-                        d.droneEnumValue === drone &&
-                        d.droneSubEnumValue === sub,
+                      (d) => getDroneModelKey(d) === v,
                     );
                     if (model) {
                       setMissionDefault({
                         droneEnumValue: model.droneEnumValue,
                         droneSubEnumValue: model.droneSubEnumValue,
+                        kmzProfile: model.kmzProfile,
                         payloadEnumValue:
                           model.payloads[0]?.payloadEnumValue || 0,
                       });
@@ -401,8 +398,8 @@ export function AccountModal({ onClose }: AccountModalProps) {
                   <SelectContent>
                     {DRONE_MODELS.map((d) => (
                       <SelectItem
-                        key={`${d.droneEnumValue}-${d.droneSubEnumValue}`}
-                        value={`${d.droneEnumValue}-${d.droneSubEnumValue}`}
+                        key={getDroneModelKey(d)}
+                        value={getDroneModelKey(d)}
                       >
                         {d.label}
                       </SelectItem>

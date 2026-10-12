@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { v4 as uuidv4 } from "uuid";
 import type { Mission } from "@droneroute/shared";
+import { getKmzExportError } from "@droneroute/shared";
 import { generateKmzBuffer } from "../services/kmzGenerator.js";
 import { parseKmz } from "../services/kmzParser.js";
 import { getDb } from "../models/db.js";
@@ -23,8 +24,8 @@ const upload = multer({
 // Generate and download KMZ from mission data (POST body)
 kmzRoutes.post(
   "/generate",
-  strictLimiter,
   optionalAuth,
+  strictLimiter,
   async (req: AuthRequest, res) => {
     try {
       const { name, config, waypoints, pois } = req.body;
@@ -52,6 +53,11 @@ kmzRoutes.post(
         obstacles: [],
       };
 
+      const exportError = getKmzExportError(mission);
+      if (exportError) {
+        res.status(400).json({ error: exportError });
+        return;
+      }
       const buffer = await generateKmzBuffer(mission);
 
       const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
@@ -95,6 +101,11 @@ kmzRoutes.get(
         obstacles: JSON.parse(row.obstacles || "[]"),
       };
 
+      const exportError = getKmzExportError(mission);
+      if (exportError) {
+        res.status(400).json({ error: exportError });
+        return;
+      }
       const buffer = await generateKmzBuffer(mission);
       const filename = `${mission.name.replace(/[^a-zA-Z0-9_-]/g, "_")}.kmz`;
       res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
