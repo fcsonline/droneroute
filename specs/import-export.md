@@ -35,9 +35,9 @@ Bring in existing missions or export your planned flight as a file ready for DJI
 - Choose **DJI Air 3S** to export the dedicated DJI Fly layout. Existing profiles,
   including M30 Dock, retain their original export format. Old saved missions
   are not automatically reassigned to Air 3S.
-- The profile requires heights relative to the takeoff point. AGL and sea-level
-  exports are blocked until heights are reviewed and the reference is changed.
-  Changing the reference leaves all height numbers unchanged.
+- The profile always uses heights relative to the takeoff point, shown as 0 m.
+  Selecting Air 3S changes the reference while keeping waypoint height numbers
+  unchanged. Configure takeoff clearance separately in DJI Fly.
 - Facade scans export explicit wall-facing headings and gimbal pitch actions
   before photographs. POI headings are converted to per-waypoint angles.
 - Photo, video, hover, aircraft heading, and gimbal pitch actions are supported.

@@ -32,10 +32,9 @@ Configure your drone model, camera, altitude reference, and safety options for t
 - You can set default values for all mission settings in the **Mission defaults** tab of the settings dialog. New missions will use those defaults instead of the factory defaults.
 
 - **DJI Air 3S** uses its built-in camera and a dedicated DJI Fly export profile.
-  Review heights relative to the takeoff point before selecting **Relative to start**.
-  Selecting a drone does not change or convert waypoint heights.
-- For Air 3S, configure takeoff clearance in DJI Fly; the takeoff height input is
-  disabled because this export dialect does not carry that setting.
+  Selecting it sets the height reference to **Relative to start** and keeps the
+  waypoint height numbers unchanged. The takeoff point is shown as 0 m; configure
+  takeoff clearance separately in DJI Fly.
 
 - Existing M30, M30T, and M30 Dock profiles remain available. Selecting Air 3S
   is separate from those profiles, including in mission defaults and saved routes.

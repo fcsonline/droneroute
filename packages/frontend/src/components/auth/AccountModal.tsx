@@ -28,6 +28,7 @@ import {
 import {
   DRONE_MODELS,
   getDroneModelKey,
+  isAir3S,
   DEFAULT_USER_PREFERENCES,
   DEFAULT_MISSION_CONFIG,
 } from "@droneroute/shared";
@@ -79,7 +80,12 @@ export function AccountModal({ onClose }: AccountModalProps) {
     preferences?.visualization ?? DEFAULT_USER_PREFERENCES.visualization,
   );
   const [missionDefaults, setMissionDefaults] = useState(
-    preferences?.missionDefaults ?? DEFAULT_MISSION_CONFIG,
+    (() => {
+      const defaults = preferences?.missionDefaults ?? DEFAULT_MISSION_CONFIG;
+      return isAir3S(defaults)
+        ? { ...defaults, heightMode: "relativeToStartPoint" as const }
+        : defaults;
+    })(),
   );
   const [unitSystem, setUnitSystem] = useState<UnitSystem>(
     preferences?.unitSystem ?? "metric",
@@ -90,8 +96,14 @@ export function AccountModal({ onClose }: AccountModalProps) {
   // Sync local state when preferences load
   useEffect(() => {
     if (preferences?.visualization) setVizPrefs(preferences.visualization);
-    if (preferences?.missionDefaults)
-      setMissionDefaults(preferences.missionDefaults);
+    if (preferences?.missionDefaults) {
+      const defaults = preferences.missionDefaults;
+      setMissionDefaults(
+        isAir3S(defaults)
+          ? { ...defaults, heightMode: "relativeToStartPoint" }
+          : defaults,
+      );
+    }
     if (preferences?.unitSystem) setUnitSystem(preferences.unitSystem);
   }, [preferences]);
 
@@ -134,7 +146,12 @@ export function AccountModal({ onClose }: AccountModalProps) {
   };
 
   const setMissionDefault = (partial: Partial<MissionConfig>) => {
-    setMissionDefaults((prev: MissionConfig) => ({ ...prev, ...partial }));
+    setMissionDefaults((prev: MissionConfig) => {
+      const next = { ...prev, ...partial };
+      return isAir3S(next)
+        ? { ...next, heightMode: "relativeToStartPoint" }
+        : next;
+    });
   };
 
   const selectedDrone = DRONE_MODELS.find(
@@ -461,14 +478,21 @@ export function AccountModal({ onClose }: AccountModalProps) {
                 </div>
                 <div>
                   <Label className="text-xs">
-                    Takeoff height ({heightLabel(unitSystem)})
+                    {isAir3S(missionDefaults)
+                      ? "Takeoff reference (m)"
+                      : `Takeoff height (${heightLabel(unitSystem)})`}
                   </Label>
                   <Input
                     type="number"
-                    value={toDisplayHeight(
-                      missionDefaults.takeOffSecurityHeight,
-                      unitSystem,
-                    )}
+                    value={
+                      isAir3S(missionDefaults)
+                        ? "0"
+                        : toDisplayHeight(
+                            missionDefaults.takeOffSecurityHeight,
+                            unitSystem,
+                          )
+                    }
+                    disabled={isAir3S(missionDefaults)}
                     onChange={(e) =>
                       setMissionDefault({
                         takeOffSecurityHeight: fromDisplayHeight(
@@ -511,6 +535,7 @@ export function AccountModal({ onClose }: AccountModalProps) {
                   onValueChange={(v) =>
                     setMissionDefault({ heightMode: v as HeightMode })
                   }
+                  disabled={isAir3S(missionDefaults)}
                 >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />

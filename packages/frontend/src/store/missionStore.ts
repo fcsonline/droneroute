@@ -6,7 +6,11 @@ import type {
   PointOfInterest,
   Obstacle,
 } from "@droneroute/shared";
-import { DEFAULT_MISSION_CONFIG, DEFAULT_WAYPOINT } from "@droneroute/shared";
+import {
+  DEFAULT_MISSION_CONFIG,
+  DEFAULT_WAYPOINT,
+  isAir3S,
+} from "@droneroute/shared";
 import { usePreferencesStore } from "@/store/preferencesStore";
 import type { TemplateType } from "@/lib/templates";
 
@@ -547,7 +551,9 @@ export const useMissionStore = create<MissionState>((set, get) => ({
     set({
       missionId: data.id || null,
       missionName: data.name,
-      config: data.config,
+      config: isAir3S(data.config)
+        ? { ...data.config, heightMode: "relativeToStartPoint" }
+        : data.config,
       waypoints: data.waypoints,
       pois: data.pois || [],
       obstacles: data.obstacles || [],
@@ -560,10 +566,13 @@ export const useMissionStore = create<MissionState>((set, get) => ({
 
   clearMission: () => {
     const prefs = usePreferencesStore.getState().preferences;
+    const config = { ...DEFAULT_MISSION_CONFIG, ...prefs.missionDefaults };
     set({
       missionId: null,
       missionName: "New Mission",
-      config: { ...DEFAULT_MISSION_CONFIG, ...prefs.missionDefaults },
+      config: isAir3S(config)
+        ? { ...config, heightMode: "relativeToStartPoint" }
+        : config,
       waypoints: [],
       pois: [],
       obstacles: [],

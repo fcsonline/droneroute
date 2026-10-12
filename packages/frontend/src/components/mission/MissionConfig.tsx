@@ -49,6 +49,9 @@ export function MissionConfig() {
                 droneSubEnumValue: model.droneSubEnumValue,
                 kmzProfile: model.kmzProfile,
                 payloadEnumValue: model.payloads[0]?.payloadEnumValue || 0,
+                ...(isAir3S(model) && {
+                  heightMode: "relativeToStartPoint",
+                }),
               });
             }
           }}
@@ -68,10 +71,8 @@ export function MissionConfig() {
 
       {isAir3S(config) && (
         <p className="text-xs text-muted-foreground" role="note">
-          DJI Fly export. Heights must be relative to the takeoff point. Review
-          waypoint heights before selecting Relative to start; changing the
-          reference does not convert them. Check the route in DJI Fly before
-          flight.
+          DJI Fly export. The takeoff point is 0 m; waypoint heights are used as
+          entered relative to it. Check the route in DJI Fly before flight.
         </p>
       )}
 
@@ -123,11 +124,17 @@ export function MissionConfig() {
         </div>
         <div>
           <Label className="text-xs">
-            Takeoff height ({heightLabel(unitSystem)})
+            {isAir3S(config)
+              ? "Takeoff reference (m)"
+              : `Takeoff height (${heightLabel(unitSystem)})`}
           </Label>
           <Input
             type="number"
-            value={toDisplayHeight(config.takeOffSecurityHeight, unitSystem)}
+            value={
+              isAir3S(config)
+                ? "0"
+                : toDisplayHeight(config.takeOffSecurityHeight, unitSystem)
+            }
             disabled={isAir3S(config)}
             onChange={(e) =>
               setConfig({
@@ -143,7 +150,8 @@ export function MissionConfig() {
           />
           {isAir3S(config) && (
             <p className="text-[10px] text-muted-foreground">
-              Set takeoff clearance in DJI Fly.
+              Waypoint heights use this point as 0 m. Set takeoff clearance in
+              DJI Fly.
             </p>
           )}
         </div>
@@ -174,6 +182,7 @@ export function MissionConfig() {
         <Select
           value={config.heightMode}
           onValueChange={(v) => setConfig({ heightMode: v as HeightMode })}
+          disabled={isAir3S(config)}
         >
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
