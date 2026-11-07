@@ -88,7 +88,12 @@ export async function parseKmz(buffer: Buffer): Promise<{
 
   // Determine which document contains the Folder with waypoints.
   // template.kml may have it, or it may only be in waylines.wpml.
-  let folder = doc.Folder;
+  // Area/mapping templates (mappingPolygon, mappingCylinder, ...) carry a Folder with a
+  // Placemark that describes the area, not waypoints; the flyable points are in waylines.wpml.
+  const hasWaypoints = (f: any) =>
+    (f?.Placemark || []).some((pm: any) => pm?.Point?.coordinates != null);
+  let folder = hasWaypoints(doc.Folder) ? doc.Folder : undefined;
+  const templateFolder = doc.Folder;
 
   if (!folder) {
     // Try waylines.wpml for the actual waypoint data
@@ -99,6 +104,7 @@ export async function parseKmz(buffer: Buffer): Promise<{
       const waylinesParsed = parser.parse(waylinesXml);
       folder = waylinesParsed.kml?.Document?.Folder;
     }
+    if (!hasWaypoints(folder)) folder = templateFolder;
   }
 
   if (folder) {
